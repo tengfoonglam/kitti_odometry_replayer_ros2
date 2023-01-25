@@ -14,7 +14,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'generate_urdf = ros2_kitti_description.generate_urdf:generate_urdf',
+            'generate_urdfs = ros2_kitti_description.generate_urdfs:generate_urdfs',
         ]
     },
     install_requires=['setuptools'],
