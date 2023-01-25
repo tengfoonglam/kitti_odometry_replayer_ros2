@@ -24,6 +24,11 @@ repos:
       - id: cppcheck
       - id: cpplint
       - id: include-what-you-use
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: 'v2.0.1'
+    hooks:
+      - id: autopep8
+        args: ["-i", "--global-config", "ament_flake8.ini"]
   - repo: https://github.com/PyCQA/flake8
     rev: 4.0.0
     hooks:
