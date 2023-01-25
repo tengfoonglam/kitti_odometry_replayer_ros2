@@ -1,0 +1,2 @@
+# networkx needs to be upgraded in order for urdfpy to work on Python 3.10. See https://github.com/mmatl/urdfpy/pull/23
+networkx>=2.8.4

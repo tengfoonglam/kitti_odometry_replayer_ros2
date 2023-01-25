@@ -16,7 +16,10 @@
 3. Activate virtual environment: `source .venv/bin/activate`
 4. Install dependencies using *rosdep*: `rosdep install -i --from-path src --ignore-src --rosdistro $ROS_DISTRO -y --as-root pip:no`
    * Note: Specify to not use *sudo* when which will install pip packages to OS Python environment
-5. Build package: `colcon build --packages-up-to ros2_kitti`
+5. Unfortunately, some dependencies cannot be satisfied using rosdep and needs to be resolved directly using pip
+   * In the git root directory with .venv activated run `pip install -r non_rosdep_requirements.txt`
+   * Note: Ignore warnings, see comments in `non_rosdep_requirements.txt` for more details
+6. Build package: `colcon build --packages-up-to ros2_kitti`
 
 ## Pre-Commit Hooks
 
