@@ -4,6 +4,7 @@
 import click
 import logging
 import numpy as np
+import re
 import ros2_kitti_description.constants as constants
 
 # import urdfpy
@@ -18,9 +19,20 @@ def extract_p0_tf_lidar(calib_file_path: Path) -> Optional[np.ndarray]:
 
     with open(calib_file_path, 'r') as f:
         lines: List[str] = [line.rstrip() for line in f]
-        candidate_lines = [line for line in lines if constants.P0_TF_LIDAR_ROW_LABEL in line]
+        candidate_lines: List[str] = [line for line in lines if re.fullmatch(
+            constants.P0_TF_LIDAR_ROW_REGEX, line) is not None]
         if len(candidate_lines) != 1:
-            pass
+            logging.info(
+                f"Multiple/no lines in {calib_file_path} contains a row with 'Tr: "
+                "followed by 12 space-separated scientific notation floats'. Ignoring file")
+        else:
+            candidate_line: str = candidate_lines[0]
+            mat_str: str = re.sub(f'^{constants.P0_TF_LIDAR_ROW_LABEL} ',
+                                  '', string=candidate_line, count=1)
+            rot_trans_mat: np.ndarray = np.fromstring(
+                mat_str, dtype=float, count=12, sep=' ').reshape((3, 4))
+            output = np.vstack((rot_trans_mat, np.array([0., 0., 0., 1.])))
+            logging.debug(f"Successfully parsed p0_tf_lidar: \n {output}")
 
     return output
 
@@ -35,7 +47,12 @@ def generate_urdf(dataset_path: Path) -> None:
             f"{CALIB_FILENAME} not found in folder {dataset_path}")
         return
 
-    extract_p0_tf_lidar(calib_file_path)
+    p0_tf_lidar = extract_p0_tf_lidar(calib_file_path)
+
+    if p0_tf_lidar is None:
+        logging.error(
+            f"Unable to extract transformation matrix from p0 to lidar in {calib_file_path}")
+        return
 
     pass
 
