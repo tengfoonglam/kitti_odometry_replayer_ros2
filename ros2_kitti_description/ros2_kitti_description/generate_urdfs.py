@@ -2,12 +2,42 @@
 
 # import launch_ros
 import click
-# import urdfpy
 import logging
+import numpy as np
+import ros2_kitti_description.constants as constants
+
+# import urdfpy
 
 
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, List, Optional
+
+
+def extract_p0_tf_lidar(calib_file_path: Path) -> Optional[np.ndarray]:
+    output = None
+
+    with open(calib_file_path, 'r') as f:
+        lines: List[str] = [line.rstrip() for line in f]
+        candidate_lines = [line for line in lines if constants.P0_TF_LIDAR_ROW_LABEL in line]
+        if len(candidate_lines) != 1:
+            pass
+
+    return output
+
+
+def generate_urdf(dataset_path: Path) -> None:
+
+    CALIB_FILENAME = "calib.txt"
+    calib_file_path: Path = dataset_path / Path(CALIB_FILENAME)
+
+    if not calib_file_path.exists():
+        logging.error(
+            f"{CALIB_FILENAME} not found in folder {dataset_path}")
+        return
+
+    extract_p0_tf_lidar(calib_file_path)
+
+    pass
 
 
 @click.command()
@@ -19,6 +49,14 @@ def generate_urdfs(data_odometry_calib_dir: str, output_dir: str) -> None:
     """Generate URDFs for the KITTI Odometry Dataset"""
 
     logging.basicConfig(level=logging.INFO)
+
+    # Make sure output directory exists
+    output_path: Path = Path(output_dir).resolve()
+    if not output_path.is_dir():
+        logging.error(
+            f"output_path provided ({output_path}) "
+            "is not a folder or does not exist")
+        return
 
     # Get all folders
     data_odometry_calib_path: Path = Path(data_odometry_calib_dir).resolve()
@@ -42,12 +80,10 @@ def generate_urdfs(data_odometry_calib_dir: str, output_dir: str) -> None:
     logging.info(f"Found sequences {[folder.stem for folder in dataset_folders]}")
 
     # For each folder
+    for folder in dataset_folders:
+        generate_urdf(folder)
+
     # Find calib.txt
     # Parse txt
     # Add links
     # Save file
-    pass
-
-
-if __name__ == "__main__":
-    pass

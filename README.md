@@ -2,6 +2,8 @@
 
 ## Setup
 
+Clone this repository in the `src` folder of your ROS2 workspace (e.g. ros2_ws folder)
+
 #### Without Virtual Environment
 
 1. Install dependencies using *rosdep*: `rosdep install -i --from-path src --ignore-src --rosdistro $ROS_DISTRO -y`
@@ -10,16 +12,18 @@
 
 #### With Virtual Environment
 
-1. In ROS2 Workspace, create virtual environment: `virtualenv -p python3 --system-site-packages .venv`
+1. In ROS2 Workspace, create virtual environment: `virtualenv -p python3 --system-site-packages --symlinks .venv`
    * Note: *rosdep* installs some dependencies using *apt* so we need the `--system-site-packages` flag to access them
-2. Ensure colcon does not try to build the new virtual environment (Source [here](https://docs.ros.org/en/foxy/How-To-Guides/Using-Python-Packages.html)): `touch .venv/COLCON_IGNORE`
+   * For more information see this [issue](https://github.com/ros2/ros2/issues/1094)
+2. Ensure colcon does not try to build the new virtual environment (Source [here](https://docs.ros.org/en/humble/How-To-Guides/Using-Python-Packages.html)): `touch .venv/COLCON_IGNORE`
 3. Activate virtual environment: `source .venv/bin/activate`
 4. Install dependencies using *rosdep*: `rosdep install -i --from-path src --ignore-src --rosdistro $ROS_DISTRO -y --as-root pip:no`
    * Note: Specify to not use *sudo* when which will install pip packages to OS Python environment
 5. Unfortunately, some dependencies cannot be satisfied using rosdep and needs to be resolved directly using pip
-   * In the git root directory with .venv activated run `pip install -r non_rosdep_requirements.txt`
+   * With .venv activated, in your workspace directory run `pip install -r src/ros2_kitti/non_rosdep_requirements.txt`
    * Note: Ignore warnings, see comments in `non_rosdep_requirements.txt` for more details
 6. Build package: `colcon build --packages-up-to ros2_kitti`
+7. Source the workspace after building `source ./install/setup.sh`
 
 ## Pre-Commit Hooks
 

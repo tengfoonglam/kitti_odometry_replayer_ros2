@@ -1,4 +1,3 @@
-
 from setuptools import setup
 
 package_name = 'ros2_kitti_description'
