@@ -117,7 +117,7 @@ def generate_urdf(dataset_path: Path, output_path: Path) -> None:
         return
 
     vehicle_urdf = create_urdf(urdf_name=dataset_path.stem, p0_tf_lidar=p0_tf_lidar)
-    output_file = output_path / Path(f"{dataset_path.stem}.urdf")
+    output_file = output_path / Path(f"{dataset_path.stem}.urdf.xml")
     vehicle_urdf.save(str(output_file))
 
     logging.info(f"Vehicle URDF for sequence {dataset_path.stem} saved to {output_file}")
