@@ -40,14 +40,16 @@ def create_urdf(p0_tf_lidar: np.ndarray) -> urdfpy.URDF:
     Joints = List[urdfpy.Joint]
 
     base_link: Links = [urdfpy.Link(name=constants.BASE_LINK_NAME,
-                                    visuals=[constants.VEHICLE_VISUAL],
+                                    visuals=[constants.CAM_VISUAL,
+                                             constants.VEHICLE_VISUAL],
                                     collisions=None, inertial=None)]
-    lidar_link: Links = [urdfpy.Link(name=constants.LIDAR_LINK_NAME, visuals=None,
+    lidar_link: Links = [urdfpy.Link(name=constants.LIDAR_LINK_NAME,
+                                     visuals=[constants.LIDAR_VISUAL],
                                      collisions=None, inertial=None)]
     wheel_links: Links = [urdfpy.Link(name=name, visuals=[constants.WHEEL_VISUAL],
                                       collisions=None, inertial=None)
                           for name in constants.WHEEL_TFS.keys()]
-    camera_links: Links = [urdfpy.Link(name=name, visuals=None,
+    camera_links: Links = [urdfpy.Link(name=name, visuals=[constants.CAM_VISUAL],
                                        collisions=None, inertial=None)
                            for name in constants.CAMERA_TFS.keys()]
 
