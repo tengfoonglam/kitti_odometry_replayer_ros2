@@ -92,8 +92,6 @@ def generate_urdf(dataset_path: Path, output_path: Path) -> None:
 
     logging.info(f"URDF saved to {output_file}")
 
-    pass
-
 
 @click.command()
 @click.option('--data_odometry_calib_dir', '-d', required=True, help="Location of the "
