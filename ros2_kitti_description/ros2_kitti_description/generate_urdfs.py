@@ -40,8 +40,7 @@ def create_urdf(p0_tf_lidar: np.ndarray) -> urdfpy.URDF:
     Joints = List[urdfpy.Joint]
 
     base_link: Links = [urdfpy.Link(name=constants.BASE_LINK_NAME,
-                                    visuals=[constants.CAM_VISUAL,
-                                             constants.VEHICLE_VISUAL],
+                                    visuals=[constants.CAM_VISUAL],
                                     collisions=None, inertial=None)]
     lidar_link: Links = [urdfpy.Link(name=constants.LIDAR_LINK_NAME,
                                      visuals=[constants.LIDAR_VISUAL],
@@ -52,6 +51,9 @@ def create_urdf(p0_tf_lidar: np.ndarray) -> urdfpy.URDF:
     camera_links: Links = [urdfpy.Link(name=name, visuals=[constants.CAM_VISUAL],
                                        collisions=None, inertial=None)
                            for name in constants.CAMERA_TFS.keys()]
+    vehicle_link: Links = [urdfpy.Link(name=constants.VEHICLE_NAME,
+                                       visuals=[constants.VEHICLE_VISUAL],
+                                       collisions=None, inertial=None)]
 
     lidar_joint: Joints = [urdfpy.Joint(name=f"{constants.BASE_LINK_NAME}_"
                                         f"{constants.LIDAR_LINK_NAME}_link",
@@ -65,9 +67,14 @@ def create_urdf(p0_tf_lidar: np.ndarray) -> urdfpy.URDF:
                                           joint_type="fixed", parent=constants.BASE_LINK_NAME,
                                           child=name, origin=tf)
                              for name, tf in constants.CAMERA_TFS.items()]
+    vehicle_joint: Joints = [urdfpy.Joint(name=f"{constants.BASE_LINK_NAME}_"
+                                               f"{constants.VEHICLE_NAME}_link",
+                                          joint_type="fixed", parent=constants.BASE_LINK_NAME,
+                                          child=constants.VEHICLE_NAME,
+                                          origin=constants.P0_TF_VEHICLE)]
 
-    all_links: Links = base_link + lidar_link + wheel_links + camera_links
-    all_joints: Joints = lidar_joint + wheel_joints + camera_joints
+    all_links: Links = base_link + lidar_link + wheel_links + camera_links + vehicle_link
+    all_joints: Joints = lidar_joint + wheel_joints + camera_joints + vehicle_joint
 
     return urdfpy.URDF(name="car", links=all_links, joints=all_joints)
 
