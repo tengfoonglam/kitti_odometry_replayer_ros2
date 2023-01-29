@@ -35,16 +35,38 @@ def extract_p0_tf_lidar(calib_file_path: Path) -> Optional[np.ndarray]:
 
 
 def create_urdf(p0_tf_lidar: np.ndarray) -> urdfpy.URDF:
-    base_link = [urdfpy.Link(name=constants.BASE_LINK_NAME, visuals=None,
-                             collisions=None, inertial=None)]
-    wheel_links = [urdfpy.Link(name=name, visuals=[constants.WHEEL_VISUAL],
-                               collisions=None, inertial=None)
-                   for name in constants.WHEEL_TFS.keys()]
-    wheel_joints = [urdfpy.Joint(name=f"{constants.BASE_LINK_NAME}_{name}_link",
-                                 joint_type="fixed", parent=constants.BASE_LINK_NAME,
-                                 child=name, origin=tf)
-                    for name, tf in constants.WHEEL_TFS.items()]
-    return urdfpy.URDF(name="car", links=base_link + wheel_links, joints=wheel_joints)
+
+    Links = List[urdfpy.Link]
+    Joints = List[urdfpy.Joint]
+
+    base_link: Links = [urdfpy.Link(name=constants.BASE_LINK_NAME, visuals=None,
+                                    collisions=None, inertial=None)]
+    lidar_link: Links = [urdfpy.Link(name=constants.LIDAR_LINK_NAME, visuals=None,
+                                     collisions=None, inertial=None)]
+    wheel_links: Links = [urdfpy.Link(name=name, visuals=[constants.WHEEL_VISUAL],
+                                      collisions=None, inertial=None)
+                          for name in constants.WHEEL_TFS.keys()]
+    camera_links: Links = [urdfpy.Link(name=name, visuals=None,
+                                       collisions=None, inertial=None)
+                           for name in constants.CAMERA_TFS.keys()]
+
+    lidar_joint: Joints = [urdfpy.Joint(name=f"{constants.BASE_LINK_NAME}_"
+                                        f"{constants.LIDAR_LINK_NAME}_link",
+                                        joint_type="fixed", parent=constants.BASE_LINK_NAME,
+                                        child=constants.LIDAR_LINK_NAME, origin=p0_tf_lidar)]
+    wheel_joints: Joints = [urdfpy.Joint(name=f"{constants.BASE_LINK_NAME}_{name}_link",
+                                         joint_type="fixed", parent=constants.BASE_LINK_NAME,
+                                         child=name, origin=tf)
+                            for name, tf in constants.WHEEL_TFS.items()]
+    camera_joints: Joints = [urdfpy.Joint(name=f"{constants.BASE_LINK_NAME}_{name}_link",
+                                          joint_type="fixed", parent=constants.BASE_LINK_NAME,
+                                          child=name, origin=tf)
+                             for name, tf in constants.CAMERA_TFS.items()]
+
+    all_links: Links = base_link + lidar_link + wheel_links + camera_links
+    all_joints: Joints = lidar_joint + wheel_joints + camera_joints
+
+    return urdfpy.URDF(name="car", links=all_links, joints=all_joints)
 
 
 def generate_urdf(dataset_path: Path, output_path: Path) -> None:

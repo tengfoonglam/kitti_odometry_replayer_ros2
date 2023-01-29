@@ -47,11 +47,13 @@ P0_TF_WBR: np.ndarray = np.array([[0.,  -1.,  0.,  0.8],
                                   [1.,   0.,  0.,  -1.03],
                                   [0.,   0.,  0.,    1.]])
 
-BASE_LINK_NAME: str = "p0"
+P0_NAME: str = "p0"
+BASE_LINK_NAME: str = P0_NAME
+CAMERA_TFS: Dict[str, np.ndarray] = {"p1": P0_TF_P1, "p2": P0_TF_P2, "p3": P0_TF_P3}
+LIDAR_LINK_NAME: str = "lidar"
 
 WHEEL_TFS: Dict[str, np.ndarray] = {"wfl": P0_TF_WFL,
                                     "wfr": P0_TF_WFR, "wbl": P0_TF_WBL, "wbr": P0_TF_WBR}
-
 WHEEL_RADIUS: float = 0.3
 WHEEL_WIDTH: float = 0.1
 WHEEL_GEOMETRY: urdfpy.Geometry = urdfpy.Geometry(
