@@ -1,4 +1,7 @@
 import numpy as np
+import urdfpy
+
+from typing import Dict
 
 # Values obtained from https://www.cvlibs.net/datasets/kitti/setup.php
 # P0_TF_LIDAR should be obtained from calib.txt for each dataset
@@ -44,4 +47,15 @@ P0_TF_WBR: np.ndarray = np.array([[0.,  -1.,  0.,  0.8],
                                   [1.,   0.,  0.,  -1.03],
                                   [0.,   0.,  0.,    1.]])
 
+BASE_LINK_NAME: str = "p0"
+
+WHEEL_TFS: Dict[str, np.ndarray] = {"wfl": P0_TF_WFL,
+                                    "wfr": P0_TF_WFR, "wbl": P0_TF_WBL, "wbr": P0_TF_WBR}
+
 WHEEL_RADIUS: float = 0.3
+WHEEL_WIDTH: float = 0.1
+WHEEL_GEOMETRY: urdfpy.Geometry = urdfpy.Geometry(
+    cylinder=urdfpy.Cylinder(radius=WHEEL_RADIUS, length=WHEEL_WIDTH))
+WHEEL_MATERIAL: urdfpy.Material = urdfpy.Material(
+    name="wheel_material", color=(0.5, 0.5, 0.5, 1.0))
+WHEEL_VISUAL: urdfpy.Visual = urdfpy.Visual(geometry=WHEEL_GEOMETRY, material=WHEEL_MATERIAL)

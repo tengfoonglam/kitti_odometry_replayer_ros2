@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
-# import launch_ros
 import click
 import logging
 import numpy as np
 import re
 import ros2_kitti_description.constants as constants
-
-# import urdfpy
-
+import urdfpy
 
 from pathlib import Path
 from typing import Callable, List, Optional
@@ -37,22 +34,41 @@ def extract_p0_tf_lidar(calib_file_path: Path) -> Optional[np.ndarray]:
     return output
 
 
-def generate_urdf(dataset_path: Path) -> None:
+def create_urdf(p0_tf_lidar: np.ndarray) -> urdfpy.URDF:
+    base_link = [urdfpy.Link(name=constants.BASE_LINK_NAME, visuals=None,
+                             collisions=None, inertial=None)]
+    wheel_links = [urdfpy.Link(name=name, visuals=[constants.WHEEL_VISUAL],
+                               collisions=None, inertial=None)
+                   for name in constants.WHEEL_TFS.keys()]
+    wheel_joints = [urdfpy.Joint(name=f"{constants.BASE_LINK_NAME}_{name}_link",
+                                 joint_type="fixed", parent=constants.BASE_LINK_NAME,
+                                 child=name, origin=tf)
+                    for name, tf in constants.WHEEL_TFS.items()]
+    return urdfpy.URDF(name="car", links=base_link + wheel_links, joints=wheel_joints)
 
-    CALIB_FILENAME = "calib.txt"
-    calib_file_path: Path = dataset_path / Path(CALIB_FILENAME)
+
+def generate_urdf(dataset_path: Path, output_path: Path) -> None:
+
+    calib_file_path: Path = dataset_path / Path(constants.KITTI_CALIB_FILENAME)
 
     if not calib_file_path.exists():
         logging.error(
-            f"{CALIB_FILENAME} not found in folder {dataset_path}")
+            f"{constants.KITTI_CALIB_FILENAME} not found in folder {dataset_path}")
         return
 
-    p0_tf_lidar = extract_p0_tf_lidar(calib_file_path)
+    p0_tf_lidar = extract_p0_tf_lidar(calib_file_path=calib_file_path)
 
     if p0_tf_lidar is None:
         logging.error(
             f"Unable to extract transformation matrix from p0 to lidar in {calib_file_path}")
         return
+
+    vehicle_urdf = create_urdf(p0_tf_lidar=p0_tf_lidar)
+
+    output_file = output_path / Path(f"{dataset_path.stem}.urdf")
+
+    vehicle_urdf.save(str(output_file))
+    logging.info(f"URDF saved to {output_file}")
 
     pass
 
@@ -98,9 +114,4 @@ def generate_urdfs(data_odometry_calib_dir: str, output_dir: str) -> None:
 
     # For each folder
     for folder in dataset_folders:
-        generate_urdf(folder)
-
-    # Find calib.txt
-    # Parse txt
-    # Add links
-    # Save file
+        generate_urdf(dataset_path=folder, output_path=output_path)
