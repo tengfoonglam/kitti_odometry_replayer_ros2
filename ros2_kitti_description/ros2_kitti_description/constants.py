@@ -14,6 +14,7 @@ KITTI_CALIB_FILENAME: str = "calib.txt"
 P0_TF_LIDAR_ROW_LABEL: str = "Tr:"
 # Regex that searches for - 'Tr: followed by 12 space-separated scientific notation floats'
 P0_TF_LIDAR_ROW_REGEX: str = "Tr:( [+\-]?(?=.)(0|[1-9]\d*)?(\.\d*)?(?:(\d)[eE][+\-]?\d+)?){12}$"  # noqa: E501, W605
+SEQUENCE_FOLDER_REGEX: str = "^[0-9]{2,}$"
 
 # Sensors TF data
 P0_NAME: str = "p0"
