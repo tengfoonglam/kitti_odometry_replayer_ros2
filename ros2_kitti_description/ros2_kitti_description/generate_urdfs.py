@@ -39,7 +39,8 @@ def create_urdf(p0_tf_lidar: np.ndarray) -> urdfpy.URDF:
     Links = List[urdfpy.Link]
     Joints = List[urdfpy.Joint]
 
-    base_link: Links = [urdfpy.Link(name=constants.BASE_LINK_NAME, visuals=None,
+    base_link: Links = [urdfpy.Link(name=constants.BASE_LINK_NAME,
+                                    visuals=[constants.VEHICLE_VISUAL],
                                     collisions=None, inertial=None)]
     lidar_link: Links = [urdfpy.Link(name=constants.LIDAR_LINK_NAME, visuals=None,
                                      collisions=None, inertial=None)]
