@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>ros2_kitti_description</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>URDF Files and Generation Scripts for the KITTI Dataset</description>
   <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>
   <license>BSD 3-clause</license>
