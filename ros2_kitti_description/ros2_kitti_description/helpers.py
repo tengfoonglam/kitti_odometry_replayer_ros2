@@ -2,10 +2,38 @@ import logging
 import numpy as np
 import re
 import ros2_kitti_description.constants as constants
+import subprocess
 import urdfpy
 
 from pathlib import Path
 from typing import List, Optional
+
+
+def is_existing_folder(path: Path) -> bool:
+    """Check if the given path is for a folder and exists
+
+    Args:
+        path (Path): Path to check
+    Returns:
+        bool: Whether check passed
+    """
+    return path.exists() and path.is_dir()
+
+
+def get_package_src_path(package_name: str) -> Path:
+    """Get the src folder of the specified ROS2 Package
+
+    Args:
+        package_name (str): Name of package
+
+    Returns:
+        Path: Path to the src folder, if it exists. Returns empty path otherwise
+    """
+    terminal_output = subprocess.check_output(
+        ["colcon", "list", "--packages-select",
+         package_name, "--paths-only"]).decode("utf-8").rstrip()
+    output_path = Path(terminal_output)
+    return output_path.absolute() if is_existing_folder(path=output_path) else Path()
 
 
 def extract_p0_tf_lidar(calib_file_path: Path) -> Optional[np.ndarray]:

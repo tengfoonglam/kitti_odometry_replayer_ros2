@@ -10,6 +10,7 @@ from typing import Dict
 # Note 2: Sensor/Vehicle geometry is only for visualization purposes
 
 # File parsing constants
+PACKAGE_NAME = "ros2_kitti_description"
 KITTI_CALIB_FILENAME: str = "calib.txt"
 P0_TF_LIDAR_ROW_LABEL: str = "Tr:"
 # Regex that searches for - 'Tr: followed by 12 space-separated scientific notation floats'
