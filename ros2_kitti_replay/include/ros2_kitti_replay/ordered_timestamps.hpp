@@ -12,7 +12,7 @@ namespace r2k_replay
 using OrderedTimestamps = std::set<rclcpp::Time>;
 
 [[nodiscard]] std::optional<OrderedTimestamps> extract_ordered_timestamps_from_file(
-  const std::filesystem::path & path);
+  const std::filesystem::path & times_path);
 
 }  // namespace r2k_replay
 
