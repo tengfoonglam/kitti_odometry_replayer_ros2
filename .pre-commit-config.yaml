@@ -22,7 +22,9 @@ repos:
         args: ["-c", "ament_code_style.cfg", "--replace"]
       - id: cppcheck
       - id: cpplint
-        args: ["--filter=-legal/copyright,-whitespace/braces,-build/include_order"]
+        # Linelength/filters mainly obtained from https://github.com/ament/ament_lint/blob/c01b035957dda939e8cffd33f431d26bd83ce233/ament_cpplint/ament_cpplint/main.py
+        # legal/copyright and build/include_order are added temporarily to speed up development, will be addressed in the future
+        args: ["--linelength=100", "--filter=-legal/copyright,-build/include_order,-build/c++11,-runtime/references,-whitespace/braces,-whitespace/indent,-whitespace/parens,-whitespace/semicolon"]
   - repo: https://github.com/pre-commit/mirrors-autopep8
     rev: 'v2.0.1'
     hooks:
