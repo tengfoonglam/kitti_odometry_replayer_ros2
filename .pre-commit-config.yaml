@@ -18,7 +18,7 @@ repos:
     hooks:
       - id: clang-format
         args: [--style=file, -i]
-      # clang-format and uncrustify conflict with each other, disable uncrustify for now (See https://github.com/ament/ament_lint/issues/146)
+      # ROS2 clang-format and uncrustify configs conflict with each other, disable uncrustify for now (See https://github.com/ament/ament_lint/issues/146)
       # - id: uncrustify
       #   args: ["-c", "ament_code_style.cfg", "--replace"]
       - id: cppcheck
