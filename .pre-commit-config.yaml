@@ -23,6 +23,7 @@ repos:
         args: ["-c", "ament_code_style.cfg", "--replace"]
       - id: cppcheck
       - id: cpplint
+        args: ["--filter=-legal/copyright,-whitespace/braces"]
   - repo: https://github.com/pre-commit/mirrors-autopep8
     rev: 'v2.0.1'
     hooks:

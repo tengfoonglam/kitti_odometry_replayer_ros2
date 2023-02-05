@@ -1,0 +1,11 @@
+#ifndef ROS2_KITTI_REPLAY_INCLUDE_ROS2_KITTI_REPLAY_TIMESTAMPS_HPP_
+#define ROS2_KITTI_REPLAY_INCLUDE_ROS2_KITTI_REPLAY_TIMESTAMPS_HPP_
+
+namespace r2k_replay
+{
+
+[[nodiscard]] bool hi() { return true; }
+
+}  // namespace r2k_replay
+
+#endif  // ROS2_KITTI_REPLAY_INCLUDE_ROS2_KITTI_REPLAY_TIMESTAMPS_HPP_
