@@ -1,5 +1,5 @@
 ---
-# Obtained from https://github.com/ament/ament_lint/blob/rolling/ament_clang_format/ament_clang_format/configuration/.clang-format
+# Obtained from https://github.com/ament/ament_lint/blob/humble/ament_clang_format/ament_clang_format/configuration/.clang-format
 # Note: ReflowComments has been modified from false to true so the doxygen comments are neater
 Language: Cpp
 BasedOnStyle: Google
@@ -11,7 +11,6 @@ BraceWrapping:
   AfterFunction: true
   AfterNamespace: true
   AfterStruct: true
-  AfterEnum: true
 BreakBeforeBraces: Custom
 ColumnLimit: 100
 ConstructorInitializerIndentWidth: 0
