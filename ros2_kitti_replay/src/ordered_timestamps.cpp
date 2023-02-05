@@ -25,9 +25,9 @@ namespace r2k_replay
 
   // If successful, parse each line as a double then convert to ros time
   OrderedTimestamps output;
-  for (std::string line; std::getline(times_file, line); ) {
+  for (std::string line; std::getline(times_file, line);) {
     const double timestamp_seconds = std::atof(line.c_str());
-    output.insert(rclcpp::Time {static_cast<std::int64_t>(timestamp_seconds * 1e9)});
+    output.insert(rclcpp::Time{static_cast<std::int64_t>(timestamp_seconds * 1e9)});
   }
 
   return output;
