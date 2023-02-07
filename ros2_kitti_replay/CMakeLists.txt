@@ -11,13 +11,16 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall
+                      -Wextra
+                      -Wshadow
+                      -Wnon-virtual-dtor
+                      -pedantic)
 endif()
 
-set(HEADER_LIST
-    "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/ordered_timestamps.hpp")
+set(HEADER_LIST "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/timestamps.hpp")
 
-set(SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/ordered_timestamps.cpp")
+set(SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/timestamps.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
