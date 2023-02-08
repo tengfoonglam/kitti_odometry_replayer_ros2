@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <string>
 
 namespace r2k_replay
@@ -11,7 +12,9 @@ namespace r2k_replay
   const std::filesystem::path & times_path)
 {
   // Check if text file is .txt file and exists
-  if (!std::filesystem::exists(times_path) || times_path.stem().string() != ".txt") {
+  if (
+    !std::filesystem::exists(times_path.parent_path()) ||
+    times_path.extension().string() != ".txt") {
     return std::nullopt;
   }
 
@@ -25,7 +28,7 @@ namespace r2k_replay
 
   // If successful, parse each line as a double then convert to ros time
   Timestamps output;
-  for (std::string line; std::getline(times_file, line); ) {
+  for (std::string line; std::getline(times_file, line);) {
     const double timestamp_seconds = std::atof(line.c_str());
     output.emplace_back(static_cast<std::int64_t>(timestamp_seconds * 1e9));
   }

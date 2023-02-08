@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY_INCLUDE_ROS2_KITTI_REPLAY_TIMESTAMPS_HPP_
-#define ROS2_KITTI_REPLAY_INCLUDE_ROS2_KITTI_REPLAY_TIMESTAMPS_HPP_
+#ifndef ROS2_KITTI_REPLAY__TIMESTAMPS_HPP_
+#define ROS2_KITTI_REPLAY__TIMESTAMPS_HPP_
 
 #include <filesystem>
 #include <optional>
@@ -26,4 +26,4 @@ using Timestamps = std::vector<rclcpp::Time>;
 
 }  // namespace r2k_replay
 
-#endif  // ROS2_KITTI_REPLAY_INCLUDE_ROS2_KITTI_REPLAY_TIMESTAMPS_HPP_
+#endif  // ROS2_KITTI_REPLAY__TIMESTAMPS_HPP_

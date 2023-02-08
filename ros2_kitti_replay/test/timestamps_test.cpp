@@ -21,9 +21,9 @@ public:
     for (const auto & timestamp : timestamps) {
       output_file_stream << std::scientific << timestamp;
 
-      const auto last_element = (&timestamp != &timestamps.back());
+      const auto last_element = (&timestamp == &timestamps.back());
       if (!last_element) {
-        output_file_stream << "\n";
+        output_file_stream << '\n';
       }
     }
     output_file_stream.close();
