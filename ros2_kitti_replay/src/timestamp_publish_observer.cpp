@@ -3,7 +3,17 @@
 namespace r2k_replay
 {
 
-bool TimestampPublishObserver::setup(
+TimestampPublishObserver::TimestampPublishObserver(const std::string & name)
+: PublishObserver<rosgraph_msgs::msg::Clock>(name)
+{
+}
+
+TimestampPublishObserver::TimestampPublishObserver(const std::string & name, rclcpp::Logger logger)
+: PublishObserver<rosgraph_msgs::msg::Clock>(name, logger)
+{
+}
+
+bool TimestampPublishObserver::setup_internal(
   TimestampPublishObserver::PublisherUqPtr publisher_uq_ptr, const Timestamps & timestamps,
   __attribute__((unused)) const std::filesystem::path & load_path)
 {
@@ -13,30 +23,20 @@ bool TimestampPublishObserver::setup(
     ready_ = true;
   }
 
-  return false;
+  return ready();
 }
 
-[[nodiscard]] bool TimestampPublishObserver::ready() { return ready_; }
-
-bool TimestampPublishObserver::notify_send(const std::size_t idx)
+bool TimestampPublishObserver::notify_send_internal(const std::size_t idx)
 {
-  if (ready() && idx < number_readings()) {
-    TimestampPublishObserver::Type clock_msg;
-    clock_msg.set__clock(timestamps_.at(idx));
-    publisher_uq_ptr_->publish(clock_msg);
-  }
-
-  return false;
+  TimestampPublishObserver::Type clock_msg;
+  clock_msg.set__clock(timestamps_.at(idx));
+  publisher_uq_ptr_->publish(clock_msg);
+  return true;
 }
 
-bool TimestampPublishObserver::notify_prepare(const std::size_t idx)
+bool TimestampPublishObserver::notify_prepare_internal([[maybe_unused]] const std::size_t idx)
 {
-  return (ready() && idx < number_readings());
-}
-
-[[nodiscard]] std::size_t TimestampPublishObserver::number_readings() const
-{
-  return timestamps_.size();
+  return true;
 }
 
 }  // namespace r2k_replay
