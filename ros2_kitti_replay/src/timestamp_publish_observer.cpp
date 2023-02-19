@@ -3,20 +3,36 @@
 namespace r2k_replay
 {
 
-bool TimestampPublishObserver::start() {}
-
-bool load(
-  const std::filesystem::path & load_path,
-  const TimestampPublishObserver::PublisherUqPtr publisher_uq_ptr)
+bool TimestampPublishObserver::setup(
+  TimestampPublishObserver::PublisherUqPtr publisher_uq_ptr, const Timestamps & timestamps,
+  __attribute__((unused)) const std::filesystem::path & load_path)
 {
+  if (publisher_uq_ptr) {
+    publisher_uq_ptr_ = std::move(publisher_uq_ptr);
+    timestamps_ = timestamps;
+    ready_ = true;
+  }
+
   return false;
 }
 
-bool TimestampPublishObserver::stop() { return false; }
+[[nodiscard]] bool TimestampPublishObserver::ready() { return ready_; }
 
-bool TimestampPublishObserver::notify_send(const std::size_t idx) { return false; }
+bool TimestampPublishObserver::notify_send(const std::size_t idx)
+{
+  if (ready() && idx < number_readings()) {
+    TimestampPublishObserver::Type clock_msg;
+    clock_msg.set__clock(timestamps_.at(idx));
+    publisher_uq_ptr_->publish(clock_msg);
+  }
 
-bool TimestampPublishObserver::notify_prepare(const std::size_t idx) { return false; }
+  return false;
+}
+
+bool TimestampPublishObserver::notify_prepare(const std::size_t idx)
+{
+  return (ready() && idx < number_readings());
+}
 
 [[nodiscard]] std::size_t TimestampPublishObserver::number_readings() const
 {
