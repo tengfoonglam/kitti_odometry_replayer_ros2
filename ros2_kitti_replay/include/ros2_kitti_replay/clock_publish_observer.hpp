@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__TIMESTAMP_PUBLISH_OBSERVER_HPP_
-#define ROS2_KITTI_REPLAY__TIMESTAMP_PUBLISH_OBSERVER_HPP_
+#ifndef ROS2_KITTI_REPLAY__CLOCK_PUBLISH_OBSERVER_HPP_
+#define ROS2_KITTI_REPLAY__CLOCK_PUBLISH_OBSERVER_HPP_
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <cstdint>
@@ -14,11 +14,11 @@
 namespace r2k_replay
 {
 
-class TimestampPublishObserver : public PublishObserver<rosgraph_msgs::msg::Clock>
+class ClockPublishObserver : public PublishObserver<rosgraph_msgs::msg::Clock>
 {
 public:
-  explicit TimestampPublishObserver(const std::string & name);
-  TimestampPublishObserver(const std::string & name, rclcpp::Logger logger);
+  explicit ClockPublishObserver(const std::string & name);
+  ClockPublishObserver(const std::string & name, rclcpp::Logger logger);
 
 private:
   bool setup_internal(
@@ -30,4 +30,4 @@ private:
 
 }  // namespace r2k_replay
 
-#endif  // ROS2_KITTI_REPLAY__TIMESTAMP_PUBLISH_OBSERVER_HPP_
+#endif  // ROS2_KITTI_REPLAY__CLOCK_PUBLISH_OBSERVER_HPP_
