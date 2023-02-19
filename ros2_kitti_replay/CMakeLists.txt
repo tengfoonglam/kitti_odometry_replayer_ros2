@@ -21,10 +21,14 @@ endif()
 
 set(HEADER_LIST
     "include/${PROJECT_NAME}/timestamps.hpp"
+    "include/${PROJECT_NAME}/observer_base.hpp"
     "include/${PROJECT_NAME}/publish_observer.hpp"
     "include/${PROJECT_NAME}/clock_publish_observer.hpp")
 
-set(SOURCE_LIST "src/timestamps.cpp" "src/clock_publish_observer.cpp")
+set(SOURCE_LIST
+    "src/timestamps.cpp"
+    "src/observer_base.cpp"
+    "src/clock_publish_observer.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
