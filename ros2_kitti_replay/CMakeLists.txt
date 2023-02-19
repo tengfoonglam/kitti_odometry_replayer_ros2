@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ros2_kitti_replay LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rosgraph_msgs REQUIRED)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -18,9 +19,12 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                       -pedantic)
 endif()
 
-set(HEADER_LIST "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/timestamps.hpp")
+set(HEADER_LIST
+    "include/${PROJECT_NAME}/timestamps.hpp"
+    "include/${PROJECT_NAME}/publish_observer.hpp"
+    "include/${PROJECT_NAME}/timestamp_publish_observer.hpp")
 
-set(SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/timestamps.cpp")
+set(SOURCE_LIST "src/timestamps.cpp" "src/timestamp_publish_observer.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
