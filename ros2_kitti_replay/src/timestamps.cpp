@@ -18,7 +18,7 @@ namespace r2k_replay
     return std::nullopt;
   }
 
-  // Open file. Note: Upon desctruction, open file is automatically closed
+  // Open file. Note: Upon destruction, open file is automatically closed
   std::ifstream times_file;
   times_file.open(times_path, std::ios::in);
 
