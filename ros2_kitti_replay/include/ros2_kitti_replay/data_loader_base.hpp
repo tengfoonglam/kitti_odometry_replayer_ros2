@@ -22,7 +22,7 @@ public:
   [[nodiscard]] const std::string & name() const noexcept { return name_; };
   [[nodiscard]] constexpr std::size_t number_packets() const noexcept
   {
-    return ready() ? timestamps_.size() : 0;
+    return ready() ? timestamps_.size() : std::size_t{0};
   };
   bool setup(const Timestamps & timestamps, const std::filesystem::path & load_path);
   bool prepare_data(const std::size_t idx);

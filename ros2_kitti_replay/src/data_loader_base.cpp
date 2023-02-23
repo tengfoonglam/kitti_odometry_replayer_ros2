@@ -15,7 +15,7 @@ DataLoaderBase::DataLoaderBase(const std::string & name, rclcpp::Logger logger)
 
 bool DataLoaderBase::setup(const Timestamps & timestamps, const std::filesystem::path & load_path)
 {
-  if (!ready()) {
+  if (ready()) {
     RCLCPP_WARN(
       logger_, "%s data loader already ready and setup, ignoring setup() call", name().c_str());
     return false;
