@@ -13,13 +13,6 @@ DataLoaderBase::DataLoaderBase(const std::string & name, rclcpp::Logger logger)
 {
 }
 
-[[nodiscard]] bool DataLoaderBase::ready() const { return ready_; }
-[[nodiscard]] const std::string & DataLoaderBase::name() const { return name_; }
-[[nodiscard]] std::size_t DataLoaderBase::number_packets() const
-{
-  return ready() ? timestamps_.size() : 0;
-}
-
 bool DataLoaderBase::setup(const Timestamps & timestamps, const std::filesystem::path & load_path)
 {
   if (!ready()) {

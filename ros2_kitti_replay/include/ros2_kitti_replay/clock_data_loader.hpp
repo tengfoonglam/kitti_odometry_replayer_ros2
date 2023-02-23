@@ -4,7 +4,6 @@
 #include <builtin_interfaces/msg/time.hpp>
 #include <cstdint>
 #include <filesystem>
-#include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
 #include <string>
 

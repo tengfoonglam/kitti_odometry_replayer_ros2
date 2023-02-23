@@ -18,9 +18,12 @@ class DataLoaderBase
 public:
   explicit DataLoaderBase(const std::string & name);
   DataLoaderBase(const std::string & name, rclcpp::Logger logger);
-  [[nodiscard]] bool ready() const;
-  [[nodiscard]] const std::string & name() const;
-  [[nodiscard]] std::size_t number_packets() const;
+  [[nodiscard]] constexpr bool ready() const noexcept { return ready_; };
+  [[nodiscard]] const std::string & name() const noexcept { return name_; };
+  [[nodiscard]] constexpr std::size_t number_packets() const noexcept
+  {
+    return ready() ? timestamps_.size() : 0;
+  };
   bool setup(const Timestamps & timestamps, const std::filesystem::path & load_path);
   bool prepare_data(const std::size_t idx);
   virtual ~DataLoaderBase();
