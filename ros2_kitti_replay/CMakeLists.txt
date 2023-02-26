@@ -23,10 +23,12 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/timestamps.hpp"
     "include/${PROJECT_NAME}/data_loader_base.hpp"
     "include/${PROJECT_NAME}/data_loader.hpp"
-    "include/${PROJECT_NAME}/clock_data_loader.hpp")
+    "include/${PROJECT_NAME}/clock_data_loader.hpp"
+    "include/${PROJECT_NAME}/play_data_callback_base.hpp"
+    "include/${PROJECT_NAME}/data_replayer.hpp")
 
 set(SOURCE_LIST
-    "src/timestamps.cpp" "src/data_loader_base.cpp" "src/clock_data_loader.cpp")
+    "src/timestamps.cpp" "src/data_loader_base.cpp" "src/data_replayer.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 

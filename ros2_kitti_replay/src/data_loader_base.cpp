@@ -3,13 +3,13 @@
 namespace r2k_replay
 {
 
-DataLoaderBase::DataLoaderBase(const std::string & name)
-: name_(name), logger_(rclcpp::get_logger(name))
+DataLoaderBase::DataLoaderBase(const std::string & name, rclcpp::Logger logger)
+: name_(name), logger_(logger)
 {
 }
 
-DataLoaderBase::DataLoaderBase(const std::string & name, rclcpp::Logger logger)
-: name_(name), logger_(logger)
+DataLoaderBase::DataLoaderBase(const std::string & name)
+: DataLoaderBase(name, rclcpp::get_logger(name))
 {
 }
 
@@ -42,7 +42,7 @@ bool DataLoaderBase::can_process_data(const std::size_t idx, const std::string &
       logger_,
       "%s data loader could not process %s with the requested index %lu. Debug info - ready: %s"
       ", number packets: %lu",
-      name().c_str(), call_name.c_str(), idx, ready() ? "true" : "false", number_packets());
+      name().c_str(), call_name.c_str(), idx, ready() ? "true" : "false", data_size());
     return false;
   }
 }

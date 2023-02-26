@@ -22,6 +22,7 @@ repos:
       # - id: uncrustify
       #   args: ["-c", "ament_code_style.cfg", "--replace"]
       - id: cppcheck
+        args: [--suppress=missingInclude,--suppress=unusedStructMember,--suppress=unusedFunction,--suppress=unmatchedSuppression]
       - id: cpplint
         # Linelength/filters mainly obtained from https://github.com/ament/ament_lint/blob/c01b035957dda939e8cffd33f431d26bd83ce233/ament_cpplint/ament_cpplint/main.py
         # legal/copyright and build/include_order are added temporarily to speed up development, will be addressed in the future

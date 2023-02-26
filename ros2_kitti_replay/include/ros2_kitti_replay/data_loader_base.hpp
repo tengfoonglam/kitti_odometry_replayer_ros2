@@ -20,7 +20,7 @@ public:
   DataLoaderBase(const std::string & name, rclcpp::Logger logger);
   [[nodiscard]] constexpr bool ready() const noexcept { return ready_; };
   [[nodiscard]] const std::string & name() const noexcept { return name_; };
-  [[nodiscard]] constexpr std::size_t number_packets() const noexcept
+  [[nodiscard]] constexpr std::size_t data_size() const noexcept
   {
     return ready() ? timestamps_.size() : std::size_t{0};
   };

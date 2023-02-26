@@ -8,7 +8,7 @@
 
 namespace r2k_replay
 {
-
+using Timestamp = rclcpp::Time;
 using Timestamps = std::vector<rclcpp::Time>;
 
 /**

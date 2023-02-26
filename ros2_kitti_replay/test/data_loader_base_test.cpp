@@ -50,13 +50,13 @@ TEST_F(TestDataLoaderBase, SetupTest)
 {
   auto loader = MockDataLoader();
   ASSERT_FALSE(loader.ready());
-  ASSERT_EQ(loader.number_packets(), std::size_t{0});
+  ASSERT_EQ(loader.data_size(), std::size_t{0});
   ASSERT_TRUE(loader.setup(kTestTimestamps, kMockLoadPath));
   ASSERT_TRUE(loader.ready());
-  ASSERT_EQ(loader.number_packets(), kTestTimestamps.size());
+  ASSERT_EQ(loader.data_size(), kTestTimestamps.size());
   ASSERT_FALSE(loader.setup(r2k_replay::Timestamps(4), kMockLoadPath));
   ASSERT_TRUE(loader.ready());
-  ASSERT_EQ(loader.number_packets(), kTestTimestamps.size());
+  ASSERT_EQ(loader.data_size(), kTestTimestamps.size());
 }
 
 TEST_F(TestDataLoaderBase, PrepareDataTest)
