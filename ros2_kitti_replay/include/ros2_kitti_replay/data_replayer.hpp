@@ -50,7 +50,7 @@ public:
 
   bool add_play_data_cb(std::unique_ptr<PlayDataCallbackBase> play_data_cb_ptr);
 
-  bool set_state_change_cb(StateChangeCallback && state_change_cb);
+  bool set_state_change_cb(const StateChangeCallback & state_change_cb);
 
   [[nodiscard]] ReplayerState getReplayerState() const;
 
@@ -85,7 +85,7 @@ private:
   StateChangeCallback state_change_cb_;
 
   template <typename Callable>
-  inline auto with_lock(std::mutex & mutex, Callable callable) -> decltype(callable())
+  static inline auto with_lock(std::mutex & mutex, Callable callable) -> decltype(callable())
   {
     std::scoped_lock lock(mutex);
     return callable();

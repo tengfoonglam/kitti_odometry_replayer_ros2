@@ -1,7 +1,5 @@
 #include "ros2_kitti_replay/data_replayer.hpp"
 
-#include <utility>
-
 namespace r2k_replay
 {
 
@@ -23,8 +21,7 @@ DataReplayer::DataReplayer(
 
 [[nodiscard]] bool DataReplayer::is_playing() const
 {
-  std::scoped_lock lock(state_mutex_);
-  return state_.playing;
+  return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_.playing; });
 }
 
 bool DataReplayer::add_play_data_cb(std::unique_ptr<PlayDataCallbackBase> play_data_cb_ptr)
@@ -38,13 +35,14 @@ bool DataReplayer::add_play_data_cb(std::unique_ptr<PlayDataCallbackBase> play_d
     });
     return false;
   }
-  with_lock(cb_mutex_, [this, play_data_cb_ptr = std::move(play_data_cb_ptr)]() mutable {
+  {
+    std::scoped_lock lock(cb_mutex_);
     play_data_cb_ptrs_.push_back(std::move(play_data_cb_ptr));
-  });
+  }
   return true;
 }
 
-bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
+bool DataReplayer::set_state_change_cb(const StateChangeCallback & state_change_cb)
 {
   if (is_playing()) {
     with_lock(logger_mutex_, [this]() {
@@ -57,7 +55,7 @@ bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
     return false;
   }
 
-  with_lock(cb_mutex_, [this, &state_change_cb]() {
+  with_lock(cb_mutex_, [this, &state_change_cb = std::as_const(state_change_cb)]() {
     if (state_change_cb_) {
       with_lock(logger_mutex_, [this]() {
         RCLCPP_WARN(
@@ -65,7 +63,7 @@ bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
           name_.c_str());
       });
     }
-    std::swap(state_change_cb_, state_change_cb);
+    state_change_cb_ = state_change_cb;
   });
 
   return true;
@@ -91,8 +89,7 @@ DataReplayer::~DataReplayer()
 
 [[nodiscard]] DataReplayer::ReplayerState DataReplayer::getReplayerState() const
 {
-  std::scoped_lock lock(state_mutex_);
-  return state_;
+  return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_; });
 };
 
 }  // namespace r2k_replay
