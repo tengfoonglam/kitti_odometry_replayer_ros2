@@ -7,6 +7,7 @@
 #include <rclcpp/time.hpp>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include "ros2_kitti_replay/data_loader.hpp"
@@ -25,20 +26,26 @@ public:
     Timestamp start_time;
     Timestamp current_time;
     Timestamp final_time;
-    std::size_t next_idx;
-    std::size_t data_size;
+    std::size_t next_idx{};
+    std::size_t target_idx{};
+    std::size_t data_size{};
   };
 
   struct PlayRequest
   {
     float replay_speed;
     Timestamp start_time;
-    Timestamp final_time;
-
-    [[nodiscard]] bool is_valid(const Timestamps & timeline) const;
+    Timestamp target_time;
   };
 
-  using StateChangeCallback = std::function<bool(const ReplayerState &)>;
+  struct StepRequest
+  {
+    float replay_speed;
+    std::size_t number_steps{};
+  };
+
+  using StateChangeCallback = std::function<void(const ReplayerState &)>;
+  using StateModificationCallback = std::function<void(ReplayerState &)>;
 
   explicit DataReplayer(const std::string & name, const Timestamps & timestamps);
   DataReplayer(const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger);
@@ -56,7 +63,7 @@ public:
 
   bool play(const PlayRequest & play_request);
 
-  bool step(const std::size_t number_steps);
+  bool step(const StepRequest & step_request);
 
   bool pause();
 
@@ -65,6 +72,9 @@ public:
   bool reset();
 
   ~DataReplayer();
+
+  static std::optional<std::pair<std::size_t, std::size_t>> compute_index_range_to_play(
+    const PlayRequest & play_request, const Timestamps & timestamps);
 
 private:
   const std::string name_;
@@ -90,6 +100,8 @@ private:
     std::scoped_lock lock(mutex);
     return callable();
   }
+
+  void modify_state(const StateModificationCallback & modify_cb);
 };
 
 }  // namespace r2k_replay
