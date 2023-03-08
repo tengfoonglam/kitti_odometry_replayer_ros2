@@ -160,6 +160,9 @@ void DataReplayer::play_loop()
   // Prepare data of first frame before starting loop
   prepare_data(get_current_index());
 
+  const auto replay_speed =
+    with_lock(state_mutex_, [&] [[nodiscard]] () { return state_.replay_speed; });
+
   while (!play_thread_shutdown_flag_) {
     // Start timer
     const auto iteration_start_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
@@ -172,10 +175,11 @@ void DataReplayer::play_loop()
     play_data(current_index);
 
     // Update state
-    with_lock(state_mutex_, [&]() {
-      state_.next_idx++;
-      state_.current_time =
-        state_.next_idx < state_.data_size ? timestamps_.at(state_.next_idx) : state_.final_time;
+    modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
+      replayer_state.next_idx++;
+      replayer_state.current_time = replayer_state.next_idx < replayer_state.data_size
+                                      ? timestamps.at(replayer_state.next_idx)
+                                      : replayer_state.final_time;
     });
 
     // If play has been completed, break from loop
@@ -193,7 +197,9 @@ void DataReplayer::play_loop()
     const auto iteration_end_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
     const auto iteration_duration = iteration_end_time - iteration_start_time;
     const auto duration_between_frames = timestamps_.at(next_index) - timestamps_.at(current_index);
-    const auto duration_till_next_play = duration_between_frames - iteration_duration;
+    const auto duration_till_next_play =
+      replay_speed == 0.0 ? rclcpp::Duration(0, 0)
+                          : (duration_between_frames * (1.0 / replay_speed) - iteration_duration);
 
     // Break if flag has been set
     if (play_thread_shutdown_flag_) {
@@ -201,7 +207,7 @@ void DataReplayer::play_loop()
     }
 
     // If duration till wait is negative, give a warning and immediately continue to next iteration
-    if (duration_till_next_play < decltype(duration_till_next_play){0, 0}) {
+    if (duration_till_next_play < rclcpp::Duration(0, 0)) {
       with_lock(logger_mutex_, [this, &duration_till_next_play]() {
         RCLCPP_WARN(
           logger_, "Replayer %s behind schedule by %f seconds", name_.c_str(),
@@ -220,7 +226,7 @@ void DataReplayer::play_loop()
   }
 
   // Set final state
-  with_lock(state_mutex_, [&]() { state_.playing = false; });
+  modify_state([](auto & replayer_state) { replayer_state.playing = false; });
 }
 
 bool DataReplayer::step([[maybe_unused]] const StepRequest & step_request) { return false; }
