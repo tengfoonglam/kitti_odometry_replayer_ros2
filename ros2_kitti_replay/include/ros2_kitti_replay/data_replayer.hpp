@@ -7,6 +7,7 @@
 #include <rclcpp/time.hpp>
 #include <string>
 #include <thread>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -46,6 +47,7 @@ public:
 
   using StateChangeCallback = std::function<void(const ReplayerState &)>;
   using StateModificationCallback = std::function<void(ReplayerState &)>;
+  using IndexRange = std::tuple<std::size_t, std::size_t>;
 
   explicit DataReplayer(const std::string & name, const Timestamps & timestamps);
   DataReplayer(const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger);
@@ -63,7 +65,7 @@ public:
 
   bool play(const PlayRequest & play_request);
 
-  bool step(const StepRequest & step_request);
+  bool step([[maybe_unused]] const StepRequest & step_request);
 
   bool pause();
 
@@ -73,7 +75,7 @@ public:
 
   ~DataReplayer();
 
-  static std::optional<std::pair<std::size_t, std::size_t>> compute_index_range_to_play(
+  static std::optional<IndexRange> compute_index_range_to_play(
     const PlayRequest & play_request, const Timestamps & timestamps);
 
 private:
@@ -88,6 +90,8 @@ private:
   rclcpp::Logger logger_;
 
   mutable std::mutex thread_mutex_;
+  std::atomic_bool play_thread_shutdown_flag_{false};
+  std::condition_variable play_thread_cv_;
   std::unique_ptr<std::thread> play_thread_ptr_;
 
   mutable std::mutex cb_mutex_;
@@ -102,6 +106,16 @@ private:
   }
 
   void modify_state(const StateModificationCallback & modify_cb);
+
+  void play_loop();
+
+  void stop_play_thread();
+
+  [[nodiscard]] size_t get_current_index() const;
+
+  void prepare_data(const size_t index);
+
+  void play_data(const size_t index);
 };
 
 }  // namespace r2k_replay
