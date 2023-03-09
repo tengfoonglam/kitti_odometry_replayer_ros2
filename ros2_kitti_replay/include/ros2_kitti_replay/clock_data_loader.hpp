@@ -13,7 +13,7 @@
 namespace r2k_replay
 {
 
-class ClockDataLoader : public DataLoader<rosgraph_msgs::msg::Clock>
+class ClockDataLoader final : public DataLoader<rosgraph_msgs::msg::Clock>
 {
 public:
   explicit ClockDataLoader(const std::string & name);
