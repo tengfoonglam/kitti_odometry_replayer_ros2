@@ -79,7 +79,7 @@ bool DataReplayer::set_state_change_cb(const StateChangeCallback & state_change_
 bool DataReplayer::play(const PlayRequest & play_request)
 {
   // Return if invalid play request
-  const auto index_range_opt = compute_index_range_to_play(play_request, timestamps_);
+  const auto index_range_opt = process_play_request(play_request, timestamps_);
   if (!index_range_opt.has_value()) {
     with_lock(logger_mutex_, [this, &play_request = std::as_const(play_request)]() {
       RCLCPP_WARN(
@@ -89,6 +89,25 @@ bool DataReplayer::play(const PlayRequest & play_request)
     return false;
   }
 
+  return play_index_range(index_range_opt.value(), play_request.replay_speed);
+}
+
+bool DataReplayer::step(const StepRequest & step_request)
+{
+  // Return if invalid step request
+  const auto index_range_opt = process_step_request(step_request, get_replayer_state());
+  if (!index_range_opt.has_value()) {
+    with_lock(logger_mutex_, [this, &step_request = std::as_const(step_request)]() {
+      RCLCPP_WARN(logger_, "Replayer %s cannot process invalid step request", name_.c_str());
+    });
+    return false;
+  }
+
+  return play_index_range(index_range_opt.value(), step_request.replay_speed);
+}
+
+bool DataReplayer::play_index_range(const IndexRange & index_range, const float replay_speed)
+{
   // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
   // bug
   std::scoped_lock lock(state_mutex_);
@@ -102,15 +121,15 @@ bool DataReplayer::play(const PlayRequest & play_request)
   }
 
   // Update state and start thread
-  const auto [start_index, target_index] = index_range_opt.value();
+  const auto [start_index, target_index] = index_range;
 
-  if (play_request.replay_speed <= 0.0) {
-    with_lock(logger_mutex_, [this, &play_request = std::as_const(play_request)]() {
+  if (replay_speed <= 0.0) {
+    with_lock(logger_mutex_, [this, replay_speed]() {
       RCLCPP_WARN(
         logger_,
         "Replayer %s requested to play at a zero/negative replay speed of %f. Will play as fast as "
         "possible.",
-        name_.c_str(), play_request.replay_speed);
+        name_.c_str(), replay_speed);
     });
   }
 
@@ -118,9 +137,8 @@ bool DataReplayer::play(const PlayRequest & play_request)
   state_.current_time = start_index > 0 ? timestamps_.at(start_index - 1) : Timestamp();
   state_.next_idx = start_index;
   state_.target_idx = target_index;
-  state_.replay_speed = std::max(
-    static_cast<std::decay<decltype(play_request.replay_speed)>::type>(0.0),
-    play_request.replay_speed);
+  state_.replay_speed = std::max(0.0f, replay_speed);
+  with_lock(cb_mutex_, [this]() { state_change_cb_(state_); });
 
   // Ensure play thread has been stopped. state_.playing == true should guarantee that previous
   // play_loop has completed
@@ -229,13 +247,48 @@ void DataReplayer::play_loop()
   modify_state([](auto & replayer_state) { replayer_state.playing = false; });
 }
 
-bool DataReplayer::step([[maybe_unused]] const StepRequest & step_request) { return false; }
+bool DataReplayer::pause()
+{
+  if (!is_playing()) {
+    with_lock(logger_mutex_, [this]() {
+      RCLCPP_WARN(logger_, "Replayer %s is not playing, already paused", name_.c_str());
+    });
+    return true;
+  }
 
-bool DataReplayer::pause() { return false; }
+  stop_play_thread();
+  return true;
+}
 
-bool DataReplayer::stop() { return false; }
+bool DataReplayer::stop()
+{
+  if (!is_playing()) {
+    with_lock(logger_mutex_, [this]() {
+      RCLCPP_WARN(logger_, "Replayer %s is not playing, already stopped", name_.c_str());
+    });
+    return true;
+  }
 
-bool DataReplayer::reset() { return false; }
+  stop_play_thread();
+  return reset();
+}
+
+bool DataReplayer::reset()
+{
+  if (is_playing()) {
+    with_lock(logger_mutex_, [this]() {
+      RCLCPP_WARN(logger_, "Cannot reset replayer %s when it is playing", name_.c_str());
+    });
+    return false;
+  }
+
+  modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
+    replayer_state.next_idx = 0;
+    replayer_state.current_time = replayer_state.start_time;
+  });
+
+  return true;
+}
 
 void DataReplayer::stop_play_thread()
 {
@@ -250,7 +303,7 @@ void DataReplayer::stop_play_thread()
 
 DataReplayer::~DataReplayer() { stop_play_thread(); }
 
-[[nodiscard]] DataReplayer::ReplayerState DataReplayer::getReplayerState() const
+[[nodiscard]] DataReplayer::ReplayerState DataReplayer::get_replayer_state() const
 {
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_; });
 };
@@ -262,7 +315,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   state_change_cb_(state_);
 };
 
-std::optional<DataReplayer::IndexRange> DataReplayer::compute_index_range_to_play(
+[[nodiscard]] std::optional<DataReplayer::IndexRange> DataReplayer::process_play_request(
   const PlayRequest & play_request, const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
@@ -293,6 +346,25 @@ std::optional<DataReplayer::IndexRange> DataReplayer::compute_index_range_to_pla
   // Return result
   return (target_index >= start_index) ? std::optional(std::make_tuple(start_index, target_index))
                                        : std::nullopt;
+}
+
+[[nodiscard]] std::optional<DataReplayer::IndexRange> DataReplayer::process_step_request(
+  const StepRequest & step_request, const ReplayerState & replayer_state)
+{
+  // Invalid if step side is negative
+  if (step_request.number_steps < 1) {
+    return std::nullopt;
+  }
+
+  // Invalid if replayer is at the end of the timeline
+  const auto next_idx = replayer_state.next_idx;
+  if (next_idx >= replayer_state.data_size) {
+    return std::nullopt;
+  }
+
+  const auto target_idx =
+    std::min(replayer_state.next_idx + step_request.number_steps - 1, replayer_state.data_size);
+  return std::make_pair(replayer_state.next_idx, target_idx);
 }
 
 }  // namespace r2k_replay

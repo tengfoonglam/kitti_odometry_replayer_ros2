@@ -23,7 +23,7 @@ public:
   struct ReplayerState
   {
     bool playing;
-    float replay_speed;
+    float replay_speed{1.0f};
     Timestamp start_time;
     Timestamp current_time;
     Timestamp final_time;
@@ -34,14 +34,14 @@ public:
 
   struct PlayRequest
   {
-    float replay_speed;
+    float replay_speed{1.0f};
     Timestamp start_time;
     Timestamp target_time;
   };
 
   struct StepRequest
   {
-    float replay_speed;
+    float replay_speed{1.0f};
     std::size_t number_steps{};
   };
 
@@ -61,11 +61,11 @@ public:
 
   bool set_state_change_cb(const StateChangeCallback & state_change_cb);
 
-  [[nodiscard]] ReplayerState getReplayerState() const;
+  [[nodiscard]] ReplayerState get_replayer_state() const;
 
   bool play(const PlayRequest & play_request);
 
-  bool step([[maybe_unused]] const StepRequest & step_request);
+  bool step(const StepRequest & step_request);
 
   bool pause();
 
@@ -75,8 +75,11 @@ public:
 
   ~DataReplayer();
 
-  static std::optional<IndexRange> compute_index_range_to_play(
+  [[nodiscard]] static std::optional<IndexRange> process_play_request(
     const PlayRequest & play_request, const Timestamps & timestamps);
+
+  [[nodiscard]] static std::optional<IndexRange> process_step_request(
+    const StepRequest & step_request, const ReplayerState & replayer_state);
 
 private:
   const std::string name_;
@@ -116,6 +119,8 @@ private:
   void prepare_data(const size_t index);
 
   void play_data(const size_t index);
+
+  bool play_index_range(const IndexRange & index_range, const float replay_speed);
 };
 
 }  // namespace r2k_replay
