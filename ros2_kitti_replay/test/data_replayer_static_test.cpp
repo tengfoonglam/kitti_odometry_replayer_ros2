@@ -10,10 +10,25 @@ using r2k_replay::DataReplayer;
 using r2k_replay::Timestamp;
 using r2k_replay::Timestamps;
 using PlayRequest = DataReplayer::PlayRequest;
+using IndexRange = DataReplayer::IndexRange;
 }  // namespace
 
+class DataReplayerStaticTests : public ::testing::Test
+{
+public:
+  static void assert_optional_index_range_equal(
+    const DataReplayer::IndexRangeOpt & lhs, const DataReplayer::IndexRangeOpt & rhs)
+  {
+    ASSERT_EQ(lhs.has_value(), rhs.has_value());
+    if (lhs.has_value() && rhs.has_value()) {
+      ASSERT_EQ(lhs.value(), rhs.value());
+    }
+  }
+};
+
 class ProcessPlayRequestNormalOperationsTests
-: public ::testing::TestWithParam<
+: public DataReplayerStaticTests,
+  public ::testing::WithParamInterface<
     std::tuple<PlayRequest, Timestamps, std::optional<DataReplayer::IndexRange>>>
 {
 public:
@@ -31,18 +46,17 @@ private:
 };
 const Timestamps ProcessPlayRequestNormalOperationsTests::kTimestamps =
   ProcessPlayRequestNormalOperationsTests::generate_test_timestamps();
-constexpr auto & kTimestamps = ProcessPlayRequestNormalOperationsTests::kTimestamps;
+
+namespace
+{
+const auto & kTimestamps = ProcessPlayRequestNormalOperationsTests::kTimestamps;
+}  // namespace
 
 TEST_P(ProcessPlayRequestNormalOperationsTests, NormalOperationsTests)
 {
   const auto [request, timestamps, answer] = GetParam();
-
-  const auto index_opt = DataReplayer::process_play_request(request, timestamps);
-
-  ASSERT_EQ(answer.has_value(), index_opt.has_value());
-  if (answer.has_value() && index_opt.has_value()) {
-    ASSERT_EQ(answer.value(), index_opt.value());
-  }
+  const auto output = DataReplayer::process_play_request(request, timestamps);
+  assert_optional_index_range_equal(answer, output);
 }
 
 INSTANTIATE_TEST_SUITE_P(

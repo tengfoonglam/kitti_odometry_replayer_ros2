@@ -321,7 +321,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   state_change_cb_(state_);
 };
 
-[[nodiscard]] std::optional<DataReplayer::IndexRange> DataReplayer::process_play_request(
+[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_play_request(
   const PlayRequest & play_request, const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
@@ -347,7 +347,6 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
       break;
     }
   }
-  std::cout << start_index << std::endl;
 
   // Find target index
   std::size_t target_index{timestamps.size()};
@@ -358,14 +357,13 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
       break;
     }
   }
-  std::cout << target_index << std::endl;
 
   // Return result
   return (target_index >= start_index) ? std::optional(std::make_tuple(start_index, target_index))
                                        : std::nullopt;
 }
 
-[[nodiscard]] std::optional<DataReplayer::IndexRange> DataReplayer::process_step_request(
+[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
   const StepRequest & step_request, const ReplayerState & replayer_state)
 {
   // Invalid if step side is negative

@@ -51,6 +51,7 @@ public:
   using StateChangeCallback = std::function<void(const ReplayerState &)>;
   using StateModificationCallback = std::function<void(ReplayerState &)>;
   using IndexRange = std::tuple<std::size_t, std::size_t>;
+  using IndexRangeOpt = std::optional<IndexRange>;
 
   explicit DataReplayer(const std::string & name, const Timestamps & timestamps);
   DataReplayer(const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger);
@@ -78,10 +79,10 @@ public:
 
   ~DataReplayer();
 
-  [[nodiscard]] static std::optional<IndexRange> process_play_request(
+  [[nodiscard]] static IndexRangeOpt process_play_request(
     const PlayRequest & play_request, const Timestamps & timestamps);
 
-  [[nodiscard]] static std::optional<IndexRange> process_step_request(
+  [[nodiscard]] static IndexRangeOpt process_step_request(
     const StepRequest & step_request, const ReplayerState & replayer_state);
 
 private:
