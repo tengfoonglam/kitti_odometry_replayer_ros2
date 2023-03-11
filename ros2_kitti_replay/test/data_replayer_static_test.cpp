@@ -10,14 +10,15 @@ using r2k_replay::DataReplayer;
 using r2k_replay::Timestamp;
 using r2k_replay::Timestamps;
 using PlayRequest = DataReplayer::PlayRequest;
-using IndexRange = DataReplayer::IndexRange;
+using StepRequest = DataReplayer::StepRequest;
+using IndexRangeOpt = DataReplayer::IndexRangeOpt;
 }  // namespace
 
 class DataReplayerStaticTests : public ::testing::Test
 {
 public:
   static void assert_optional_index_range_equal(
-    const DataReplayer::IndexRangeOpt & lhs, const DataReplayer::IndexRangeOpt & rhs)
+    const IndexRangeOpt & lhs, const IndexRangeOpt & rhs)
   {
     ASSERT_EQ(lhs.has_value(), rhs.has_value());
     if (lhs.has_value() && rhs.has_value()) {
@@ -28,8 +29,7 @@ public:
 
 class ProcessPlayRequestNormalOperationsTests
 : public DataReplayerStaticTests,
-  public ::testing::WithParamInterface<
-    std::tuple<PlayRequest, Timestamps, std::optional<DataReplayer::IndexRange>>>
+  public ::testing::WithParamInterface<std::tuple<PlayRequest, Timestamps, IndexRangeOpt>>
 {
 public:
   static const Timestamps kTimestamps;
@@ -97,3 +97,26 @@ TEST(TestProcessPlayRequest, EmptyTimestampTests)
     DataReplayer::process_play_request(PlayRequest(Timestamp(), Timestamp(1)), Timestamps{});
   ASSERT_FALSE(index_opt.has_value());
 }
+
+class ProcessStepRequestNormalOperationsTests
+: public DataReplayerStaticTests,
+  public ::testing::WithParamInterface<std::tuple<StepRequest, size_t, size_t, IndexRangeOpt>>
+{
+};
+
+TEST_P(ProcessStepRequestNormalOperationsTests, NormalOperationsTests)
+{
+  const auto [request, next_idx, data_size, answer] = GetParam();
+  const auto output = DataReplayer::process_step_request(request, next_idx, data_size);
+  assert_optional_index_range_equal(answer, output);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  TestProcessPlayRequest, ProcessStepRequestNormalOperationsTests,
+  ::testing::Values(
+    std::make_tuple(StepRequest(0), 1, 3, std::nullopt),
+    std::make_tuple(StepRequest(1), 3, 3, std::nullopt),
+    std::make_tuple(StepRequest(1), 100, 3, std::nullopt),
+    std::make_tuple(StepRequest(1), 1, 3, std::optional(std::make_tuple(1, 1))),
+    std::make_tuple(StepRequest(5), 3, 10, std::optional(std::make_tuple(3, 7))),
+    std::make_tuple(StepRequest(100), 2, 10, std::optional(std::make_tuple(2, 10)))));

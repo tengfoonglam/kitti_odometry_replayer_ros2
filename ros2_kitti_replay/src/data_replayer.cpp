@@ -13,6 +13,11 @@ DataReplayer::PlayRequest::PlayRequest(
 {
 }
 
+DataReplayer::StepRequest::StepRequest(const size_t number_steps_in, const float replay_speed_in)
+: number_steps(number_steps_in), replay_speed(replay_speed_in)
+{
+}
+
 DataReplayer::DataReplayer(const std::string & name, const Timestamps & timestamps)
 : DataReplayer(name, timestamps, rclcpp::get_logger(name))
 {
@@ -101,7 +106,9 @@ bool DataReplayer::play(const PlayRequest & play_request)
 bool DataReplayer::step(const StepRequest & step_request)
 {
   // Return if invalid step request
-  const auto index_range_opt = process_step_request(step_request, get_replayer_state());
+  const auto state = get_replayer_state();
+  const auto index_range_opt =
+    process_step_request(step_request, state.target_idx, state.data_size);
   if (!index_range_opt.has_value()) {
     with_lock(logger_mutex_, [this, &step_request = std::as_const(step_request)]() {
       RCLCPP_WARN(logger_, "Replayer %s cannot process invalid step request", name_.c_str());
@@ -364,22 +371,20 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
 }
 
 [[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
-  const StepRequest & step_request, const ReplayerState & replayer_state)
+  const StepRequest & step_request, const size_t next_idx, const size_t data_size)
 {
-  // Invalid if step side is negative
+  // Invalid if step side is zero
   if (step_request.number_steps < 1) {
     return std::nullopt;
   }
 
   // Invalid if replayer is at the end of the timeline
-  const auto next_idx = replayer_state.next_idx;
-  if (next_idx >= replayer_state.data_size) {
+  if (next_idx >= data_size) {
     return std::nullopt;
   }
 
-  const auto target_idx =
-    std::min(replayer_state.next_idx + step_request.number_steps - 1, replayer_state.data_size);
-  return std::make_pair(replayer_state.next_idx, target_idx);
+  const auto target_idx = std::min(next_idx + step_request.number_steps - 1, data_size);
+  return std::make_pair(next_idx, target_idx);
 }
 
 }  // namespace r2k_replay
