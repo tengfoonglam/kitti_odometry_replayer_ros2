@@ -34,9 +34,12 @@ public:
 
   struct PlayRequest
   {
-    float replay_speed{1.0f};
     Timestamp start_time;
     Timestamp target_time;
+    float replay_speed{1.0f};
+    PlayRequest(
+      const Timestamp & start_time_in, const Timestamp & target_timein,
+      const float replay_speed_in = 1.0f);
   };
 
   struct StepRequest

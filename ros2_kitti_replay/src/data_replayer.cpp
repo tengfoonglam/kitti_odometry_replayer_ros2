@@ -7,6 +7,12 @@
 namespace r2k_replay
 {
 
+DataReplayer::PlayRequest::PlayRequest(
+  const Timestamp & start_time_in, const Timestamp & target_time_in, const float replay_speed_in)
+: start_time(start_time_in), target_time(target_time_in), replay_speed(replay_speed_in)
+{
+}
+
 DataReplayer::DataReplayer(const std::string & name, const Timestamps & timestamps)
 : DataReplayer(name, timestamps, rclcpp::get_logger(name))
 {
@@ -323,25 +329,36 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
     return std::nullopt;
   }
 
+  // Aliases
+  const auto & start_time = play_request.start_time;
+  const auto & target_time = play_request.target_time;
+
+  // Return if start_time is after last timestamp or target_time is before first timestamp
+  if (start_time > timestamps.back() || target_time < timestamps.front()) {
+    return std::nullopt;
+  }
+
   // Find starting index
   std::size_t start_index{0};
-  const auto & start_time = play_request.start_time;
-  for (; start_index < timestamps.size(); start_index++) {
-    const auto timestamp = timestamps.at(start_index);
+  for (auto i = start_index; i < timestamps.size(); i++) {
+    const auto & timestamp = timestamps.at(i);
+    start_index = i;
     if (timestamp >= start_time) {
       break;
     }
   }
+  std::cout << start_index << std::endl;
 
   // Find target index
   std::size_t target_index{timestamps.size()};
-  const auto & target_time = play_request.target_time;
-  for (; target_index-- > 0;) {
-    const auto timestamp = timestamps.at(target_index);
+  for (auto i = target_index; i-- > 0;) {
+    const auto & timestamp = timestamps.at(i);
+    target_index = i;
     if (timestamp <= target_time) {
       break;
     }
   }
+  std::cout << target_index << std::endl;
 
   // Return result
   return (target_index >= start_index) ? std::optional(std::make_tuple(start_index, target_index))
