@@ -180,19 +180,35 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
 
 void DataReplayer::prepare_data(const size_t index_to_prep)
 {
-  with_lock(cb_mutex_, [&, index_to_prep]() {
+  with_lock(cb_mutex_, [this, index_to_prep]() {
     std::for_each(
       std::cbegin(play_data_cb_ptrs_), std::cend(play_data_cb_ptrs_),
-      [index_to_prep](const auto & cb_ptr) { cb_ptr->prepare(index_to_prep); });
+      [this, index_to_prep](const auto & cb_ptr) {
+        const auto prepare_success = cb_ptr->prepare(index_to_prep);
+        if (!prepare_success) {
+          with_lock(logger_mutex_, [this, name = cb_ptr->name(), index_to_prep]() {
+            RCLCPP_WARN(
+              logger_, "Failed to prepare data for %s, index %ld", name.c_str(), index_to_prep);
+          });
+        }
+      });
   });
 }
 
 void DataReplayer::play_data(const size_t index_to_play)
 {
-  with_lock(cb_mutex_, [&, index_to_play]() {
+  with_lock(cb_mutex_, [this, index_to_play]() {
     std::for_each(
       std::cbegin(play_data_cb_ptrs_), std::cend(play_data_cb_ptrs_),
-      [index_to_play](const auto & cb_ptr) { cb_ptr->play(index_to_play); });
+      [this, index_to_play](const auto & cb_ptr) {
+        const auto play_success = cb_ptr->play(index_to_play);
+        if (!play_success) {
+          with_lock(logger_mutex_, [this, name = cb_ptr->name(), index_to_play]() {
+            RCLCPP_WARN(
+              logger_, "Failed to play data for %s, index %ld", name.c_str(), index_to_play);
+          });
+        }
+      });
   });
 }
 
@@ -295,14 +311,10 @@ bool DataReplayer::pause()
 
 bool DataReplayer::stop()
 {
-  if (!is_playing()) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(logger_, "Replayer %s is not playing, already stopped", name_.c_str());
-    });
-    return true;
+  if (is_playing()) {
+    stop_play_thread();
   }
 
-  stop_play_thread();
   const auto reset_success = reset();
   with_lock(logger_mutex_, [this, reset_success]() {
     RCLCPP_INFO(
@@ -310,7 +322,7 @@ bool DataReplayer::stop()
       reset_success ? "successfully" : "unsuccessfully");
   });
 
-  return reset();
+  return reset_success;
 }
 
 bool DataReplayer::reset()
@@ -355,7 +367,9 @@ void DataReplayer::modify_state_no_lock(const StateModificationCallback & modify
 {
   std::scoped_lock lock(cb_mutex_);
   modify_cb(state_);
-  state_change_cb_(state_);
+  if (state_change_cb_) {
+    state_change_cb_(state_);
+  }
 }
 
 void DataReplayer::modify_state(const StateModificationCallback & modify_cb)

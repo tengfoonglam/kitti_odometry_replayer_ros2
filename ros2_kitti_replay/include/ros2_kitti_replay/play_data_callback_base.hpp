@@ -16,7 +16,7 @@ public:
   [[nodiscard]] virtual std::size_t data_size() const = 0;
   virtual bool prepare(const std::size_t idx) = 0;
   virtual bool play(const std::size_t idx) = 0;
-  virtual ~PlayDataCallbackBase() {}
+  virtual ~PlayDataCallbackBase() = default;
 
 protected:
   std::string name_;

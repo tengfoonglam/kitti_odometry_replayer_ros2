@@ -4,7 +4,6 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <rclcpp/time.hpp>
 #include <string>
 #include <thread>
 #include <tuple>
