@@ -146,12 +146,14 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
     });
   }
 
-  state_.playing = true;
-  state_.current_time = start_index > 0 ? timestamps_.at(start_index - 1) : Timestamp();
-  state_.next_idx = start_index;
-  state_.target_idx = target_index;
-  state_.replay_speed = std::max(0.0f, replay_speed);
-  with_lock(cb_mutex_, [this]() { state_change_cb_(state_); });
+  // Update state
+  modify_state_no_lock([start_index, target_index, replay_speed, this](auto & replayer_state) {
+    replayer_state.playing = true;
+    replayer_state.current_time = timestamps_.at(std::max<size_t>(start_index - 1, 0));
+    replayer_state.next_idx = start_index;
+    replayer_state.target_idx = target_index;
+    replayer_state.replay_speed = std::max(0.0f, replay_speed);
+  });
 
   // Ensure play thread has been stopped. state_.playing == true should guarantee that previous
   // play_loop has completed
@@ -159,6 +161,14 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
 
   play_thread_shutdown_flag_ = false;
   play_thread_ptr_ = std::make_unique<std::thread>(&DataReplayer::play_loop, this);
+
+  with_lock(logger_mutex_, [this]() {
+    RCLCPP_INFO(
+      logger_, "Replayer %s starting to play from %fs to %f at x%f speed", name_.c_str(),
+      state_.current_time.seconds(),
+      timestamps_.at(std::min<size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
+      state_.replay_speed);
+  });
 
   return true;
 }
@@ -188,6 +198,10 @@ void DataReplayer::play_data(const size_t index_to_play)
 
 void DataReplayer::play_loop()
 {
+  with_lock(logger_mutex_, [this]() {
+    RCLCPP_INFO(logger_, "Replayer %s's play loop started", name_.c_str());
+  });
+
   // Prepare data of first frame before starting loop
   prepare_data(get_current_index());
 
@@ -258,6 +272,9 @@ void DataReplayer::play_loop()
 
   // Set final state
   modify_state([](auto & replayer_state) { replayer_state.playing = false; });
+  with_lock(logger_mutex_, [this]() {
+    RCLCPP_INFO(logger_, "Replayer %s's play loop ended", name_.c_str());
+  });
 }
 
 bool DataReplayer::pause()
@@ -270,6 +287,9 @@ bool DataReplayer::pause()
   }
 
   stop_play_thread();
+
+  with_lock(logger_mutex_, [this]() { RCLCPP_INFO(logger_, "Replayer %s paused", name_.c_str()); });
+
   return true;
 }
 
@@ -283,6 +303,13 @@ bool DataReplayer::stop()
   }
 
   stop_play_thread();
+  const auto reset_success = reset();
+  with_lock(logger_mutex_, [this, reset_success]() {
+    RCLCPP_INFO(
+      logger_, "Replayer %s stopped %s", name_.c_str(),
+      reset_success ? "successfully" : "unsuccessfully");
+  });
+
   return reset();
 }
 
@@ -299,6 +326,9 @@ bool DataReplayer::reset()
     replayer_state.next_idx = 0;
     replayer_state.current_time = replayer_state.start_time;
   });
+
+  with_lock(
+    logger_mutex_, [this]() { RCLCPP_INFO(logger_, "Replayer %s has been reset", name_.c_str()); });
 
   return true;
 }
@@ -319,13 +349,19 @@ DataReplayer::~DataReplayer() { stop_play_thread(); }
 [[nodiscard]] DataReplayer::ReplayerState DataReplayer::get_replayer_state() const
 {
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_; });
-};
+}
+
+void DataReplayer::modify_state_no_lock(const StateModificationCallback & modify_cb)
+{
+  std::scoped_lock lock(cb_mutex_);
+  modify_cb(state_);
+  state_change_cb_(state_);
+}
 
 void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
 {
-  std::scoped_lock lock(state_mutex_, cb_mutex_);
-  modify_cb(state_);
-  state_change_cb_(state_);
+  std::scoped_lock lock(state_mutex_);
+  modify_state_no_lock(modify_cb);
 };
 
 [[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_play_request(
@@ -373,7 +409,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
 [[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
   const StepRequest & step_request, const size_t next_idx, const size_t data_size)
 {
-  // Invalid if step side is zero
+  // Invalid if step size is zero
   if (step_request.number_steps < 1) {
     return std::nullopt;
   }
@@ -383,7 +419,8 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
     return std::nullopt;
   }
 
-  const auto target_idx = std::min(next_idx + step_request.number_steps - 1, data_size);
+  // Compute target index and return
+  const auto target_idx = std::min(next_idx + step_request.number_steps - 1, data_size - 1);
   return std::make_pair(next_idx, target_idx);
 }
 

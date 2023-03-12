@@ -113,6 +113,8 @@ private:
     return callable();
   }
 
+  void modify_state_no_lock(const StateModificationCallback & modify_cb);
+
   void modify_state(const StateModificationCallback & modify_cb);
 
   void play_loop();

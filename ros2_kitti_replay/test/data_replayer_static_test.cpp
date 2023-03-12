@@ -119,4 +119,5 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(StepRequest(1), 100, 3, std::nullopt),
     std::make_tuple(StepRequest(1), 1, 3, std::optional(std::make_tuple(1, 1))),
     std::make_tuple(StepRequest(5), 3, 10, std::optional(std::make_tuple(3, 7))),
-    std::make_tuple(StepRequest(100), 2, 10, std::optional(std::make_tuple(2, 10)))));
+    std::make_tuple(StepRequest(1), 2, 3, std::optional(std::make_tuple(2, 2))),
+    std::make_tuple(StepRequest(100), 2, 10, std::optional(std::make_tuple(2, 9)))));
