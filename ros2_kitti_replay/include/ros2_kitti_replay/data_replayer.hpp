@@ -21,7 +21,7 @@ class DataReplayer
 public:
   struct ReplayerState
   {
-    bool playing;
+    bool playing{false};
     float replay_speed{1.0f};
     Timestamp start_time;
     Timestamp current_time;
@@ -29,6 +29,8 @@ public:
     std::size_t next_idx{};
     std::size_t target_idx{};
     std::size_t data_size{};
+
+    friend bool operator==(const ReplayerState & lhs, const ReplayerState & rhs);
   };
 
   struct PlayRequest
@@ -37,7 +39,7 @@ public:
     Timestamp target_time;
     float replay_speed{1.0f};
     PlayRequest(
-      const Timestamp & start_time_in, const Timestamp & target_timein,
+      const Timestamp & start_time_in, const Timestamp & target_time_in,
       const float replay_speed_in = 1.0f);
   };
 
@@ -61,11 +63,13 @@ public:
 
   [[nodiscard]] bool is_playing() const;
 
-  bool add_play_data_cb(std::unique_ptr<PlayDataCallbackBase> play_data_cb_ptr);
+  bool add_play_data_cb(std::shared_ptr<PlayDataCallbackBase> play_data_cb_ptr);
 
   bool set_state_change_cb(const StateChangeCallback & state_change_cb);
 
   [[nodiscard]] ReplayerState get_replayer_state() const;
+
+  bool resume(const float replay_speed = 1.0f);
 
   bool play(const PlayRequest & play_request);
 
@@ -99,10 +103,10 @@ private:
   mutable std::mutex thread_mutex_;
   std::atomic_bool play_thread_shutdown_flag_{false};
   std::condition_variable play_thread_cv_;
-  std::unique_ptr<std::thread> play_thread_ptr_;
+  std::shared_ptr<std::thread> play_thread_ptr_;
 
   mutable std::mutex cb_mutex_;
-  std::vector<std::unique_ptr<PlayDataCallbackBase>> play_data_cb_ptrs_;
+  std::vector<std::shared_ptr<PlayDataCallbackBase>> play_data_cb_ptrs_;
   StateChangeCallback state_change_cb_;
 
   template <typename Callable>
@@ -120,7 +124,7 @@ private:
 
   void stop_play_thread();
 
-  [[nodiscard]] size_t get_current_index() const;
+  [[nodiscard]] size_t get_next_index() const;
 
   void prepare_data(const size_t index);
 

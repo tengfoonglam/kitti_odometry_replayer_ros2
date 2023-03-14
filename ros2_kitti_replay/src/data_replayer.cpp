@@ -23,6 +23,14 @@ DataReplayer::DataReplayer(const std::string & name, const Timestamps & timestam
 {
 }
 
+bool operator==(const DataReplayer::ReplayerState & lhs, const DataReplayer::ReplayerState & rhs)
+{
+  return (lhs.playing == rhs.playing) && (lhs.replay_speed == rhs.replay_speed) &&
+         (lhs.start_time == rhs.start_time) && (lhs.current_time == rhs.current_time) &&
+         (lhs.final_time == rhs.final_time) && (lhs.next_idx == rhs.next_idx) &&
+         (lhs.target_idx == rhs.target_idx) && (lhs.data_size == rhs.data_size);
+}
+
 DataReplayer::DataReplayer(
   const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger)
 : name_(name), timestamps_(timestamps), logger_(logger)
@@ -42,7 +50,7 @@ DataReplayer::DataReplayer(
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_.playing; });
 }
 
-bool DataReplayer::add_play_data_cb(std::unique_ptr<PlayDataCallbackBase> play_data_cb_ptr)
+bool DataReplayer::add_play_data_cb(std::shared_ptr<PlayDataCallbackBase> play_data_cb_ptr)
 {
   if (is_playing()) {
     with_lock(logger_mutex_, [this, cb_name = play_data_cb_ptr->name()]() {
@@ -55,7 +63,7 @@ bool DataReplayer::add_play_data_cb(std::unique_ptr<PlayDataCallbackBase> play_d
   }
   {
     std::scoped_lock lock(cb_mutex_);
-    play_data_cb_ptrs_.push_back(std::move(play_data_cb_ptr));
+    play_data_cb_ptrs_.push_back(play_data_cb_ptr);
   }
   return true;
 }
@@ -119,6 +127,24 @@ bool DataReplayer::step(const StepRequest & step_request)
   return play_index_range(index_range_opt.value(), step_request.replay_speed);
 }
 
+bool DataReplayer::resume(const float replay_speed)
+{
+  const auto state = get_replayer_state();
+  const bool resumable = state.next_idx < state.data_size && state.next_idx <= state.target_idx;
+  if (resumable) {
+    return play_index_range(std::make_tuple(state.next_idx, state.target_idx), replay_speed);
+  } else {
+    with_lock(logger_mutex_, [this]() {
+      RCLCPP_WARN(
+        logger_,
+        "Replayer %s cannot resume because it has either reached the target time or the end of the "
+        "timeline",
+        name_.c_str());
+    });
+    return false;
+  }
+}
+
 bool DataReplayer::play_index_range(const IndexRange & index_range, const float replay_speed)
 {
   // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
@@ -149,7 +175,8 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
   // Update state
   modify_state_no_lock([start_index, target_index, replay_speed, this](auto & replayer_state) {
     replayer_state.playing = true;
-    replayer_state.current_time = timestamps_.at(std::max<size_t>(start_index - 1, 0));
+    replayer_state.current_time =
+      timestamps_.at(std::max<size_t>(std::min<size_t>(0, start_index - 1), 0));
     replayer_state.next_idx = start_index;
     replayer_state.target_idx = target_index;
     replayer_state.replay_speed = std::max(0.0f, replay_speed);
@@ -166,14 +193,15 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
     RCLCPP_INFO(
       logger_, "Replayer %s starting to play from %fs to %f at x%f speed", name_.c_str(),
       state_.current_time.seconds(),
-      timestamps_.at(std::min<size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
+      timestamps_.at(std::min<size_t>(state_.target_idx, std::min<size_t>(0, state_.data_size - 1)))
+        .seconds(),
       state_.replay_speed);
   });
 
   return true;
 }
 
-[[nodiscard]] size_t DataReplayer::get_current_index() const
+[[nodiscard]] size_t DataReplayer::get_next_index() const
 {
   return with_lock(state_mutex_, [&]() { return state_.next_idx; });
 }
@@ -219,7 +247,7 @@ void DataReplayer::play_loop()
   });
 
   // Prepare data of first frame before starting loop
-  prepare_data(get_current_index());
+  prepare_data(get_next_index());
 
   const auto replay_speed =
     with_lock(state_mutex_, [&] [[nodiscard]] () { return state_.replay_speed; });
@@ -229,7 +257,7 @@ void DataReplayer::play_loop()
     const auto iteration_start_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
 
     // Get current index
-    const auto current_index = get_current_index();
+    const auto current_index = get_next_index();
     const auto next_index = current_index + 1;
 
     // Play

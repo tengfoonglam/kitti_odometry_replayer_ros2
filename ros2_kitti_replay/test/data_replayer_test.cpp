@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <ros2_kitti_replay/data_replayer.hpp>
 #include <ros2_kitti_replay/play_data_callback_base.hpp>
 #include <ros2_kitti_replay/timestamps.hpp>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace
@@ -77,16 +79,37 @@ private:
 };
 const Timestamps DataReplayerTests::kTimestamps = DataReplayerTests::generate_test_timestamps();
 
-namespace
-{
-const auto & kTimestamps = DataReplayerTests::kTimestamps;
-}  // namespace
-
-TEST(DataReplayerTests, NormalInitializationTest)
+TEST_F(DataReplayerTests, NormalInitializationTest)
 {
   auto replayer = DataReplayer("Test Replayer", kTimestamps);
   const auto state = replayer.get_replayer_state();
   ASSERT_EQ(state.start_time, kTimestamps.front());
   ASSERT_EQ(state.final_time, kTimestamps.back());
   ASSERT_EQ(state.data_size, kTimestamps.size());
+}
+
+TEST_F(DataReplayerTests, EmptyTimestampInitializationTest)
+{
+  auto replayer = DataReplayer("Test Replayer", Timestamps{});
+  ASSERT_EQ(replayer.get_replayer_state(), ReplayerState());
+}
+
+TEST_F(DataReplayerTests, NormalOperationTest)
+{
+  auto replayer = DataReplayer("Test Replayer", kTimestamps);
+  auto play_cb_ptr = std::make_shared<TestPlayDataCallback>();
+  ASSERT_TRUE(replayer.add_play_data_cb(play_cb_ptr));
+  ASSERT_TRUE(replayer.set_state_change_cb(get_state_change_callback()));
+  ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
+  while (replayer.is_playing()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  ASSERT_TRUE(replayer.stop());
+
+  ASSERT_EQ(play_cb_ptr->prepare_record().size(), kTimestamps.size());
+  ASSERT_EQ(play_cb_ptr->play_record().size(), kTimestamps.size());
+  for (size_t i = 0; i < kTimestamps.size(); i++) {
+    ASSERT_EQ(play_cb_ptr->prepare_record().at(i), i);
+    ASSERT_EQ(play_cb_ptr->prepare_record().at(i), i);
+  }
 }
