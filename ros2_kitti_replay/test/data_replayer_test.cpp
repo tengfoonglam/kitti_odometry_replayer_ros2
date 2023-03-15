@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <mutex>
 #include <ros2_kitti_replay/data_replayer.hpp>
 #include <ros2_kitti_replay/play_data_callback_base.hpp>
 #include <ros2_kitti_replay/timestamps.hpp>
@@ -54,25 +55,95 @@ private:
 class DataReplayerTests : public ::testing::Test
 {
 public:
-  static constexpr size_t kNumberTimestamps = 5;
-  static constexpr size_t kStartTimeSeconds = 1;
+  static constexpr size_t kNumberTimestamps = 10;
+  static constexpr size_t kStartTimeSeconds = 2;
+  static constexpr auto kTimestampIntervalNs = static_cast<size_t>(1e7);
   static const Timestamps kTimestamps;
 
   StateChangeCallback get_state_change_callback()
   {
-    return [&replay_states_ = replay_states_](const ReplayerState & replayer_state) {
-      replay_states_.push_back(replayer_state);
+    return [this](const ReplayerState & replayer_state) {
+      std::scoped_lock lock(state_mutex_);
+      replayer_states_.push_back(replayer_state);
     };
   }
 
-private:
-  std::vector<ReplayerState> replay_states_;
+  void assert_timeline_played_exactly_once(
+    const size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
+  {
+    const auto & play_data_callback = *play_cb_ptr;
+    const auto num_stamps = timestamps.size();
+    ASSERT_EQ(play_data_callback.prepare_record().size(), num_stamps);
+    ASSERT_EQ(play_data_callback.play_record().size(), num_stamps);
+    for (size_t i = 0; i < num_stamps; i++) {
+      ASSERT_EQ(play_data_callback.play_record().at(i), start_index + i);
+      ASSERT_EQ(play_data_callback.prepare_record().at(i), start_index + i);
+    }
+    const auto last_state = get_last_replayer_state();
+    ASSERT_EQ(last_state.playing, false);
+    ASSERT_GE(last_state.current_time, timestamps.back());
+    ASSERT_EQ(last_state.next_idx, start_index + num_stamps);
+    ASSERT_EQ(last_state.target_idx, start_index + num_stamps - 1);
+  }
+
+  void assert_timeline_played_partially(
+    const size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
+  {
+    const auto & play_data_callback = *play_cb_ptr;
+    const auto num_stamps = timestamps.size();
+    const auto prepare_size = play_cb_ptr->prepare_record().size();
+    const auto play_size = play_cb_ptr->play_record().size();
+    EXPECT_TRUE((prepare_size > 0) && (prepare_size < num_stamps));
+    EXPECT_TRUE((play_size > 0) && (play_size < num_stamps));
+    ASSERT_EQ(play_data_callback.play_record().at(0), start_index);
+    ASSERT_EQ(play_data_callback.prepare_record().at(0), start_index);
+    const auto last_state = get_last_replayer_state();
+    ASSERT_EQ(last_state.playing, false);
+    ASSERT_LT(last_state.next_idx, num_stamps);
+  }
+
+  void wait_until(const std::function<bool(void)> & condition)
+  {
+    while (condition()) {
+      std::this_thread::sleep_for(std::chrono::nanoseconds(kTimestampIntervalNs));
+    }
+  }
+
+  void wait_till_replayer_no_longer_playing()
+  {
+    wait_until([this]() { return replayer.is_playing(); });
+  }
+
+  [[nodiscard]] std::vector<ReplayerState> get_replayer_states() const
+  {
+    std::scoped_lock lock(state_mutex_);
+    return replayer_states_;
+  }
+
+  [[nodiscard]] ReplayerState get_last_replayer_state() const
+  {
+    std::scoped_lock lock(state_mutex_);
+    return replayer_states_.back();
+  }
+
+  DataReplayer replayer{"Test Replayer", kTimestamps};
+  std::shared_ptr<TestPlayDataCallback> play_cb_ptr = std::make_shared<TestPlayDataCallback>();
+
+protected:
+  mutable std::mutex state_mutex_;
+  std::vector<ReplayerState> replayer_states_;
+
+  void SetUp()
+  {
+    ASSERT_TRUE(replayer.add_play_data_cb(play_cb_ptr));
+    ASSERT_TRUE(replayer.set_state_change_cb(get_state_change_callback()));
+  }
 
   [[nodiscard]] static Timestamps generate_test_timestamps()
   {
     Timestamps output;
     for (size_t i = 0; i < kNumberTimestamps; i++) {
-      output.emplace_back(kStartTimeSeconds + i, 0);
+      output.emplace_back(kStartTimeSeconds, i * kTimestampIntervalNs);
     }
     return output;
   }
@@ -81,7 +152,6 @@ const Timestamps DataReplayerTests::kTimestamps = DataReplayerTests::generate_te
 
 TEST_F(DataReplayerTests, NormalInitializationTest)
 {
-  auto replayer = DataReplayer("Test Replayer", kTimestamps);
   const auto state = replayer.get_replayer_state();
   ASSERT_EQ(state.start_time, kTimestamps.front());
   ASSERT_EQ(state.final_time, kTimestamps.back());
@@ -90,26 +160,54 @@ TEST_F(DataReplayerTests, NormalInitializationTest)
 
 TEST_F(DataReplayerTests, EmptyTimestampInitializationTest)
 {
-  auto replayer = DataReplayer("Test Replayer", Timestamps{});
-  ASSERT_EQ(replayer.get_replayer_state(), ReplayerState());
+  auto empty_replayer = DataReplayer("Test Replayer", Timestamps{});
+  ASSERT_EQ(empty_replayer.get_replayer_state(), ReplayerState());
 }
 
-TEST_F(DataReplayerTests, NormalOperationTest)
+TEST_F(DataReplayerTests, PlayTest)
 {
-  auto replayer = DataReplayer("Test Replayer", kTimestamps);
-  auto play_cb_ptr = std::make_shared<TestPlayDataCallback>();
-  ASSERT_TRUE(replayer.add_play_data_cb(play_cb_ptr));
-  ASSERT_TRUE(replayer.set_state_change_cb(get_state_change_callback()));
   ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
-  while (replayer.is_playing()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
-  ASSERT_TRUE(replayer.stop());
-
-  ASSERT_EQ(play_cb_ptr->prepare_record().size(), kTimestamps.size());
-  ASSERT_EQ(play_cb_ptr->play_record().size(), kTimestamps.size());
-  for (size_t i = 0; i < kTimestamps.size(); i++) {
-    ASSERT_EQ(play_cb_ptr->prepare_record().at(i), i);
-    ASSERT_EQ(play_cb_ptr->prepare_record().at(i), i);
-  }
+  wait_till_replayer_no_longer_playing();
+  assert_timeline_played_exactly_once();
 }
+
+TEST_F(DataReplayerTests, ResumeTest)
+{
+  ASSERT_TRUE(replayer.resume());
+  wait_till_replayer_no_longer_playing();
+  ASSERT_FALSE(replayer.resume());
+  assert_timeline_played_exactly_once();
+}
+
+TEST_F(DataReplayerTests, DestructorTest)
+{
+  {
+    auto scoped_replayer = DataReplayer{"Scoped Test Replayer", kTimestamps};
+    ASSERT_TRUE(scoped_replayer.add_play_data_cb(play_cb_ptr));
+    ASSERT_TRUE(scoped_replayer.set_state_change_cb(get_state_change_callback()));
+    ASSERT_TRUE(scoped_replayer.resume());
+    std::this_thread::sleep_for(std::chrono::nanoseconds(kTimestampIntervalNs));
+  }
+  assert_timeline_played_partially();
+}
+
+TEST_F(DataReplayerTests, PlaySegmentTest)
+{
+  constexpr size_t start_index = 3;
+  constexpr size_t segment_length = 3;
+  ASSERT_LT(start_index + segment_length, kTimestamps.size());
+  const Timestamps truncated_timestamp{
+    &kTimestamps[start_index], &kTimestamps[start_index + segment_length]};
+
+  ASSERT_TRUE(replayer.play(PlayRequest(truncated_timestamp.front(), truncated_timestamp.back())));
+  wait_till_replayer_no_longer_playing();
+  assert_timeline_played_exactly_once(start_index, truncated_timestamp);
+}
+
+// Pause test
+
+// Stop test
+
+// Reset test
+
+// Speed factor

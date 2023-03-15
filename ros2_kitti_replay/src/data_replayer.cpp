@@ -35,13 +35,21 @@ DataReplayer::DataReplayer(
   const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger)
 : name_(name), timestamps_(timestamps), logger_(logger)
 {
+  if (timestamps.empty()) {
+    with_lock(logger_mutex_, [this]() {
+      RCLCPP_ERROR(
+        logger_,
+        "Replayer %s initialized with an empty timeline, this will lead to unexpected behavior",
+        name_.c_str());
+    });
+    return;
+  }
+
   modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
-    if (timestamps.empty()) {
-      return;
-    }
     replayer_state.start_time = timestamps.front();
     replayer_state.final_time = timestamps.back();
     replayer_state.data_size = timestamps.size();
+    replayer_state.target_idx = timestamps.size() - 1;
   });
 }
 
@@ -175,8 +183,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
   // Update state
   modify_state_no_lock([start_index, target_index, replay_speed, this](auto & replayer_state) {
     replayer_state.playing = true;
-    replayer_state.current_time =
-      timestamps_.at(std::max<size_t>(std::min<size_t>(0, start_index - 1), 0));
+    replayer_state.current_time = timestamps_.at(start_index);
     replayer_state.next_idx = start_index;
     replayer_state.target_idx = target_index;
     replayer_state.replay_speed = std::max(0.0f, replay_speed);
@@ -191,10 +198,9 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
 
   with_lock(logger_mutex_, [this]() {
     RCLCPP_INFO(
-      logger_, "Replayer %s starting to play from %fs to %f at x%f speed", name_.c_str(),
+      logger_, "Replayer %s starting to play from %fs to %fs at x%f speed", name_.c_str(),
       state_.current_time.seconds(),
-      timestamps_.at(std::min<size_t>(state_.target_idx, std::min<size_t>(0, state_.data_size - 1)))
-        .seconds(),
+      timestamps_.at(std::min<size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
       state_.replay_speed);
   });
 
@@ -250,7 +256,7 @@ void DataReplayer::play_loop()
   prepare_data(get_next_index());
 
   const auto replay_speed =
-    with_lock(state_mutex_, [&] [[nodiscard]] () { return state_.replay_speed; });
+    with_lock(state_mutex_, [this] [[nodiscard]] () { return state_.replay_speed; });
 
   while (!play_thread_shutdown_flag_) {
     // Start timer
@@ -264,11 +270,16 @@ void DataReplayer::play_loop()
     play_data(current_index);
 
     // Update state
-    modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
+    modify_state([this, &timestamps = std::as_const(timestamps_)](auto & replayer_state) {
       replayer_state.next_idx++;
       replayer_state.current_time = replayer_state.next_idx < replayer_state.data_size
                                       ? timestamps.at(replayer_state.next_idx)
                                       : replayer_state.final_time;
+
+      // TODO(ltf): Remove after debuggin
+      with_lock(logger_mutex_, [this, seconds = replayer_state.current_time.seconds()]() {
+        RCLCPP_INFO(logger_, "Current time: %fs", seconds);
+      });
     });
 
     // If play has been completed, break from loop
