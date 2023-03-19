@@ -135,6 +135,18 @@ public:
   DataReplayer replayer{"Test Replayer", kTimestamps};
   std::shared_ptr<TestPlayDataCallback> play_cb_ptr = std::make_shared<TestPlayDataCallback>();
 
+  void play_timeline_halfway(const std::function<void()> & interrupt_play_cb)
+  {
+    ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
+    ASSERT_TRUE(replayer.is_playing());
+    std::this_thread::sleep_for(
+      std::chrono::nanoseconds(kNumberTimestamps / size_t{2} * kTimestampIntervalNs));
+    ASSERT_TRUE(replayer.is_playing());
+    interrupt_play_cb();
+    ASSERT_FALSE(replayer.is_playing());
+    assert_timeline_played_partially();
+  }
+
 protected:
   mutable std::mutex state_mutex_;
   std::vector<ReplayerState> replayer_states_;
@@ -219,14 +231,7 @@ TEST_F(DataReplayerTests, PauseWhileNotPlayingTest)
 
 TEST_F(DataReplayerTests, PauseWhilePlayingTest)
 {
-  ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
-  ASSERT_TRUE(replayer.is_playing());
-  std::this_thread::sleep_for(
-    std::chrono::nanoseconds(kNumberTimestamps / size_t{2} * kTimestampIntervalNs));
-  ASSERT_TRUE(replayer.is_playing());
-  ASSERT_TRUE(replayer.pause());
-  ASSERT_FALSE(replayer.is_playing());
-  assert_timeline_played_partially();
+  play_timeline_halfway([&]() { ASSERT_TRUE(replayer.pause()); });
 
   const auto paused_state = get_last_replayer_state();
   const auto resume_idx = paused_state.next_idx;
@@ -242,14 +247,7 @@ TEST_F(DataReplayerTests, PauseWhilePlayingTest)
 
 TEST_F(DataReplayerTests, StopWhilePlayingTest)
 {
-  ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
-  ASSERT_TRUE(replayer.is_playing());
-  std::this_thread::sleep_for(
-    std::chrono::nanoseconds(kNumberTimestamps / 2 * kTimestampIntervalNs));
-  ASSERT_TRUE(replayer.is_playing());
-  ASSERT_TRUE(replayer.stop());
-  ASSERT_FALSE(replayer.is_playing());
-  assert_timeline_played_partially();
+  play_timeline_halfway([&]() { ASSERT_TRUE(replayer.stop()); });
 
   const auto stopped_state = get_last_replayer_state();
   ASSERT_EQ(stopped_state.current_time, kTimestamps.front());
@@ -262,14 +260,7 @@ TEST_F(DataReplayerTests, StopWhileNotPlayingTest)
   ASSERT_TRUE(replayer.stop());
   ASSERT_FALSE(replayer.is_playing());
 
-  ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
-  ASSERT_TRUE(replayer.is_playing());
-  std::this_thread::sleep_for(
-    std::chrono::nanoseconds(kNumberTimestamps / size_t{2} * kTimestampIntervalNs));
-  ASSERT_TRUE(replayer.is_playing());
-  ASSERT_TRUE(replayer.pause());
-  ASSERT_FALSE(replayer.is_playing());
-  assert_timeline_played_partially();
+  play_timeline_halfway([&]() { ASSERT_TRUE(replayer.pause()); });
 
   const auto paused_state = get_last_replayer_state();
   ASSERT_GT(paused_state.current_time, kTimestamps.front());
