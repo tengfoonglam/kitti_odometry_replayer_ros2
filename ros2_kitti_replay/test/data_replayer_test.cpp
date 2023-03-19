@@ -147,6 +147,19 @@ public:
     assert_timeline_played_partially();
   }
 
+  void assert_replayer_has_been_reset_after_cb(const std::function<void()> & reset_cb)
+  {
+    const auto paused_state = get_last_replayer_state();
+    ASSERT_GT(paused_state.current_time, kTimestamps.front());
+    ASSERT_GT(paused_state.next_idx, size_t{0});
+
+    reset_cb();
+
+    const auto stopped_state = get_last_replayer_state();
+    ASSERT_EQ(stopped_state.current_time, kTimestamps.front());
+    ASSERT_EQ(stopped_state.next_idx, size_t{0});
+  }
+
 protected:
   mutable std::mutex state_mutex_;
   std::vector<ReplayerState> replayer_states_;
@@ -262,18 +275,21 @@ TEST_F(DataReplayerTests, StopWhileNotPlayingTest)
   ASSERT_FALSE(replayer.is_playing());
 
   play_timeline_halfway([&]() { ASSERT_TRUE(replayer.pause()); });
-
-  const auto paused_state = get_last_replayer_state();
-  ASSERT_GT(paused_state.current_time, kTimestamps.front());
-  ASSERT_GT(paused_state.next_idx, size_t{0});
-
-  ASSERT_TRUE(replayer.stop());
-
-  const auto stopped_state = get_last_replayer_state();
-  ASSERT_EQ(stopped_state.current_time, kTimestamps.front());
-  ASSERT_EQ(stopped_state.next_idx, size_t{0});
+  assert_replayer_has_been_reset_after_cb([&]() { ASSERT_TRUE(replayer.stop()); });
 }
 
-// Reset test
+TEST_F(DataReplayerTests, ResetTest)
+{
+  ASSERT_FALSE(replayer.is_playing());
+  ASSERT_TRUE(replayer.reset());
+  ASSERT_FALSE(replayer.is_playing());
+
+  play_timeline_halfway([&]() {
+    ASSERT_FALSE(replayer.reset());
+    ASSERT_TRUE(replayer.pause());
+  });
+
+  assert_replayer_has_been_reset_after_cb([&]() { ASSERT_TRUE(replayer.reset()); });
+}
 
 // Speed factor
