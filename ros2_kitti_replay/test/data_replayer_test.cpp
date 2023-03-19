@@ -160,6 +160,7 @@ protected:
   [[nodiscard]] static Timestamps generate_test_timestamps()
   {
     Timestamps output;
+    output.reserve(kNumberTimestamps);
     for (size_t i = 0; i < kNumberTimestamps; i++) {
       output.emplace_back(kStartTimeSeconds, i * kTimestampIntervalNs);
     }
