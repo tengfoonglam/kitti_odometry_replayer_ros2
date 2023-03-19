@@ -45,6 +45,12 @@ public:
   [[nodiscard]] const IndexRecord & prepare_record() const noexcept { return prepare_record_; }
   [[nodiscard]] const IndexRecord & play_record() const noexcept { return play_record_; }
 
+  void reset()
+  {
+    play_record_.clear();
+    prepare_record_.clear();
+  }
+
 private:
   IndexRecord play_record_;
   IndexRecord prepare_record_;
@@ -204,7 +210,31 @@ TEST_F(DataReplayerTests, PlaySegmentTest)
   assert_timeline_played_exactly_once(start_index, truncated_timestamp);
 }
 
-// Pause test
+TEST_F(DataReplayerTests, PauseTest)
+{
+  ASSERT_FALSE(replayer.is_playing());
+  ASSERT_TRUE(replayer.pause());
+  ASSERT_FALSE(replayer.is_playing());
+
+  ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
+  ASSERT_TRUE(replayer.is_playing());
+  std::this_thread::sleep_for(
+    std::chrono::nanoseconds(kNumberTimestamps / 2 * kTimestampIntervalNs));
+  ASSERT_TRUE(replayer.is_playing());
+  ASSERT_TRUE(replayer.pause());
+  assert_timeline_played_partially();
+
+  const auto paused_state = replayer.get_replayer_state();
+  const auto resume_idx = paused_state.next_idx;
+  play_cb_ptr->reset();
+  ASSERT_FALSE(replayer.is_playing());
+  ASSERT_TRUE(replayer.resume());
+
+  wait_till_replayer_no_longer_playing();
+  ASSERT_FALSE(replayer.is_playing());
+  assert_timeline_played_exactly_once(
+    resume_idx, Timestamps{std::next(kTimestamps.cbegin(), resume_idx), kTimestamps.cend()});
+}
 
 // Stop test
 
