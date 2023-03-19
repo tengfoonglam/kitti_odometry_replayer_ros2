@@ -108,16 +108,18 @@ public:
     ASSERT_LT(last_state.next_idx, num_stamps);
   }
 
-  void wait_until(const std::function<bool(void)> & condition)
+  void wait_until(
+    const std::function<bool(void)> & condition,
+    const size_t check_interval_ns = kTimestampIntervalNs)
   {
     while (condition()) {
-      std::this_thread::sleep_for(std::chrono::nanoseconds(kTimestampIntervalNs));
+      std::this_thread::sleep_for(std::chrono::nanoseconds(check_interval_ns));
     }
   }
 
-  void wait_till_replayer_no_longer_playing()
+  void wait_till_replayer_no_longer_playing(const size_t check_interval_ns = kTimestampIntervalNs)
   {
-    wait_until([this]() { return replayer.is_playing(); });
+    wait_until([this]() { return replayer.is_playing(); }, check_interval_ns);
   }
 
   [[nodiscard]] std::vector<ReplayerState> get_replayer_states() const
@@ -292,4 +294,38 @@ TEST_F(DataReplayerTests, ResetTest)
   assert_replayer_has_been_reset_after_cb([&]() { ASSERT_TRUE(replayer.reset()); });
 }
 
-// Speed factor
+class DataReplayerSpeedFactorTests : public DataReplayerTests,
+                                     public ::testing::WithParamInterface<float>
+{
+public:
+  static constexpr auto kExpectedNormalPlayDurationNs = kNumberTimestamps * kTimestampIntervalNs;
+  static constexpr float kTol = 0.1;
+};
+
+TEST_P(DataReplayerSpeedFactorTests, SpeedFactorTests)
+{
+  const auto speed_factor = GetParam();
+
+  auto start_time = std::chrono::high_resolution_clock::now();
+  ASSERT_TRUE(replayer.resume(speed_factor));
+  wait_till_replayer_no_longer_playing();
+  auto end_time = std::chrono::high_resolution_clock::now();
+  const auto time_taken =
+    std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+  using DurationType = std::decay_t<decltype(time_taken)>;
+
+  const bool play_as_fast_as_possible = speed_factor <= 0.0;
+  if (play_as_fast_as_possible) {
+    ASSERT_LT(time_taken, static_cast<DurationType>(kExpectedNormalPlayDurationNs));
+  } else {
+    const auto expected_duration_ns =
+      static_cast<DurationType>(kExpectedNormalPlayDurationNs * (1.0 / speed_factor));
+    EXPECT_TRUE(
+      (time_taken > static_cast<DurationType>(expected_duration_ns * (1.0 - kTol))) &&
+      (time_taken < static_cast<DurationType>(expected_duration_ns * (1.0 + kTol))));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  DataReplayerSpeedFactorTimingTests, DataReplayerSpeedFactorTests,
+  ::testing::Values(-100.0, -1.0, -0.001, 0.0, 0.1, 0.5, 1.0, 1.1, 2.0, 5.0));
