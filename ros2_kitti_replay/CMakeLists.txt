@@ -4,6 +4,7 @@ project(ros2_kitti_replay LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -25,16 +26,20 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/data_loader.hpp"
     "include/${PROJECT_NAME}/clock_data_loader.hpp"
     "include/${PROJECT_NAME}/play_data_callback_base.hpp"
+    "include/${PROJECT_NAME}/point_cloud_utils.hpp"
     "include/${PROJECT_NAME}/data_replayer.hpp"
     "include/${PROJECT_NAME}/ros_publisher_play_data_callback.hpp")
 
 set(SOURCE_LIST
-    "src/timestamps.cpp" "src/data_loader_base.cpp" "src/data_replayer.cpp")
+    "src/timestamps.cpp"
+    "src/data_loader_base.cpp"
+    "src/data_replayer.cpp"
+    "src/point_cloud_utils.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
 target_include_directories(ros2_kitti_replay PUBLIC include)
-ament_target_dependencies(ros2_kitti_replay rclcpp)
+ament_target_dependencies(ros2_kitti_replay rclcpp sensor_msgs)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

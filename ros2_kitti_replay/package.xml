@@ -3,13 +3,14 @@
 <package format="2">
   <name>ros2_kitti_replay</name>
   <version>0.1.0</version>
-  <description>Repaly Utilities for the KITTI Datasets</description>
+  <description>Replay Utilities for the KITTI Datasets</description>
   <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>
   <license>BSD 3-clause</license>
 
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
   <exec_depend>ros2_kitti_description</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
