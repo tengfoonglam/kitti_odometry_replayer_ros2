@@ -38,13 +38,18 @@ namespace r2k_replay
 
   // Create point cloud message
   auto output_ptr = std::make_shared<PointCloudMsg>();
+  output_ptr->height = num_points;
+  output_ptr->width = 1;
+  output_ptr->is_dense = false;
+  output_ptr->is_bigendian = false;
+
   sensor_msgs::PointCloud2Modifier modifier(*output_ptr);
+  // Note: setPointCloud2Fields will automatically resize message if PC has height and width
+  // specified
   modifier.setPointCloud2Fields(
     4, "x", 1, sensor_msgs::msg::PointField::FLOAT32, "y", 1, sensor_msgs::msg::PointField::FLOAT32,
     "z", 1, sensor_msgs::msg::PointField::FLOAT32, "intensity", 1,
     sensor_msgs::msg::PointField::FLOAT32);
-
-  modifier.resize(num_points);
 
   sensor_msgs::PointCloud2Iterator<float> iter_x(*output_ptr, "x");
   sensor_msgs::PointCloud2Iterator<float> iter_y(*output_ptr, "y");
