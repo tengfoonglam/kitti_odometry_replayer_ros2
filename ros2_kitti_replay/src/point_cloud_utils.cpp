@@ -1,5 +1,6 @@
 #include "ros2_kitti_replay/point_cloud_utils.hpp"
 
+#include <iostream>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
 namespace r2k_replay
@@ -40,26 +41,32 @@ namespace r2k_replay
   sensor_msgs::PointCloud2Modifier modifier(*output_ptr);
   modifier.setPointCloud2Fields(
     4, "x", 1, sensor_msgs::msg::PointField::FLOAT32, "y", 1, sensor_msgs::msg::PointField::FLOAT32,
-    "z", 1, sensor_msgs::msg::PointField::FLOAT32, "i", 1, sensor_msgs::msg::PointField::FLOAT32);
+    "z", 1, sensor_msgs::msg::PointField::FLOAT32, "intensity", 1,
+    sensor_msgs::msg::PointField::FLOAT32);
 
-  modifier.reserve(num_points);
+  modifier.resize(num_points);
 
   sensor_msgs::PointCloud2Iterator<float> iter_x(*output_ptr, "x");
   sensor_msgs::PointCloud2Iterator<float> iter_y(*output_ptr, "y");
   sensor_msgs::PointCloud2Iterator<float> iter_z(*output_ptr, "z");
-  sensor_msgs::PointCloud2Iterator<float> iter_i(*output_ptr, "i");
+  sensor_msgs::PointCloud2Iterator<float> iter_i(*output_ptr, "intensity");
 
   // Assign data into message
   for (std::size_t i = 0; i < num_points; i++) {
-    iter_x[i] = *x_ptr;
-    iter_y[i] = *y_ptr;
-    iter_z[i] = *z_ptr;
-    iter_i[i] = *i_ptr;
+    *iter_x = *x_ptr;
+    *iter_y = *y_ptr;
+    *iter_z = *z_ptr;
+    *iter_i = *i_ptr;
 
-    x_ptr += size_float;
-    y_ptr += size_float;
-    z_ptr += size_float;
-    i_ptr += size_float;
+    ++iter_x;
+    ++iter_y;
+    ++iter_z;
+    ++iter_i;
+
+    x_ptr += number_fields;
+    y_ptr += number_fields;
+    z_ptr += number_fields;
+    i_ptr += number_fields;
   }
 
   // Cleanup

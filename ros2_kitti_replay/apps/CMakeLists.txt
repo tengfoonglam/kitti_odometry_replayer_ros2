@@ -1,0 +1,3 @@
+add_executable(convert_kitti_point_cloud convert_kitti_point_cloud.cpp)
+ament_target_dependencies(convert_kitti_point_cloud pcl_ros pcl_conversions)
+target_link_libraries(convert_kitti_point_cloud ros2_kitti_replay)
