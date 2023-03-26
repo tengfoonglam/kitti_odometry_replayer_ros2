@@ -12,9 +12,7 @@ namespace r2k_replay
   const std::filesystem::path & times_path)
 {
   // Check if text file is .txt file and exists
-  if (
-    !std::filesystem::exists(times_path.parent_path()) ||
-    times_path.extension().string() != ".txt") {
+  if (!std::filesystem::exists(times_path) || times_path.extension().string() != ".txt") {
     return std::nullopt;
   }
 

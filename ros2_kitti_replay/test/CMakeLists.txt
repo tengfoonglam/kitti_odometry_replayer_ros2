@@ -9,3 +9,7 @@ target_link_libraries(data_replayer_static_test ${PROJECT_NAME})
 
 ament_add_gtest(data_replayer_test data_replayer_test.cpp)
 target_link_libraries(data_replayer_test ${PROJECT_NAME})
+
+ament_add_gtest(point_cloud_utils_test point_cloud_utils_test.cpp)
+ament_target_dependencies(point_cloud_utils_test pcl_conversions)
+target_link_libraries(point_cloud_utils_test ${PROJECT_NAME})

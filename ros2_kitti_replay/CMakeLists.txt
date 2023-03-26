@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ros2_kitti_replay LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
+find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -45,6 +46,7 @@ ament_target_dependencies(ros2_kitti_replay
                           rclcpp
                           sensor_msgs
                           pcl_conversions)
+target_link_libraries(ros2_kitti_replay ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -64,7 +66,12 @@ add_subdirectory(apps)
 
 ament_export_include_directories(include)
 ament_export_libraries(ros2_kitti_replay)
-ament_export_dependencies(rclcpp sensor_msgs)
+ament_export_dependencies(rclcpp
+                          sensor_msgs
+                          PCL
+                          pcl_ros
+                          pcl_conversions
+                          rosgraph_msgs)
 
 install(TARGETS convert_kitti_point_cloud DESTINATION lib/${PROJECT_NAME})
 

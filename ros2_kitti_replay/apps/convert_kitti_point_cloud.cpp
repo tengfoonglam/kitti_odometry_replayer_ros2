@@ -25,7 +25,7 @@ int main(int argc, char const * argv[])
     return 1;
   }
 
-  pcl::PointCloud<pcl::PointXYZI> pcl_cloud;
+  r2k_replay::PointCloudPCLType pcl_cloud;
   pcl::fromROSMsg(*msg_ptr, pcl_cloud);
 
   std::filesystem::path output_path{input_path};

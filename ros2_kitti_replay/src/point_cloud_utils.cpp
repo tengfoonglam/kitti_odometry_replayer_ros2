@@ -10,9 +10,7 @@ namespace r2k_replay
   const std::filesystem::path & pc_bin_path)
 {
   // Check if text file is .bin file and exists
-  if (
-    !std::filesystem::exists(pc_bin_path.parent_path()) ||
-    pc_bin_path.extension().string() != ".bin") {
+  if (!std::filesystem::exists(pc_bin_path) || pc_bin_path.extension().string() != ".bin") {
     return PointCloudMsg::SharedPtr();
   }
 
