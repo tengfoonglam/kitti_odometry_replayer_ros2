@@ -13,6 +13,11 @@ DataLoaderBase::DataLoaderBase(const std::string & name)
 {
 }
 
+[[nodiscard]] std::size_t DataLoaderBase::data_size() const
+{
+  return ready() ? timestamps_.size() : std::size_t{0};
+};
+
 bool DataLoaderBase::setup(const Timestamps & timestamps, const std::filesystem::path & load_path)
 {
   if (ready()) {
@@ -31,11 +36,9 @@ bool DataLoaderBase::prepare_data(const std::size_t idx)
   return prepare_data_internal(idx);
 }
 
-DataLoaderBase::~DataLoaderBase() {}
-
 bool DataLoaderBase::can_process_data(const std::size_t idx, const std::string & call_name)
 {
-  if (ready() && idx < timestamps_.size()) {
+  if (ready() && idx < data_size()) {
     return true;
   } else {
     RCLCPP_WARN(
