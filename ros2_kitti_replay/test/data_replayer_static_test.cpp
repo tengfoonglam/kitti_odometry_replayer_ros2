@@ -2,6 +2,7 @@
 
 #include <ros2_kitti_replay/data_replayer.hpp>
 #include <ros2_kitti_replay/timestamps.hpp>
+#include <ros2_kitti_replay_test/test_utils.hpp>
 #include <tuple>
 
 namespace
@@ -33,19 +34,13 @@ class ProcessPlayRequestNormalOperationsTests
 {
 public:
   static const Timestamps kTimestamps;
-
-private:
-  [[nodiscard]] static Timestamps generate_test_timestamps()
-  {
-    Timestamps output;
-    for (size_t i = 1; i <= 5; i++) {
-      output.emplace_back(i, 0);
-    }
-    return output;
-  }
+  static constexpr std::size_t kStartTimeS{1};
+  static constexpr std::size_t kEndTimeS{5};
 };
 const Timestamps ProcessPlayRequestNormalOperationsTests::kTimestamps =
-  ProcessPlayRequestNormalOperationsTests::generate_test_timestamps();
+  r2k_replay_test::generate_test_timestamps(
+    ProcessPlayRequestNormalOperationsTests::kStartTimeS,
+    ProcessPlayRequestNormalOperationsTests::kEndTimeS);
 
 namespace
 {

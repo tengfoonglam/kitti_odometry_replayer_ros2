@@ -28,7 +28,7 @@ public:
   [[nodiscard]] OptionalType get_data(const std::size_t idx)
   {
     if (!can_process_data(idx, __func__)) {
-      return false;
+      return std::nullopt;
     }
     return get_data_internal(idx);
   }

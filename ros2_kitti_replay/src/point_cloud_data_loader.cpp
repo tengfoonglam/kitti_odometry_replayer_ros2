@@ -47,12 +47,12 @@ bool PointCloudDataLoader::setup_internal(
 
 [[nodiscard]] std::size_t PointCloudDataLoader::data_size() const
 {
-  return ready() ? max_idx_ : std::size_t{0};
+  return ready() ? max_idx_ + 1 : std::size_t{0};
 }
 
 bool PointCloudDataLoader::prepare_data_internal(const std::size_t idx)
 {
-  if (idx >= data_size()) {
+  if (idx > max_idx_) {
     return false;
   }
 

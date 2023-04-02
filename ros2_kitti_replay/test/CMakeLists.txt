@@ -5,6 +5,7 @@ ament_add_gtest(base_data_loader_test data_loader_base_test.cpp)
 target_link_libraries(base_data_loader_test ${PROJECT_NAME})
 
 ament_add_gtest(data_replayer_static_test data_replayer_static_test.cpp)
+target_include_directories(data_replayer_static_test PRIVATE include)
 target_link_libraries(data_replayer_static_test ${PROJECT_NAME})
 
 ament_add_gtest(data_replayer_test data_replayer_test.cpp)
@@ -14,3 +15,8 @@ ament_add_gtest(point_cloud_utils_test point_cloud_utils_test.cpp)
 ament_target_dependencies(point_cloud_utils_test pcl_conversions)
 target_include_directories(point_cloud_utils_test PRIVATE include)
 target_link_libraries(point_cloud_utils_test ${PROJECT_NAME})
+
+ament_add_gtest(point_cloud_data_loader_test point_cloud_data_loader_test.cpp)
+ament_target_dependencies(point_cloud_data_loader_test pcl_conversions)
+target_include_directories(point_cloud_data_loader_test PRIVATE include)
+target_link_libraries(point_cloud_data_loader_test ${PROJECT_NAME})
