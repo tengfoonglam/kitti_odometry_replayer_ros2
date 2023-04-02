@@ -20,6 +20,18 @@ public:
   static const std::filesystem::path kTestFolderPath;
   static const KITTIPoints kTestPoints;
 
+  static void write_kitti_bin_files(
+    const std::vector<std::size_t> & indices, const std::filesystem::path & folder,
+    const std::vector<KITTIPoints> & point_clouds)
+  {
+    ASSERT_EQ(indices.size(), point_clouds.size());
+
+    for (std::size_t i = 0; i < indices.size(); i++) {
+      const auto file_path = r2k_replay::from_index_to_point_cloud_file_path(indices.at(i), folder);
+      write_bin_file(file_path, point_clouds.at(i));
+    }
+  }
+
   static void write_bin_file(const std::filesystem::path & file_path, const KITTIPoints & points)
   {
     const auto number_points = points.size();

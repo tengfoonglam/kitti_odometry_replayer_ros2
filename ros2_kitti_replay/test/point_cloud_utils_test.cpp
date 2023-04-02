@@ -99,3 +99,30 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(123, "/home/user", "/home/user/000123.bin"),
     std::make_tuple(123456, "/home/user", "/home/user/123456.bin"),
     std::make_tuple(1234567, "/home/user", "/home/user/1234567.bin")));
+
+class TestGetLastIndexOfPointCLoudSequence
+: public r2k_replay_test::TestsWithPointCloudIO,
+  public ::testing::WithParamInterface<
+    std::tuple<std::vector<std::size_t>, std::optional<std::size_t>>>
+{
+};
+
+TEST_P(TestGetLastIndexOfPointCLoudSequence, NormalOperation)
+{
+  const auto [indices, expected_answer] = GetParam();
+  write_kitti_bin_files(
+    indices, kTestFolderPath, std::vector<KITTIPoints>(indices.size(), KITTIPoints{}));
+  const auto output = r2k_replay::get_last_index_of_point_cloud_sequence(kTestFolderPath);
+  ASSERT_EQ(output, expected_answer);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  PointCloudUtilsTests, TestGetLastIndexOfPointCLoudSequence,
+  ::testing::Values(
+    std::make_tuple(std::vector<std::size_t>{}, std::nullopt),
+    std::make_tuple(std::vector<std::size_t>{1, 2, 3}, std::nullopt),
+    std::make_tuple(std::vector<std::size_t>{0}, 0),
+    std::make_tuple(std::vector<std::size_t>{0, 1, 2, 3}, 3),
+    std::make_tuple(std::vector<std::size_t>{0, 2, 3, 4}, 0),
+    std::make_tuple(std::vector<std::size_t>{0, 1, 2, 3, 4}, 4),
+    std::make_tuple(std::vector<std::size_t>{4, 3, 2, 1, 0}, 4)));

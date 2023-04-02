@@ -69,16 +69,17 @@ namespace r2k_replay
   const std::filesystem::path & pc_path)
 {
   const auto it = std::filesystem::directory_iterator(pc_path);
-  const auto number_files = static_cast<std::size_t>(std::count_if(
-    std::filesystem::begin(it), std::filesystem::end(it),
-    [](const auto & dir_entry) { return dir_entry.is_regular_file(); }));
+  const auto number_pc_files = static_cast<std::size_t>(
+    std::count_if(std::filesystem::begin(it), std::filesystem::end(it), [](const auto & dir_entry) {
+      return dir_entry.is_regular_file() && is_kitti_point_cloud_file(dir_entry.path());
+    }));
 
-  if (number_files == 0) {
+  if (number_pc_files == 0) {
     return std::nullopt;
   }
 
-  std::size_t answer = 0;
-  for (std::size_t idx = 0; idx < number_files; idx++) {
+  std::optional<std::size_t> answer;
+  for (std::size_t idx = 0; idx < number_pc_files; idx++) {
     const auto path_to_check = from_index_to_point_cloud_file_path(idx, pc_path);
 
     if (std::filesystem::exists(path_to_check)) {
