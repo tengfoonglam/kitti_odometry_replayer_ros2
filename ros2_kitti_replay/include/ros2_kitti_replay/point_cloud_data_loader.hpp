@@ -20,10 +20,8 @@ public:
   explicit PointCloudDataLoader(const std::string & name, const Header & header);
   PointCloudDataLoader(const std::string & name, rclcpp::Logger logger, const Header & header);
   [[nodiscard]] std::size_t data_size() const final;
-  [[nodiscard]] static bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path);
 
 private:
-  static constexpr size_t kNumberDigitsFilename{6};
   Header header_;
   std::size_t max_idx_{};
   PointCloudDataLoader::Type point_cloud_ptr_;

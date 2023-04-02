@@ -16,50 +16,30 @@ PointCloudDataLoader::PointCloudDataLoader(
 {
 }
 
-[[nodiscard]] bool PointCloudDataLoader::is_kitti_point_cloud_file(
-  const std::filesystem::path & pc_path)
-{
-  const bool extension_match = pc_path.extension().string() == ".bin";
-  const auto & stem = pc_path.stem().string();
-  const bool number_char_match = stem.size() == 6;
-  const bool stem_all_digits = std::all_of(stem.cbegin(), stem.cend(), ::isdigit);
-  return extension_match && number_char_match && stem_all_digits;
-}
-
 bool PointCloudDataLoader::setup_internal(
   const Timestamps & timestamps, const std::filesystem::path & load_path)
 {
-  ready_ = false;
-  timestamps_ = timestamps;
-  load_path_ = load_path;
-  max_idx_ = 0;
-  current_idx_opt_.reset();
-  point_cloud_ptr_.reset();
+  const auto pc_idx_opt = get_last_index_of_point_cloud_sequence(load_path);
 
-  // Iterate within file and search for matching files, find max
-  std::size_t temp_max_idx = 0;
-  bool found_at_least_one_file = false;
-  for (auto const & dir_entry : std::filesystem::directory_iterator{load_path}) {
-    const auto current_path = dir_entry.path();
-    if (is_kitti_point_cloud_file(current_path)) {
-      found_at_least_one_file = true;
-      const auto parsed_idx =
-        static_cast<std::size_t>(std::atoll(current_path.stem().string().c_str()));
-      temp_max_idx = std::max(temp_max_idx, parsed_idx);
-    }
-  }
-
-  if (found_at_least_one_file) {
-    max_idx_ = temp_max_idx;
+  if (pc_idx_opt.has_value() && !timestamps.empty()) {
+    timestamps_ = timestamps;
+    load_path_ = load_path;
+    max_idx_ = std::min(pc_idx_opt.value(), timestamps_.size() - 1);
     ready_ = true;
     RCLCPP_INFO(
-      logger_, "%s point cloud data loader setup successfully. Largest point cloud index: %zu",
+      logger_,
+      "%s point cloud data loader setup successfully. Largest point cloud index that has a "
+      "corresponding timestamp: %zu",
       name().c_str(), max_idx_);
-
   } else {
-    RCLCPP_WARN(
-      logger_, "%s point cloud data loader setup failed. Could not find point cloud files at %s",
-      name().c_str(), load_path.string().c_str());
+    if (timestamps.empty()) {
+      RCLCPP_WARN(
+        logger_, "%s point cloud data loader setup failed. No timestamps provided", name().c_str());
+    } else {
+      RCLCPP_WARN(
+        logger_, "%s point cloud data loader setup failed. Could not find point cloud files at %s",
+        name().c_str(), load_path.string().c_str());
+    }
   }
 
   return ready();
@@ -67,7 +47,7 @@ bool PointCloudDataLoader::setup_internal(
 
 [[nodiscard]] std::size_t PointCloudDataLoader::data_size() const
 {
-  return ready() ? std::min(timestamps_.size(), max_idx_ + 1) : std::size_t{0};
+  return ready() ? max_idx_ : std::size_t{0};
 }
 
 bool PointCloudDataLoader::prepare_data_internal(const std::size_t idx)
@@ -76,13 +56,8 @@ bool PointCloudDataLoader::prepare_data_internal(const std::size_t idx)
     return false;
   }
 
-  const auto idx_unpadded = std::to_string(idx);
-  auto idx_padded =
-    std::string(
-      kNumberDigitsFilename - std::min(kNumberDigitsFilename, idx_unpadded.length()), '0') +
-    idx_unpadded;
-  const auto file_to_load = load_path_ / (idx_padded + ".bin");
-  point_cloud_ptr_ = load_point_cloud_from_file(file_to_load);
+  point_cloud_ptr_ =
+    load_point_cloud_from_file(from_index_to_point_cloud_file_path(idx, load_path_));
 
   if (point_cloud_ptr_) {
     point_cloud_ptr_->header = header_;
