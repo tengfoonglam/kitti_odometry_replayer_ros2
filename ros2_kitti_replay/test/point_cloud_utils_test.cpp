@@ -115,3 +115,24 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple("000000", false), std::make_tuple("abcdef.bin", false),
     std::make_tuple("000000.bin", true), std::make_tuple("123456.bin", true),
     std::make_tuple("999999.bin", true)));
+
+class FromIndexToPointCloudFilePath
+: public ::testing::TestWithParam<std::tuple<std::size_t, std::string, std::string>>
+{
+};
+
+TEST_P(FromIndexToPointCloudFilePath, NormalOperation)
+{
+  const auto [idx, pc_path, expected_answer] = GetParam();
+  ASSERT_EQ(
+    r2k_replay::from_index_to_point_cloud_file_path(idx, pc_path),
+    std::filesystem::path(expected_answer));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  PointCloudUtilsTests, FromIndexToPointCloudFilePath,
+  ::testing::Values(
+    std::make_tuple(0, "", "000000.bin"), std::make_tuple(0, "/home/user", "/home/user/000000.bin"),
+    std::make_tuple(123, "/home/user", "/home/user/000123.bin"),
+    std::make_tuple(123456, "/home/user", "/home/user/123456.bin"),
+    std::make_tuple(1234567, "/home/user", "/home/user/1234567.bin")));
