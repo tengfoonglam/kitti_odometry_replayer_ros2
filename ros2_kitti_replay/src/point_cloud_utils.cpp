@@ -12,7 +12,7 @@ namespace r2k_replay
   // Check if text file is .bin file and exists
   if (
     !std::filesystem::exists(pc_bin_path) ||
-    pc_bin_path.extension().string().c_str() != kKittiPCExtention) {
+    pc_bin_path.extension().string() != std::string{kKittiPCExtention}) {
     return PointCloudMsg::SharedPtr();
   }
 
@@ -27,7 +27,7 @@ namespace r2k_replay
   // Compute the number of points
   constexpr std::size_t number_fields = 4;
   constexpr auto size_float = sizeof(float);
-  const auto num_points = output_ptr->data.size() / (number_fields * size_float);
+  const auto num_points = std::size_t{output_ptr->data.size() / (number_fields * size_float)};
 
   // Set point cloud details
   output_ptr->height = num_points;
@@ -48,7 +48,7 @@ namespace r2k_replay
 
 [[nodiscard]] bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path)
 {
-  const bool extension_match = pc_path.extension().string().c_str() == kKittiPCExtention;
+  const bool extension_match = pc_path.extension().string() == std::string{kKittiPCExtention};
   const auto & stem = pc_path.stem().string();
   const bool number_char_match = stem.size() == kNumberDigitsPCFilename;
   const bool stem_all_digits = std::all_of(stem.cbegin(), stem.cend(), ::isdigit);
@@ -62,7 +62,7 @@ namespace r2k_replay
   const auto number_digits_to_pad =
     kNumberDigitsPCFilename - std::min(kNumberDigitsPCFilename, idx_unpadded.length());
   auto idx_padded = std::string(number_digits_to_pad, '0') + idx_unpadded;
-  return folder_path / (idx_padded + std::string(kKittiPCExtention));
+  return folder_path / (idx_padded + std::string{kKittiPCExtention});
 }
 
 [[nodiscard]] std::optional<std::size_t> get_last_index_of_point_cloud_sequence(

@@ -49,7 +49,9 @@ const std::filesystem::path TestLoadPointCloudFromFile::kTestFolderPath{
 
 TEST_F(TestLoadPointCloudFromFile, NonExistentTest)
 {
-  const auto non_existent_file_path = kTestFolderPath / "non_existent_file.bin";
+  const auto non_existent_file_path =
+    kTestFolderPath /
+    (std::string{"non_existent_file"} + std::string{r2k_replay::kKittiPCExtention});
   ASSERT_FALSE(std::filesystem::exists(non_existent_file_path));
   const auto pc_ptr = r2k_replay::load_point_cloud_from_file(non_existent_file_path);
   ASSERT_FALSE(pc_ptr);
@@ -66,7 +68,8 @@ TEST_F(TestLoadPointCloudFromFile, NotBinFileTest)
 
 TEST_F(TestLoadPointCloudFromFile, EmptyFile)
 {
-  const auto empty_file_path = kTestFolderPath / "empty_file.bin";
+  const auto empty_file_path =
+    kTestFolderPath / (std::string{"empty_file"} + std::string{r2k_replay::kKittiPCExtention});
   write_bin_file(empty_file_path, {});
   ASSERT_TRUE(std::filesystem::exists(empty_file_path));
   const auto pc_ptr = r2k_replay::load_point_cloud_from_file(empty_file_path);
@@ -78,7 +81,8 @@ TEST_F(TestLoadPointCloudFromFile, EmptyFile)
 
 TEST_F(TestLoadPointCloudFromFile, NormalOperation)
 {
-  const auto bin_file_path = kTestFolderPath / "000000.bin";
+  const auto bin_file_path =
+    kTestFolderPath / (std::string{"000000"} + std::string{r2k_replay::kKittiPCExtention});
   write_bin_file(bin_file_path, kTestPoints);
   ASSERT_TRUE(std::filesystem::exists(bin_file_path));
   const auto pc_ptr = r2k_replay::load_point_cloud_from_file(bin_file_path);

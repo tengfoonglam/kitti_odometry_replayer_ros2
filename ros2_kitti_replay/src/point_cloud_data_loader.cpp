@@ -62,7 +62,7 @@ bool PointCloudDataLoader::prepare_data_internal(const std::size_t idx)
   if (point_cloud_ptr_) {
     point_cloud_ptr_->header = header_;
     point_cloud_ptr_->header.stamp = timestamps_.at(idx);
-    current_idx_opt_.emplace(idx);
+    current_idx_opt_ = idx;
   }
 
   return static_cast<bool>(point_cloud_ptr_);
