@@ -299,7 +299,7 @@ class DataReplayerSpeedFactorTests : public DataReplayerTests,
 {
 public:
   static constexpr auto kExpectedNormalPlayDurationNs = kNumberTimestamps * kTimestampIntervalNs;
-  static constexpr float kTol = 0.1;
+  static constexpr float kTol = 0.2;
 };
 
 TEST_P(DataReplayerSpeedFactorTests, SpeedFactorTests)

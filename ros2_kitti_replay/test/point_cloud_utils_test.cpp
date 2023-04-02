@@ -96,3 +96,22 @@ TEST_F(TestLoadPointCloudFromFile, NormalOperation)
     ASSERT_EQ(pcl_cloud[i].intensity, kTestPoints[i][3]);
   }
 }
+
+class IsKittiPointCloudFileTest : public ::testing::TestWithParam<std::tuple<std::string, bool>>
+{
+};
+
+TEST_P(IsKittiPointCloudFileTest, NormalOperation)
+{
+  const auto [input, expected_answer] = GetParam();
+  ASSERT_EQ(r2k_replay::is_kitti_point_cloud_file(std::filesystem::path(input)), expected_answer);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  PointCloudUtilsTests, IsKittiPointCloudFileTest,
+  ::testing::Values(
+    std::make_tuple("", false), std::make_tuple("000000.pcd", false),
+    std::make_tuple("12345.bin", false), std::make_tuple("abc000000.bin", false),
+    std::make_tuple("000000", false), std::make_tuple("abcdef.bin", false),
+    std::make_tuple("000000.bin", true), std::make_tuple("123456.bin", true),
+    std::make_tuple("999999.bin", true)));
