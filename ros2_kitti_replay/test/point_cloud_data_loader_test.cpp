@@ -12,17 +12,14 @@ class TestPointCloudDataLoader
 {
 };
 
-// empty timestamp
-// empty pointclouds
-
 TEST_P(TestPointCloudDataLoader, NormalOperation)
 {
   const auto [number_timestamps, number_point_clouds] = GetParam();
 
-  ASSERT_GT(number_timestamps, std::size_t{0});
-  ASSERT_GT(number_point_clouds, std::size_t{0});
-
-  const auto timestamps = r2k_replay_test::generate_test_timestamps(0, number_timestamps - 1);
+  const auto timestamps = (number_timestamps == 0)
+                            ? r2k_replay::Timestamps{}
+                            : r2k_replay_test::generate_test_timestamps(
+                                0, number_timestamps > 1 ? number_timestamps - 1 : 0);
   ASSERT_EQ(number_timestamps, timestamps.size());
 
   std::vector<std::size_t> pc_indices(number_point_clouds);
@@ -45,9 +42,16 @@ TEST_P(TestPointCloudDataLoader, NormalOperation)
 
   ASSERT_FALSE(loader.prepare_data(0));
   ASSERT_FALSE(loader.get_data(0).has_value());
-
   ASSERT_FALSE(loader.ready());
   ASSERT_EQ(loader.data_size(), size_t{0});
+
+  if (number_timestamps == 0 || number_point_clouds == 0) {
+    ASSERT_FALSE(loader.setup(timestamps, kTestFolderPath));
+    ASSERT_FALSE(loader.ready());
+    ASSERT_EQ(loader.data_size(), size_t{0});
+    return;
+  }
+
   ASSERT_TRUE(loader.setup(timestamps, kTestFolderPath));
   ASSERT_TRUE(loader.ready());
   ASSERT_EQ(loader.data_size(), std::min(number_timestamps, number_point_clouds));
@@ -86,5 +90,6 @@ TEST_P(TestPointCloudDataLoader, NormalOperation)
 INSTANTIATE_TEST_SUITE_P(
   PointCloudDataLoaderTests, TestPointCloudDataLoader,
   ::testing::Values(
-    std::make_tuple(1, 1), std::make_tuple(10, 10), std::make_tuple(1, 2), std::make_tuple(5, 10),
-    std::make_tuple(2, 1), std::make_tuple(10, 5)));
+    std::make_tuple(0, 0), std::make_tuple(0, 1), std::make_tuple(1, 0), std::make_tuple(0, 10),
+    std::make_tuple(10, 0), std::make_tuple(1, 1), std::make_tuple(10, 10), std::make_tuple(1, 2),
+    std::make_tuple(5, 10), std::make_tuple(2, 1), std::make_tuple(10, 5)));
