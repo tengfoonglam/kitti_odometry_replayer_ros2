@@ -7,6 +7,7 @@
   <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>
   <license>BSD 3-clause</license>
 
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>libpcl-all-dev</exec_depend>
   <exec_depend>pcl_ros</exec_depend>
   <exec_depend>pcl_conversions</exec_depend>
@@ -14,6 +15,8 @@
   <exec_depend>rosgraph_msgs</exec_depend>
   <exec_depend>ros2_kitti_description</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

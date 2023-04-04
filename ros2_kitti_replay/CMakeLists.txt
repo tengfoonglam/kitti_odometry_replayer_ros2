@@ -2,12 +2,15 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ros2_kitti_replay LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -32,22 +35,30 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/point_cloud_utils.hpp"
     "include/${PROJECT_NAME}/point_cloud_data_loader.hpp"
     "include/${PROJECT_NAME}/data_replayer.hpp"
-    "include/${PROJECT_NAME}/ros_publisher_play_data_callback.hpp")
+    "include/${PROJECT_NAME}/ros_publisher_play_data_callback.hpp"
+    "include/${PROJECT_NAME}/transforms.hpp")
 
 set(SOURCE_LIST
     "src/timestamps.cpp"
     "src/data_loader_base.cpp"
     "src/data_replayer.cpp"
     "src/point_cloud_utils.cpp"
-    "src/point_cloud_data_loader.cpp")
+    "src/point_cloud_data_loader.cpp"
+    "src/transforms.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
 target_include_directories(ros2_kitti_replay PUBLIC include)
 ament_target_dependencies(ros2_kitti_replay
                           rclcpp
+                          geometry_msgs
+                          PCL
+                          pcl_ros
+                          pcl_conversions
+                          rosgraph_msgs
                           sensor_msgs
-                          pcl_conversions)
+                          tf2
+                          tf2_geometry_msgs)
 target_link_libraries(ros2_kitti_replay ${PCL_LIBRARIES})
 
 if(BUILD_TESTING)
@@ -69,11 +80,14 @@ add_subdirectory(apps)
 ament_export_include_directories(include)
 ament_export_libraries(ros2_kitti_replay)
 ament_export_dependencies(rclcpp
-                          sensor_msgs
+                          geometry_msgs
                           PCL
                           pcl_ros
                           pcl_conversions
-                          rosgraph_msgs)
+                          rosgraph_msgs
+                          sensor_msgs
+                          tf2
+                          tf2_geometry_msgs)
 
 install(TARGETS convert_kitti_point_cloud DESTINATION lib/${PROJECT_NAME})
 
