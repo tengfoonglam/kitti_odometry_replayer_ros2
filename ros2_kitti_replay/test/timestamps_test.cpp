@@ -5,13 +5,13 @@
 #include <fstream>
 #include <iostream>
 #include <ros2_kitti_replay/timestamps.hpp>
+#include <ros2_kitti_replay_test/test_utils.hpp>
 #include <string_view>
 
-class TestExtractTimestampsFromFile : public ::testing::Test
+class TestExtractTimestampsFromFile : public r2k_replay_test::TestWithIO
 {
 public:
   static constexpr std::array<double, 3> kTestTimestamps{1.0, 2.0, 3.0};
-  static const std::filesystem::path kTestFolderPath;
 
   template <typename T>
   static void write_timestamps_file(const std::filesystem::path & file_path, const T & timestamps)
@@ -28,13 +28,7 @@ public:
     }
     output_file_stream.close();
   }
-
-protected:
-  void SetUp() { std::filesystem::create_directory(kTestFolderPath); }
-  void TearDown() { std::filesystem::remove_all(kTestFolderPath); }
 };
-const std::filesystem::path TestExtractTimestampsFromFile::kTestFolderPath{
-  std::filesystem::temp_directory_path() / "test"};
 
 TEST_F(TestExtractTimestampsFromFile, NonExistentTest)
 {

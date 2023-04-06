@@ -4,9 +4,9 @@
 #include <array>
 #include <filesystem>
 #include <ros2_kitti_replay/point_cloud_utils.hpp>
-#include <ros2_kitti_replay_test/tests_with_point_cloud_io.hpp>
+#include <ros2_kitti_replay_test/test_with_point_cloud_io.hpp>
 
-class TestLoadPointCloudFromFile : public r2k_replay_test::TestsWithPointCloudIO
+class TestLoadPointCloudFromFile : public r2k_replay_test::TestWithPointCloudIO
 {
 };
 
@@ -101,7 +101,7 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(1234567, "/home/user", "/home/user/1234567.bin")));
 
 class TestGetLastIndexOfPointCLoudSequence
-: public r2k_replay_test::TestsWithPointCloudIO,
+: public r2k_replay_test::TestWithPointCloudIO,
   public ::testing::WithParamInterface<
     std::tuple<std::vector<std::size_t>, std::optional<std::size_t>>>
 {

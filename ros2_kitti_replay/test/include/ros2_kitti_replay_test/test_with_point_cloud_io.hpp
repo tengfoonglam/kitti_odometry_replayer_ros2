@@ -1,6 +1,7 @@
+#ifndef ROS2_KITTI_REPLAY_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_
+#define ROS2_KITTI_REPLAY_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_
+
 #include <gtest/gtest.h>
-#ifndef ROS2_KITTI_REPLAY_TEST__TESTS_WITH_POINT_CLOUD_IO_HPP_
-#define ROS2_KITTI_REPLAY_TEST__TESTS_WITH_POINT_CLOUD_IO_HPP_
 
 #include <array>
 #include <filesystem>
@@ -8,16 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "ros2_kitti_replay_test/test_utils.hpp"
+
 namespace r2k_replay_test
 {
 
-class TestsWithPointCloudIO : public ::testing::Test
+class TestWithPointCloudIO : public r2k_replay_test::TestWithIO
 {
 public:
   using KITTIPoint = std::array<float, 4>;
   using KITTIPoints = std::vector<KITTIPoint>;
 
-  static const std::filesystem::path kTestFolderPath;
   static const KITTIPoints kTestPoints;
 
   static void write_kitti_bin_files(
@@ -51,20 +53,13 @@ public:
     fclose(stream_ptr);
     ASSERT_TRUE(std::filesystem::exists(file_path));
   }
-
-protected:
-  void SetUp() { std::filesystem::create_directory(kTestFolderPath); }
-  void TearDown() { std::filesystem::remove_all(kTestFolderPath); }
 };
-const TestsWithPointCloudIO::KITTIPoints TestsWithPointCloudIO::kTestPoints{
+const TestWithPointCloudIO::KITTIPoints TestWithPointCloudIO::kTestPoints{
   {1.0f, 2.0f, 3.0f, 4.0f},
   {5.0f, 6.0f, 7.0f, 8.0f},
   {9.0f, 10.0f, 11.0f, 12.0f},
   {13.0f, 14.0f, 15.0f, 16.0f},
   {17.0f, 18.0f, 19.0f, 20.0f}};
-const std::filesystem::path TestsWithPointCloudIO::kTestFolderPath{
-  std::filesystem::temp_directory_path() / "test"};
-
 }  // namespace r2k_replay_test
 
-#endif  // ROS2_KITTI_REPLAY_TEST__TESTS_WITH_POINT_CLOUD_IO_HPP_
+#endif  // ROS2_KITTI_REPLAY_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_

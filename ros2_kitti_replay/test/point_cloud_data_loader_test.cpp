@@ -4,10 +4,10 @@
 #include <ros2_kitti_replay/point_cloud_data_loader.hpp>
 #include <ros2_kitti_replay/timestamps.hpp>
 #include <ros2_kitti_replay_test/test_utils.hpp>
-#include <ros2_kitti_replay_test/tests_with_point_cloud_io.hpp>
+#include <ros2_kitti_replay_test/test_with_point_cloud_io.hpp>
 
 class TestPointCloudDataLoader
-: public r2k_replay_test::TestsWithPointCloudIO,
+: public r2k_replay_test::TestWithPointCloudIO,
   public ::testing::WithParamInterface<std::tuple<std::size_t, std::size_t>>
 {
 };

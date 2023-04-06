@@ -29,12 +29,13 @@ namespace r2k_replay
     return std::nullopt;
   }
 
-  // If successful, parse each line and convert to transform if line has expected number of elements
+  // If successful, parse each line
   Transforms output;
   constexpr std::size_t expected_number_elements = 12;
   constexpr char delimiter = ' ';
 
   for (std::string line; std::getline(times_file, line);) {
+    // Split lines into numbers
     std::stringstream line_stream(line);
     std::string item;
     std::vector<std::string> string_elements;
@@ -43,6 +44,7 @@ namespace r2k_replay
       string_elements.push_back(item);
     }
 
+    // If correct number of numbers, convert to transform and add to output
     if (string_elements.size() != expected_number_elements) {
       continue;
     }
