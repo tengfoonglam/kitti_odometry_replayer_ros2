@@ -57,7 +57,7 @@ TEST_F(TestExtractTimestampsFromFile, NormalOperation)
   const auto extracted_timestamps = result.value();
   ASSERT_EQ(extracted_timestamps.size(), kTestTimestamps.size());
   for (std::size_t i = 0; i < std::min(extracted_timestamps.size(), kTestTimestamps.size()); i++) {
-    EXPECT_DOUBLE_EQ(extracted_timestamps[i].seconds(), kTestTimestamps[i]);
+    EXPECT_DOUBLE_EQ(extracted_timestamps.at(i).seconds(), kTestTimestamps.at(i));
   }
 }
 

@@ -52,7 +52,7 @@ TEST_F(TestLoadPointCloudFromFile, NormalOperation)
   r2k_replay::PointCloudPCLType pcl_cloud;
   pcl::fromROSMsg(*pc_ptr, pcl_cloud);
   ASSERT_EQ(pcl_cloud.size(), kTestPoints.size());
-  for (size_t i = 0; i < kTestPoints.size(); i++) {
+  for (std::size_t i = 0; i < kTestPoints.size(); i++) {
     ASSERT_EQ(pcl_cloud[i].x, kTestPoints[i][0]);
     ASSERT_EQ(pcl_cloud[i].y, kTestPoints[i][1]);
     ASSERT_EQ(pcl_cloud[i].z, kTestPoints[i][2]);
