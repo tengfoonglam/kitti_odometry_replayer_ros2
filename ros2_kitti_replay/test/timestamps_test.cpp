@@ -64,10 +64,9 @@ TEST_F(TestExtractTimestampsFromFile, NormalOperation)
 TEST_F(TestExtractTimestampsFromFile, EmptyFile)
 {
   const auto txt_file_path = kTestFolderPath / "timestamp_file.txt";
-  write_timestamps_file(txt_file_path, std::vector<double>{});
+  write_timestamps_file(txt_file_path, std::array<decltype(kTestTimestamps)::value_type, 0>{});
   ASSERT_TRUE(std::filesystem::exists(txt_file_path));
   const auto result = r2k_replay::extract_timestamps_from_file(txt_file_path);
   ASSERT_TRUE(result.has_value());
-  const auto extracted_timestamps = result.value();
-  ASSERT_TRUE(extracted_timestamps.empty());
+  ASSERT_TRUE(result.value().empty());
 }

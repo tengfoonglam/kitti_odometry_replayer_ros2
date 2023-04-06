@@ -21,3 +21,8 @@ ament_add_gtest(point_cloud_data_loader_test point_cloud_data_loader_test.cpp)
 ament_target_dependencies(point_cloud_data_loader_test pcl_conversions)
 target_include_directories(point_cloud_data_loader_test PRIVATE include)
 target_link_libraries(point_cloud_data_loader_test ${PROJECT_NAME})
+
+ament_add_gtest(transforms_test transforms_test.cpp)
+ament_target_dependencies(transforms_test tf2)
+target_include_directories(transforms_test PRIVATE include)
+target_link_libraries(transforms_test ${PROJECT_NAME})
