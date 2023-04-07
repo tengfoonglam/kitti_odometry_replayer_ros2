@@ -35,6 +35,10 @@ bool PoseDataLoader::setup_internal(
     timestamps_ = timestamps;
     poses_ = poses_opt.value();
     ready_ = true;
+    RCLCPP_INFO(
+      logger_,
+      "%s pose data loader setup successfully. Number of poses with corresponding timestamps: %zu",
+      name().c_str(), data_size());
   }
   return ready();
 }
