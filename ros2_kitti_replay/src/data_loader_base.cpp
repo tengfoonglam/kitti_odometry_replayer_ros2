@@ -44,7 +44,7 @@ bool DataLoaderBase::can_process_data(const std::size_t idx, const std::string &
     RCLCPP_WARN(
       logger_,
       "%s data loader could not process %s with the requested index %lu. Debug info - ready: %s"
-      ", number packets: %lu",
+      ", data_size: %lu",
       name().c_str(), call_name.c_str(), idx, ready() ? "true" : "false", data_size());
     return false;
   }

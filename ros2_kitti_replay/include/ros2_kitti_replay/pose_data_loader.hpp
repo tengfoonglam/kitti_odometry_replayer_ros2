@@ -23,15 +23,13 @@ public:
   PoseDataLoader(
     const std::string & name, rclcpp::Logger logger, const Header & header,
     const std::string & child_frame_id);
-  [[nodiscard]] std::size_t data_size() const final;
 
 private:
   Header header_;
   std::string child_frame_id_;
   Transforms poses_;
 
-  bool setup_internal(
-    const Timestamps & timestamps, [[maybe_unused]] const std::filesystem::path & load_path) final;
+  bool setup_internal(const Timestamps & timestamps, const std::filesystem::path & load_path) final;
   bool prepare_data_internal([[maybe_unused]] const std::size_t idx) final;
   [[nodiscard]] OptionalType get_data_internal(const std::size_t idx) final;
 };

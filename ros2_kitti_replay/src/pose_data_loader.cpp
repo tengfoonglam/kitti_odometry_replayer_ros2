@@ -20,19 +20,35 @@ PoseDataLoader::PoseDataLoader(
 bool PoseDataLoader::setup_internal(
   const Timestamps & timestamps, const std::filesystem::path & load_path)
 {
-  return false;
+  if (const auto poses_opt = extract_poses_from_file(load_path); !poses_opt.has_value()) {
+    RCLCPP_WARN(
+      logger_, "%s pose data loader setup failed. Could not extract poses from file at %s",
+      name().c_str(), load_path.string().c_str());
+  } else if (const auto number_poses = poses_opt.value().size();
+             number_poses != timestamps.size()) {
+    RCLCPP_WARN(
+      logger_,
+      "%s pose data loader setup failed. Number of timestamps do not match number of poses "
+      "extracted from file (%zu vs %zu)",
+      name().c_str(), timestamps.size(), number_poses);
+  } else {
+    timestamps_ = timestamps;
+    poses_ = poses_opt.value();
+    ready_ = true;
+  }
+  return ready();
 }
 
-[[nodiscard]] std::size_t PoseDataLoader::data_size() const
-{
-  return ready() ? std::min(timestamps_.size(), poses_.size()) : std::size_t{0};
-}
-
-bool PoseDataLoader::prepare_data_internal(const std::size_t idx) { return true; }
+bool PoseDataLoader::prepare_data_internal([[maybe_unused]] const std::size_t idx) { return true; }
 
 [[nodiscard]] PoseDataLoader::OptionalType PoseDataLoader::get_data_internal(const std::size_t idx)
 {
-  return std::nullopt;
+  PoseDataLoader::Type output;
+  output.header = header_;
+  output.header.stamp = timestamps_.at(idx);
+  output.child_frame_id = child_frame_id_;
+  output.transform = poses_.at(idx);
+  return output;
 }
 
 }  // namespace r2k_replay

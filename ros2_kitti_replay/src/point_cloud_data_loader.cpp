@@ -52,10 +52,6 @@ bool PointCloudDataLoader::setup_internal(
 
 bool PointCloudDataLoader::prepare_data_internal(const std::size_t idx)
 {
-  if (idx > max_idx_) {
-    return false;
-  }
-
   point_cloud_ptr_ =
     load_point_cloud_from_file(from_index_to_point_cloud_file_path(idx, load_path_));
 
