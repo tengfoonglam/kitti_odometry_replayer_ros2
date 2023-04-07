@@ -4,7 +4,7 @@
 #include <mutex>
 #include <ros2_kitti_replay/data_replayer.hpp>
 #include <ros2_kitti_replay/play_data_callback_base.hpp>
-#include <ros2_kitti_replay/timestamps.hpp>
+#include <ros2_kitti_replay/timestamp_utils.hpp>
 #include <string>
 #include <thread>
 #include <vector>

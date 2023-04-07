@@ -2,7 +2,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <ros2_kitti_replay/point_cloud_data_loader.hpp>
-#include <ros2_kitti_replay/timestamps.hpp>
+#include <ros2_kitti_replay/timestamp_utils.hpp>
 #include <ros2_kitti_replay_test/test_utils.hpp>
 #include <ros2_kitti_replay_test/test_with_point_cloud_io.hpp>
 

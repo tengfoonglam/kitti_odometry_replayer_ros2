@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <ros2_kitti_replay/data_replayer.hpp>
-#include <ros2_kitti_replay/timestamps.hpp>
+#include <ros2_kitti_replay/timestamp_utils.hpp>
 #include <ros2_kitti_replay_test/test_utils.hpp>
 #include <tuple>
 

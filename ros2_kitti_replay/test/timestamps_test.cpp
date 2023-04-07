@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <ros2_kitti_replay/timestamps.hpp>
+#include <ros2_kitti_replay/timestamp_utils.hpp>
 #include <ros2_kitti_replay_test/test_utils.hpp>
 #include <string_view>
 

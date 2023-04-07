@@ -27,7 +27,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 set(HEADER_LIST
-    "include/${PROJECT_NAME}/timestamps.hpp"
+    "include/${PROJECT_NAME}/timestamp_utils.hpp"
     "include/${PROJECT_NAME}/data_loader_base.hpp"
     "include/${PROJECT_NAME}/data_loader.hpp"
     "include/${PROJECT_NAME}/clock_data_loader.hpp"
@@ -39,7 +39,7 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/pose_utils.hpp")
 
 set(SOURCE_LIST
-    "src/timestamps.cpp"
+    "src/timestamp_utils.cpp"
     "src/data_loader_base.cpp"
     "src/data_replayer.cpp"
     "src/point_cloud_utils.cpp"
