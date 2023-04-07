@@ -36,7 +36,8 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/point_cloud_data_loader.hpp"
     "include/${PROJECT_NAME}/data_replayer.hpp"
     "include/${PROJECT_NAME}/ros_publisher_play_data_callback.hpp"
-    "include/${PROJECT_NAME}/pose_utils.hpp")
+    "include/${PROJECT_NAME}/pose_utils.hpp"
+    "include/${PROJECT_NAME}/pose_data_loader.hpp")
 
 set(SOURCE_LIST
     "src/timestamp_utils.cpp"
@@ -44,7 +45,8 @@ set(SOURCE_LIST
     "src/data_replayer.cpp"
     "src/point_cloud_utils.cpp"
     "src/point_cloud_data_loader.cpp"
-    "src/pose_utils.cpp")
+    "src/pose_utils.cpp"
+    "src/pose_data_loader.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
