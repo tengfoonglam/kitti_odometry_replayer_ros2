@@ -25,12 +25,48 @@ public:
 };
 const tf2::Transform TestPoseDataLoader::kTestPose{{0.5, -0.5, 0.5, -0.5}, {4.0, 5.0, 6.0}};
 
+TEST_F(TestPoseDataLoader, ReadFileFailure)
+{
+  const auto non_existent_file_path = kTestFolderPath / "non_existent_file.txt";
+  ASSERT_FALSE(std::filesystem::exists(non_existent_file_path));
+
+  const auto timestamps = r2k_replay_test::generate_test_timestamps(1, 3);
+  ASSERT_GT(timestamps.size(), std::size_t{0});
+
+  r2k_replay::PoseDataLoader loader(
+    "test_pose_loader", get_test_header(), std::string{kChildFrameFrameId});
+
+  ASSERT_FALSE(loader.ready());
+  ASSERT_FALSE(loader.setup(timestamps, non_existent_file_path));
+  ASSERT_FALSE(loader.ready());
+}
+
+TEST_F(TestPoseDataLoader, NumberTimestampAndPosesMismatch)
+{
+  constexpr std::size_t number_timestamps = 10;
+  constexpr std::size_t number_poses = 9;
+  ASSERT_NE(number_timestamps, number_poses);
+
+  const auto pose_file_path = kTestFolderPath / "pose_file.txt";
+  write_poses_file(pose_file_path, std::vector(number_poses, kTestPose));
+  ASSERT_TRUE(std::filesystem::exists(pose_file_path));
+
+  const auto timestamps = r2k_replay_test::generate_test_timestamps(1, number_timestamps);
+  ASSERT_EQ(timestamps.size(), number_timestamps);
+
+  r2k_replay::PoseDataLoader loader(
+    "test_pose_loader", get_test_header(), std::string{kChildFrameFrameId});
+
+  ASSERT_FALSE(loader.ready());
+  ASSERT_FALSE(loader.setup(timestamps, pose_file_path));
+  ASSERT_FALSE(loader.ready());
+}
+
 TEST_F(TestPoseDataLoader, NormalOperations)
 {
   constexpr std::size_t number_readings = 10;
   const auto pose_file_path = kTestFolderPath / "pose_file.txt";
-  write_poses_file(
-    pose_file_path, std::vector<std::decay_t<decltype(kTestPose)>>(number_readings, kTestPose));
+  write_poses_file(pose_file_path, std::vector(number_readings, kTestPose));
   ASSERT_TRUE(std::filesystem::exists(pose_file_path));
 
   const auto timestamps = r2k_replay_test::generate_test_timestamps(1, number_readings);
@@ -63,7 +99,3 @@ TEST_F(TestPoseDataLoader, NormalOperations)
     EXPECT_EQ(tf2_pose, kTestPose);
   }
 }
-
-// Normal operations
-// Read file failure
-// number timestamp poses do not match
