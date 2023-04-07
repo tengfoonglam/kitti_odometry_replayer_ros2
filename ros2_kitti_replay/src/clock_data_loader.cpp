@@ -13,7 +13,7 @@ ClockDataLoader::ClockDataLoader(const std::string & name, rclcpp::Logger logger
 }
 
 bool ClockDataLoader::setup_internal(
-  const Timestamps & timestamps, __attribute__((unused)) const std::filesystem::path & load_path)
+  const Timestamps & timestamps, [[maybe_unused]] const std::filesystem::path & load_path)
 {
   timestamps_ = timestamps;
   ready_ = true;
