@@ -6,7 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <ros2_kitti_replay/pose_utils.hpp>
-#include <ros2_kitti_replay_test/test_utils.hpp>
+#include <ros2_kitti_replay_test/test_with_io.hpp>
 
 class TestExtractPosesFromFile : public r2k_replay_test::TestWithIO
 {

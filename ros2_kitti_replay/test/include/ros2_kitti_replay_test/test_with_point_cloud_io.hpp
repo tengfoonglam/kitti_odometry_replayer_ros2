@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ros2_kitti_replay_test/test_utils.hpp"
+#include "ros2_kitti_replay_test/test_with_io.hpp"
 
 namespace r2k_replay_test
 {

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <ros2_kitti_replay/timestamp_utils.hpp>
-#include <ros2_kitti_replay_test/test_utils.hpp>
+#include <ros2_kitti_replay_test/test_with_io.hpp>
 #include <string_view>
 
 class TestExtractTimestampsFromFile : public r2k_replay_test::TestWithIO
