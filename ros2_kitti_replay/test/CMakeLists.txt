@@ -34,3 +34,9 @@ target_link_libraries(point_cloud_data_loader_test
 ament_add_gtest(pose_utils_test pose_utils_test.cpp)
 ament_target_dependencies(pose_utils_test tf2)
 target_link_libraries(pose_utils_test ros2_kitti_replay_test ${PROJECT_NAME})
+
+ament_add_gtest(pose_data_loader_test pose_data_loader_test.cpp)
+ament_target_dependencies(pose_data_loader_test tf2)
+target_link_libraries(pose_data_loader_test
+                      ros2_kitti_replay_test
+                      ${PROJECT_NAME})
