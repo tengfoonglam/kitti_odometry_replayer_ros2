@@ -15,7 +15,7 @@ using StepRequest = DataReplayer::StepRequest;
 using IndexRangeOpt = DataReplayer::IndexRangeOpt;
 }  // namespace
 
-class DataReplayerStaticTests : public ::testing::Test
+class TestDataReplayerStatic : public ::testing::Test
 {
 public:
   static void assert_optional_index_range_equal(
@@ -28,8 +28,8 @@ public:
   }
 };
 
-class ProcessPlayRequestNormalOperationsTests
-: public DataReplayerStaticTests,
+class TestProcessPlayRequestNormalOperations
+: public TestDataReplayerStatic,
   public ::testing::WithParamInterface<std::tuple<PlayRequest, Timestamps, IndexRangeOpt>>
 {
 public:
@@ -37,17 +37,17 @@ public:
   static constexpr std::size_t kStartTimeS{1};
   static constexpr std::size_t kEndTimeS{5};
 };
-const Timestamps ProcessPlayRequestNormalOperationsTests::kTimestamps =
+const Timestamps TestProcessPlayRequestNormalOperations::kTimestamps =
   r2k_replay_test::generate_test_timestamps(
-    ProcessPlayRequestNormalOperationsTests::kStartTimeS,
-    ProcessPlayRequestNormalOperationsTests::kEndTimeS);
+    TestProcessPlayRequestNormalOperations::kStartTimeS,
+    TestProcessPlayRequestNormalOperations::kEndTimeS);
 
 namespace
 {
-const auto & kTimestamps = ProcessPlayRequestNormalOperationsTests::kTimestamps;
+const auto & kTimestamps = TestProcessPlayRequestNormalOperations::kTimestamps;
 }  // namespace
 
-TEST_P(ProcessPlayRequestNormalOperationsTests, NormalOperationsTests)
+TEST_P(TestProcessPlayRequestNormalOperations, NormalOperationsTests)
 {
   const auto [request, timestamps, answer] = GetParam();
   const auto output = DataReplayer::process_play_request(request, timestamps);
@@ -55,7 +55,7 @@ TEST_P(ProcessPlayRequestNormalOperationsTests, NormalOperationsTests)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-  TestProcessPlayRequest, ProcessPlayRequestNormalOperationsTests,
+  TestProcessPlayRequest, TestProcessPlayRequestNormalOperations,
   ::testing::Values(
     std::make_tuple(
       PlayRequest(kTimestamps.front(), kTimestamps.back()), kTimestamps,
@@ -93,13 +93,13 @@ TEST(TestProcessPlayRequest, EmptyTimestampTests)
   ASSERT_FALSE(index_opt.has_value());
 }
 
-class ProcessStepRequestNormalOperationsTests
-: public DataReplayerStaticTests,
+class TestProcessStepRequestNormalOperations
+: public TestDataReplayerStatic,
   public ::testing::WithParamInterface<std::tuple<StepRequest, size_t, size_t, IndexRangeOpt>>
 {
 };
 
-TEST_P(ProcessStepRequestNormalOperationsTests, NormalOperationsTests)
+TEST_P(TestProcessStepRequestNormalOperations, NormalOperationsTests)
 {
   const auto [request, next_idx, data_size, answer] = GetParam();
   const auto output = DataReplayer::process_step_request(request, next_idx, data_size);
@@ -107,7 +107,7 @@ TEST_P(ProcessStepRequestNormalOperationsTests, NormalOperationsTests)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-  TestProcessPlayRequest, ProcessStepRequestNormalOperationsTests,
+  TestProcessPlayRequest, TestProcessStepRequestNormalOperations,
   ::testing::Values(
     std::make_tuple(StepRequest(0), 1, 3, std::nullopt),
     std::make_tuple(StepRequest(1), 3, 3, std::nullopt),

@@ -20,12 +20,12 @@ using ReplayerState = r2k_replay::DataReplayer::ReplayerState;
 using StateChangeCallback = r2k_replay::DataReplayer::StateChangeCallback;
 using StepRequest = r2k_replay::DataReplayer::StepRequest;
 
-class TestPlayDataCallback final : public PlayDataCallbackBase
+class PlayDataTestCallback final : public PlayDataCallbackBase
 {
 public:
   using IndexRecord = std::vector<size_t>;
 
-  TestPlayDataCallback(const std::string & name = "Test Play Data Callback")
+  PlayDataTestCallback(const std::string & name = "Test Play Data Callback")
   : PlayDataCallbackBase(name)
   {
   }
@@ -58,7 +58,7 @@ private:
 
 }  // namespace
 
-class DataReplayerTests : public ::testing::Test
+class TestDataReplayer : public ::testing::Test
 {
 public:
   static constexpr size_t kNumberTimestamps = 10;
@@ -135,7 +135,7 @@ public:
   }
 
   DataReplayer replayer{"Test Replayer", kTimestamps};
-  std::shared_ptr<TestPlayDataCallback> play_cb_ptr = std::make_shared<TestPlayDataCallback>();
+  std::shared_ptr<PlayDataTestCallback> play_cb_ptr = std::make_shared<PlayDataTestCallback>();
 
   void play_timeline_halfway(const std::function<void()> & interrupt_play_cb)
   {
@@ -182,9 +182,9 @@ protected:
     return output;
   }
 };
-const Timestamps DataReplayerTests::kTimestamps = DataReplayerTests::generate_test_timestamps();
+const Timestamps TestDataReplayer::kTimestamps = TestDataReplayer::generate_test_timestamps();
 
-TEST_F(DataReplayerTests, NormalInitializationTest)
+TEST_F(TestDataReplayer, NormalInitializationTest)
 {
   const auto state = replayer.get_replayer_state();
   ASSERT_EQ(state.start_time, kTimestamps.front());
@@ -192,20 +192,20 @@ TEST_F(DataReplayerTests, NormalInitializationTest)
   ASSERT_EQ(state.data_size, kTimestamps.size());
 }
 
-TEST_F(DataReplayerTests, EmptyTimestampInitializationTest)
+TEST_F(TestDataReplayer, EmptyTimestampInitializationTest)
 {
   auto empty_replayer = DataReplayer("Test Replayer", Timestamps{});
   ASSERT_EQ(empty_replayer.get_replayer_state(), ReplayerState());
 }
 
-TEST_F(DataReplayerTests, PlayTest)
+TEST_F(TestDataReplayer, PlayTest)
 {
   ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
   wait_till_replayer_no_longer_playing();
   assert_timeline_played_exactly_once();
 }
 
-TEST_F(DataReplayerTests, ResumeTest)
+TEST_F(TestDataReplayer, ResumeTest)
 {
   ASSERT_TRUE(replayer.resume());
   wait_till_replayer_no_longer_playing();
@@ -213,7 +213,7 @@ TEST_F(DataReplayerTests, ResumeTest)
   assert_timeline_played_exactly_once();
 }
 
-TEST_F(DataReplayerTests, DestructorTest)
+TEST_F(TestDataReplayer, DestructorTest)
 {
   {
     auto scoped_replayer = DataReplayer{"Scoped Test Replayer", kTimestamps};
@@ -225,7 +225,7 @@ TEST_F(DataReplayerTests, DestructorTest)
   assert_timeline_played_partially();
 }
 
-TEST_F(DataReplayerTests, PlaySegmentTest)
+TEST_F(TestDataReplayer, PlaySegmentTest)
 {
   constexpr size_t start_index = 3;
   constexpr size_t segment_length = 3;
@@ -238,14 +238,14 @@ TEST_F(DataReplayerTests, PlaySegmentTest)
   assert_timeline_played_exactly_once(start_index, truncated_timestamp);
 }
 
-TEST_F(DataReplayerTests, PauseWhileNotPlayingTest)
+TEST_F(TestDataReplayer, PauseWhileNotPlayingTest)
 {
   ASSERT_FALSE(replayer.is_playing());
   ASSERT_TRUE(replayer.pause());
   ASSERT_FALSE(replayer.is_playing());
 }
 
-TEST_F(DataReplayerTests, PauseWhilePlayingTest)
+TEST_F(TestDataReplayer, PauseWhilePlayingTest)
 {
   play_timeline_halfway([&]() { ASSERT_TRUE(replayer.pause()); });
 
@@ -261,7 +261,7 @@ TEST_F(DataReplayerTests, PauseWhilePlayingTest)
     resume_idx, Timestamps{std::next(kTimestamps.cbegin(), resume_idx), kTimestamps.cend()});
 }
 
-TEST_F(DataReplayerTests, StopWhilePlayingTest)
+TEST_F(TestDataReplayer, StopWhilePlayingTest)
 {
   play_timeline_halfway([&]() { ASSERT_TRUE(replayer.stop()); });
 
@@ -270,7 +270,7 @@ TEST_F(DataReplayerTests, StopWhilePlayingTest)
   ASSERT_EQ(stopped_state.next_idx, size_t{0});
 }
 
-TEST_F(DataReplayerTests, StopWhileNotPlayingTest)
+TEST_F(TestDataReplayer, StopWhileNotPlayingTest)
 {
   ASSERT_FALSE(replayer.is_playing());
   ASSERT_TRUE(replayer.stop());
@@ -280,7 +280,7 @@ TEST_F(DataReplayerTests, StopWhileNotPlayingTest)
   assert_replayer_has_been_reset_after_cb([&]() { ASSERT_TRUE(replayer.stop()); });
 }
 
-TEST_F(DataReplayerTests, ResetTest)
+TEST_F(TestDataReplayer, ResetTest)
 {
   ASSERT_FALSE(replayer.is_playing());
   ASSERT_TRUE(replayer.reset());
@@ -294,15 +294,15 @@ TEST_F(DataReplayerTests, ResetTest)
   assert_replayer_has_been_reset_after_cb([&]() { ASSERT_TRUE(replayer.reset()); });
 }
 
-class DataReplayerSpeedFactorTests : public DataReplayerTests,
-                                     public ::testing::WithParamInterface<float>
+class TestDataReplayerSpeedFactor : public TestDataReplayer,
+                                    public ::testing::WithParamInterface<float>
 {
 public:
   static constexpr auto kExpectedNormalPlayDurationNs = kNumberTimestamps * kTimestampIntervalNs;
   static constexpr float kTol = 0.2;
 };
 
-TEST_P(DataReplayerSpeedFactorTests, SpeedFactorTests)
+TEST_P(TestDataReplayerSpeedFactor, SpeedFactorTests)
 {
   const auto speed_factor = GetParam();
 
@@ -327,5 +327,5 @@ TEST_P(DataReplayerSpeedFactorTests, SpeedFactorTests)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-  DataReplayerSpeedFactorTimingTests, DataReplayerSpeedFactorTests,
+  DataReplayerSpeedFactorTimingTests, TestDataReplayerSpeedFactor,
   ::testing::Values(-100.0, -1.0, -0.001, 0.0, 0.1, 0.5, 1.0, 1.1, 2.0, 5.0));

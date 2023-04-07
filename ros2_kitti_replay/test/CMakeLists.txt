@@ -1,6 +1,6 @@
-ament_add_gtest(timestamps_test timestamps_test.cpp)
-target_include_directories(timestamps_test PRIVATE include)
-target_link_libraries(timestamps_test ${PROJECT_NAME})
+ament_add_gtest(timestamp_utils_test timestamp_utils_test.cpp)
+target_include_directories(timestamp_utils_test PRIVATE include)
+target_link_libraries(timestamp_utils_test ${PROJECT_NAME})
 
 ament_add_gtest(base_data_loader_test data_loader_base_test.cpp)
 target_link_libraries(base_data_loader_test ${PROJECT_NAME})
