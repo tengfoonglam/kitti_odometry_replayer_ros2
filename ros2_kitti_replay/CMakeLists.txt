@@ -35,7 +35,7 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/point_cloud_utils.hpp"
     "include/${PROJECT_NAME}/point_cloud_data_loader.hpp"
     "include/${PROJECT_NAME}/data_replayer.hpp"
-    "include/${PROJECT_NAME}/ros_publisher_play_data_interface.hpp"
+    "include/${PROJECT_NAME}/load_and_play_data_interface.hpp"
     "include/${PROJECT_NAME}/pose_utils.hpp"
     "include/${PROJECT_NAME}/pose_data_loader.hpp")
 
