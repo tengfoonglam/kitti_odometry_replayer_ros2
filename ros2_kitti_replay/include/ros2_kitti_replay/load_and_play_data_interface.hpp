@@ -24,6 +24,12 @@ public:
   {
   }
 
+  LoadAndPlayDataInterface(
+    const std::string & name, PlayCb && play_cb, std::unique_ptr<DataLoader<T>> data_loader_ptr)
+  : PlayDataInterfaceBase(name), play_cb_(play_cb), data_loader_ptr_(std::move(data_loader_ptr))
+  {
+  }
+
   [[nodiscard]] virtual bool ready() const { return data_loader_ptr_->ready() && play_cb_; }
 
   [[nodiscard]] virtual std::size_t data_size() const { return data_loader_ptr_->data_size(); }

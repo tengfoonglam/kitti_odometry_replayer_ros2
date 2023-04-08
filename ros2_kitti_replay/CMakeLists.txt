@@ -47,12 +47,13 @@ set(SOURCE_LIST
     "src/point_cloud_utils.cpp"
     "src/point_cloud_data_loader.cpp"
     "src/pose_utils.cpp"
-    "src/pose_data_loader.cpp")
+    "src/pose_data_loader.cpp"
+    "src/replayer_node.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
-target_include_directories(ros2_kitti_replay PUBLIC include)
-ament_target_dependencies(ros2_kitti_replay
+target_include_directories(${PROJECT_NAME} PUBLIC include)
+ament_target_dependencies(${PROJECT_NAME}
                           rclcpp
                           geometry_msgs
                           PCL
@@ -62,7 +63,13 @@ ament_target_dependencies(ros2_kitti_replay
                           sensor_msgs
                           tf2
                           tf2_geometry_msgs)
-target_link_libraries(ros2_kitti_replay ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
+
+rclcpp_components_register_node(${PROJECT_NAME}
+                                PLUGIN
+                                "${PROJECT_NAME}::ReplayNode"
+                                EXECUTABLE
+                                replayer)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
