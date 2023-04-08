@@ -58,7 +58,7 @@ DataReplayer::DataReplayer(
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_.playing; });
 }
 
-bool DataReplayer::add_play_data_cb(std::shared_ptr<PlayDataCallbackBase> play_data_cb_ptr)
+bool DataReplayer::add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase> play_data_cb_ptr)
 {
   if (is_playing()) {
     with_lock(logger_mutex_, [this, cb_name = play_data_cb_ptr->name()]() {
@@ -71,7 +71,7 @@ bool DataReplayer::add_play_data_cb(std::shared_ptr<PlayDataCallbackBase> play_d
   }
   {
     std::scoped_lock lock(cb_mutex_);
-    play_data_cb_ptrs_.push_back(play_data_cb_ptr);
+    play_data_interface_ptrs_.push_back(play_data_cb_ptr);
   }
   return true;
 }
@@ -216,7 +216,7 @@ void DataReplayer::prepare_data(const size_t index_to_prep)
 {
   with_lock(cb_mutex_, [this, index_to_prep]() {
     std::for_each(
-      std::cbegin(play_data_cb_ptrs_), std::cend(play_data_cb_ptrs_),
+      std::cbegin(play_data_interface_ptrs_), std::cend(play_data_interface_ptrs_),
       [this, index_to_prep](const auto & cb_ptr) {
         const auto prepare_success = cb_ptr->prepare(index_to_prep);
         if (!prepare_success) {
@@ -233,7 +233,7 @@ void DataReplayer::play_data(const size_t index_to_play)
 {
   with_lock(cb_mutex_, [this, index_to_play]() {
     std::for_each(
-      std::cbegin(play_data_cb_ptrs_), std::cend(play_data_cb_ptrs_),
+      std::cbegin(play_data_interface_ptrs_), std::cend(play_data_interface_ptrs_),
       [this, index_to_play](const auto & cb_ptr) {
         const auto play_success = cb_ptr->play(index_to_play);
         if (!play_success) {

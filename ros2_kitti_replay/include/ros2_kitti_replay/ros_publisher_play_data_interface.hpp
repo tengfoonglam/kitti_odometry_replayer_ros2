@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__ROS_PUBLISHER_PLAY_DATA_CALLBACK_HPP_
-#define ROS2_KITTI_REPLAY__ROS_PUBLISHER_PLAY_DATA_CALLBACK_HPP_
+#ifndef ROS2_KITTI_REPLAY__ROS_PUBLISHER_PLAY_DATA_INTERFACE_HPP_
+#define ROS2_KITTI_REPLAY__ROS_PUBLISHER_PLAY_DATA_INTERFACE_HPP_
 
 #include <memory>
 #include <rclcpp/publisher.hpp>
@@ -7,18 +7,18 @@
 #include <utility>
 
 #include "ros2_kitti_replay/data_loader.hpp"
-#include "ros2_kitti_replay/play_data_callback_base.hpp"
+#include "ros2_kitti_replay/play_data_interface_base.hpp"
 
 namespace r2k_replay
 {
 template <typename T>
-class ROSPublisherPlayDataCallback final : public PlayDataCallbackBase
+class ROSPublisherPlayDataInterface final : public PlayDataInterfaceBase
 {
 public:
-  ROSPublisherPlayDataCallback(
+  ROSPublisherPlayDataInterface(
     const std::string & name, std::shared_ptr<rclcpp::Publisher<T>> publisher_ptr,
     std::unique_ptr<DataLoader<T>> data_loader_ptr_)
-  : PlayDataCallbackBase(name),
+  : PlayDataInterfaceBase(name),
     publisher_ptr_(publisher_ptr),
     data_loader_ptr_(std::move(data_loader_ptr_))
   {
@@ -47,4 +47,4 @@ private:
 
 }  // namespace r2k_replay
 
-#endif  // ROS2_KITTI_REPLAY__PLAY_DATA_CALLBACK_BASE_HPP_
+#endif  // ROS2_KITTI_REPLAY__PLAY_DATA_INTERFACE_BASE_HPP_

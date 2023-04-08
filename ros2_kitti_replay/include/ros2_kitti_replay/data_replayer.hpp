@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ros2_kitti_replay/data_loader.hpp"
-#include "ros2_kitti_replay/play_data_callback_base.hpp"
+#include "ros2_kitti_replay/play_data_interface_base.hpp"
 
 namespace r2k_replay
 {
@@ -63,7 +63,7 @@ public:
 
   [[nodiscard]] bool is_playing() const;
 
-  bool add_play_data_cb(std::shared_ptr<PlayDataCallbackBase> play_data_cb_ptr);
+  bool add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase> play_data_cb_ptr);
 
   bool set_state_change_cb(const StateChangeCallback & state_change_cb);
 
@@ -106,7 +106,7 @@ private:
   std::shared_ptr<std::thread> play_thread_ptr_;
 
   mutable std::mutex cb_mutex_;
-  std::vector<std::shared_ptr<PlayDataCallbackBase>> play_data_cb_ptrs_;
+  std::vector<std::shared_ptr<PlayDataInterfaceBase>> play_data_interface_ptrs_;
   StateChangeCallback state_change_cb_;
 
   template <typename Callable>

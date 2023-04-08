@@ -3,7 +3,7 @@
 #include <chrono>
 #include <mutex>
 #include <ros2_kitti_replay/data_replayer.hpp>
-#include <ros2_kitti_replay/play_data_callback_base.hpp>
+#include <ros2_kitti_replay/play_data_interface_base.hpp>
 #include <ros2_kitti_replay/timestamp_utils.hpp>
 #include <ros2_kitti_replay_test/test_utils.hpp>
 #include <string>
@@ -13,7 +13,7 @@
 namespace
 {
 using r2k_replay::DataReplayer;
-using r2k_replay::PlayDataCallbackBase;
+using r2k_replay::PlayDataInterfaceBase;
 using r2k_replay::Timestamp;
 using r2k_replay::Timestamps;
 using PlayRequest = r2k_replay::DataReplayer::PlayRequest;
@@ -21,13 +21,13 @@ using ReplayerState = r2k_replay::DataReplayer::ReplayerState;
 using StateChangeCallback = r2k_replay::DataReplayer::StateChangeCallback;
 using StepRequest = r2k_replay::DataReplayer::StepRequest;
 
-class PlayDataTestCallback final : public PlayDataCallbackBase
+class PlayDataTestCallback final : public PlayDataInterfaceBase
 {
 public:
   using IndexRecord = std::vector<size_t>;
 
   PlayDataTestCallback(const std::string & name = "Test Play Data Callback")
-  : PlayDataCallbackBase(name)
+  : PlayDataInterfaceBase(name)
   {
   }
 
@@ -169,7 +169,7 @@ protected:
 
   void SetUp()
   {
-    ASSERT_TRUE(replayer.add_play_data_cb(play_cb_ptr));
+    ASSERT_TRUE(replayer.add_play_data_interface(play_cb_ptr));
     ASSERT_TRUE(replayer.set_state_change_cb(get_state_change_callback()));
   }
 
@@ -218,7 +218,7 @@ TEST_F(TestDataReplayer, DestructorTest)
 {
   {
     auto scoped_replayer = DataReplayer{"Scoped Test Replayer", kTimestamps};
-    ASSERT_TRUE(scoped_replayer.add_play_data_cb(play_cb_ptr));
+    ASSERT_TRUE(scoped_replayer.add_play_data_interface(play_cb_ptr));
     ASSERT_TRUE(scoped_replayer.set_state_change_cb(get_state_change_callback()));
     ASSERT_TRUE(scoped_replayer.resume());
     std::this_thread::sleep_for(std::chrono::nanoseconds(kTimestampIntervalNs));

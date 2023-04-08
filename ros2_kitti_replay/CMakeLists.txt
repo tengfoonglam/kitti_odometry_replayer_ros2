@@ -31,11 +31,11 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/data_loader_base.hpp"
     "include/${PROJECT_NAME}/data_loader.hpp"
     "include/${PROJECT_NAME}/clock_data_loader.hpp"
-    "include/${PROJECT_NAME}/play_data_callback_base.hpp"
+    "include/${PROJECT_NAME}/play_data_interface_base.hpp"
     "include/${PROJECT_NAME}/point_cloud_utils.hpp"
     "include/${PROJECT_NAME}/point_cloud_data_loader.hpp"
     "include/${PROJECT_NAME}/data_replayer.hpp"
-    "include/${PROJECT_NAME}/ros_publisher_play_data_callback.hpp"
+    "include/${PROJECT_NAME}/ros_publisher_play_data_interface.hpp"
     "include/${PROJECT_NAME}/pose_utils.hpp"
     "include/${PROJECT_NAME}/pose_data_loader.hpp")
 
