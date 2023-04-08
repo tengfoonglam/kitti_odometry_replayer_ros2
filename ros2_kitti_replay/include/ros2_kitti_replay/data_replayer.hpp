@@ -63,7 +63,7 @@ public:
 
   [[nodiscard]] bool is_playing() const;
 
-  bool add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase> play_data_cb_ptr);
+  bool add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase> play_data_interface_ptr);
 
   bool set_state_change_cb(const StateChangeCallback & state_change_cb);
 

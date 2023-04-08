@@ -58,10 +58,11 @@ DataReplayer::DataReplayer(
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_.playing; });
 }
 
-bool DataReplayer::add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase> play_data_cb_ptr)
+bool DataReplayer::add_play_data_interface(
+  std::shared_ptr<PlayDataInterfaceBase> play_data_interface_ptr)
 {
   if (is_playing()) {
-    with_lock(logger_mutex_, [this, cb_name = play_data_cb_ptr->name()]() {
+    with_lock(logger_mutex_, [this, cb_name = std::as_const(play_data_interface_ptr->name())]() {
       RCLCPP_WARN(
         logger_,
         "Replayer %s could not add play data callback %s because it is in the process of playing",
@@ -71,7 +72,7 @@ bool DataReplayer::add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase
   }
   {
     std::scoped_lock lock(cb_mutex_);
-    play_data_interface_ptrs_.push_back(play_data_cb_ptr);
+    play_data_interface_ptrs_.push_back(play_data_interface_ptr);
   }
   return true;
 }
