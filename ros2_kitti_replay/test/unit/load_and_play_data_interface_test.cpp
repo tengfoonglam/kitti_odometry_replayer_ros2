@@ -26,7 +26,7 @@ TEST(TestLoadAndPlayDataInterface, NormalOperations)
 
   r2k_replay::Timestamp current_timestamp;
 
-  ClockInterface::PlayCb play_cb = [&](const auto & clock_msg) {
+  const ClockInterface::PlayCb play_cb = [&](const auto & clock_msg) {
     current_timestamp = clock_msg.clock;
     return true;
   };
