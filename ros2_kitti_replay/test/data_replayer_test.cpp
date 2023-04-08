@@ -21,12 +21,12 @@ using ReplayerState = r2k_replay::DataReplayer::ReplayerState;
 using StateChangeCallback = r2k_replay::DataReplayer::StateChangeCallback;
 using StepRequest = r2k_replay::DataReplayer::StepRequest;
 
-class PlayDataTestCallback final : public PlayDataInterfaceBase
+class PlayDataTestInterface final : public PlayDataInterfaceBase
 {
 public:
   using IndexRecord = std::vector<size_t>;
 
-  PlayDataTestCallback(const std::string & name = "Test Play Data Callback")
+  PlayDataTestInterface(const std::string & name = "Test Play Data Callback")
   : PlayDataInterfaceBase(name)
   {
   }
@@ -78,7 +78,7 @@ public:
   void assert_timeline_played_exactly_once(
     const size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
   {
-    const auto & play_data_callback = *play_cb_ptr;
+    const auto & play_data_callback = *play_interface_ptr;
     const auto num_stamps = timestamps.size();
     ASSERT_EQ(play_data_callback.prepare_record().size(), num_stamps);
     ASSERT_EQ(play_data_callback.play_record().size(), num_stamps);
@@ -96,10 +96,10 @@ public:
   void assert_timeline_played_partially(
     const size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
   {
-    const auto & play_data_callback = *play_cb_ptr;
+    const auto & play_data_callback = *play_interface_ptr;
     const auto num_stamps = timestamps.size();
-    const auto prepare_size = play_cb_ptr->prepare_record().size();
-    const auto play_size = play_cb_ptr->play_record().size();
+    const auto prepare_size = play_interface_ptr->prepare_record().size();
+    const auto play_size = play_interface_ptr->play_record().size();
     EXPECT_TRUE((prepare_size > 0) && (prepare_size < num_stamps));
     EXPECT_TRUE((play_size > 0) && (play_size < num_stamps));
     ASSERT_EQ(play_data_callback.play_record().at(0), start_index);
@@ -136,7 +136,8 @@ public:
   }
 
   DataReplayer replayer{"Test Replayer", kTimestamps};
-  std::shared_ptr<PlayDataTestCallback> play_cb_ptr = std::make_shared<PlayDataTestCallback>();
+  std::shared_ptr<PlayDataTestInterface> play_interface_ptr =
+    std::make_shared<PlayDataTestInterface>();
 
   void play_timeline_halfway(const std::function<void()> & interrupt_play_cb)
   {
@@ -169,7 +170,7 @@ protected:
 
   void SetUp()
   {
-    ASSERT_TRUE(replayer.add_play_data_interface(play_cb_ptr));
+    ASSERT_TRUE(replayer.add_play_data_interface(play_interface_ptr));
     ASSERT_TRUE(replayer.set_state_change_cb(get_state_change_callback()));
   }
 
@@ -218,7 +219,7 @@ TEST_F(TestDataReplayer, DestructorTest)
 {
   {
     auto scoped_replayer = DataReplayer{"Scoped Test Replayer", kTimestamps};
-    ASSERT_TRUE(scoped_replayer.add_play_data_interface(play_cb_ptr));
+    ASSERT_TRUE(scoped_replayer.add_play_data_interface(play_interface_ptr));
     ASSERT_TRUE(scoped_replayer.set_state_change_cb(get_state_change_callback()));
     ASSERT_TRUE(scoped_replayer.resume());
     std::this_thread::sleep_for(std::chrono::nanoseconds(kTimestampIntervalNs));
@@ -252,7 +253,7 @@ TEST_F(TestDataReplayer, PauseWhilePlayingTest)
 
   const auto paused_state = get_last_replayer_state();
   const auto resume_idx = paused_state.next_idx;
-  play_cb_ptr->reset();
+  play_interface_ptr->reset();
   ASSERT_FALSE(replayer.is_playing());
   ASSERT_TRUE(replayer.resume());
 
