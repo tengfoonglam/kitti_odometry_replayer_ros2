@@ -42,6 +42,7 @@ set(HEADER_LIST
 set(SOURCE_LIST
     "src/timestamp_utils.cpp"
     "src/data_loader_base.cpp"
+    "src/clock_data_loader.cpp"
     "src/data_replayer.cpp"
     "src/point_cloud_utils.cpp"
     "src/point_cloud_data_loader.cpp"

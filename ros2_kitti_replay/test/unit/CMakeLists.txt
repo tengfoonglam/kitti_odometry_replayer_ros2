@@ -40,3 +40,9 @@ ament_target_dependencies(pose_data_loader_test tf2)
 target_link_libraries(pose_data_loader_test
                       ros2_kitti_replay_test
                       ${PROJECT_NAME})
+
+ament_add_gtest(load_and_play_data_interface_test
+                load_and_play_data_interface_test.cpp)
+target_link_libraries(load_and_play_data_interface_test
+                      ros2_kitti_replay_test
+                      ${PROJECT_NAME})

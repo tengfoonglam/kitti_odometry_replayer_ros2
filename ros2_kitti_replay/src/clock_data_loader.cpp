@@ -25,7 +25,7 @@ bool ClockDataLoader::setup_internal(
 {
   ClockDataLoader::Type clock_msg;
   clock_msg.set__clock(timestamps_.at(idx));
-  return OptionalType(clock_msg);
+  return clock_msg;
 }
 
 bool ClockDataLoader::prepare_data_internal([[maybe_unused]] const std::size_t idx) { return true; }

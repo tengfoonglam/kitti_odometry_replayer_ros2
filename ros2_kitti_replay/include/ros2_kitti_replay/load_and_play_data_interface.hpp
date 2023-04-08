@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__ROS_PUBLISHER_PLAY_DATA_INTERFACE_HPP_
-#define ROS2_KITTI_REPLAY__ROS_PUBLISHER_PLAY_DATA_INTERFACE_HPP_
+#ifndef ROS2_KITTI_REPLAY__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
+#define ROS2_KITTI_REPLAY__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
 
 #include <functional>
 #include <memory>
@@ -19,8 +19,8 @@ public:
 
   LoadAndPlayDataInterface(
     const std::string & name, const PlayCb & play_cb,
-    std::unique_ptr<DataLoader<T>> data_loader_ptr_)
-  : PlayDataInterfaceBase(name), play_cb_(play_cb), data_loader_ptr_(std::move(data_loader_ptr_))
+    std::unique_ptr<DataLoader<T>> data_loader_ptr)
+  : PlayDataInterfaceBase(name), play_cb_(play_cb), data_loader_ptr_(std::move(data_loader_ptr))
   {
   }
 
@@ -40,10 +40,10 @@ public:
   }
 
 private:
-  std::unique_ptr<DataLoader<T>> data_loader_ptr_;
   PlayCb play_cb_;
+  std::unique_ptr<DataLoader<T>> data_loader_ptr_;
 };
 
 }  // namespace r2k_replay
 
-#endif  // ROS2_KITTI_REPLAY__PLAY_DATA_INTERFACE_BASE_HPP_
+#endif  // ROS2_KITTI_REPLAY__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
