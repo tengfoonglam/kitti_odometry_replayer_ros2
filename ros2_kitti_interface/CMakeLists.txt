@@ -11,6 +11,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
                            "msg/ReplayerState.msg"
                            "msg/ResumeRequest.msg"
                            "msg/StepRequest.msg"
+                           "msg/TriggerResponse.msg"
+                           "srv/Play.srv"
+                           "srv/Resume.srv"
+                           "srv/Step.srv"
                            DEPENDENCIES
                            std_msgs
                            ADD_LINTER_TESTS)
