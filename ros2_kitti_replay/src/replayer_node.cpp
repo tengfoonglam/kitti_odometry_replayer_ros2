@@ -93,7 +93,7 @@ public:
     // Create load interface
     LoadAndPlayDataInterface<ClockDataLoader::Type> clock_interface(
       "clock_interface",
-      [pub_ptr = this->create_publisher<ClockDataLoader::Type>("clock", 10)](const auto & msg) {
+      [pub_ptr = this->create_publisher<ClockDataLoader::DataType>("clock", 10)](const auto & msg) {
         pub_ptr->publish(msg);
         return true;
       },

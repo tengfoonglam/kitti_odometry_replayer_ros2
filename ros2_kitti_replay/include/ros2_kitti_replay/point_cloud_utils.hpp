@@ -17,7 +17,7 @@ using PointCloudPCLType = pcl::PointCloud<pcl::PointXYZI>;
 constexpr size_t kNumberDigitsPCFilename{6};
 constexpr const char kKittiPCExtention[]{".bin"};
 
-[[nodiscard]] PointCloudMsg::UniquePtr load_point_cloud_from_file(
+[[nodiscard]] PointCloudMsg::SharedPtr load_point_cloud_from_file(
   const std::filesystem::path & pc_bin_path);
 
 [[nodiscard]] bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path);

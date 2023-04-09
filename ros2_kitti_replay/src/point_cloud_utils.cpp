@@ -6,18 +6,18 @@
 namespace r2k_replay
 {
 
-[[nodiscard]] PointCloudMsg::UniquePtr load_point_cloud_from_file(
+[[nodiscard]] PointCloudMsg::SharedPtr load_point_cloud_from_file(
   const std::filesystem::path & pc_bin_path)
 {
   // Check if text file is .bin file and exists
   if (
     !std::filesystem::exists(pc_bin_path) ||
     pc_bin_path.extension().string() != std::string{kKittiPCExtention}) {
-    return PointCloudMsg::UniquePtr();
+    return PointCloudMsg::SharedPtr();
   }
 
   // Create and populate Point Cloud Message
-  auto output_ptr = std::make_unique<PointCloudMsg>();
+  auto output_ptr = std::make_shared<PointCloudMsg>();
 
   // Read binary file and load it into data field
   std::ifstream stream(pc_bin_path.string(), std::ios::in | std::ios::binary);
