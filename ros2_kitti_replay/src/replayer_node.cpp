@@ -107,14 +107,14 @@ public:
       },
       std::move(pose_loader_ptr));
 
-    // LoadAndPlayDataInterface<PointCloudDataLoader::Type> pc_interface(
-    //   "pc_interface",
-    //   [pub_ptr =
-    //      this->create_publisher<PointCloudDataLoader::Type>("lidar_pc", 10)](const auto & msg) {
-    //     pub_ptr->publish(msg);
-    //     return true;
-    //   },
-    //   std::move(pc_loader_ptr));
+    LoadAndPlayDataInterface<PointCloudDataLoader::Type> pc_interface(
+      "pc_interface",
+      [pub_ptr =
+         this->create_publisher<PointCloudDataLoader::DataType>("lidar_pc", 10)](const auto & msg) {
+        pub_ptr->publish(msg);
+        return true;
+      },
+      std::move(pc_loader_ptr));
 
     // Create replayers
 

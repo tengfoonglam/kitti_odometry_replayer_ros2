@@ -15,22 +15,23 @@ template <typename T>
 class LoadAndPlayDataInterface : public PlayDataInterfaceBase
 {
 public:
-  using PlayCb = std::function<bool(const T &)>;
+  using DataLoaderT = DataLoader<T>;
+  using DataLoaderUqPtr = std::unique_ptr<DataLoaderT>;
+  using PlayCb = std::function<bool(const typename DataLoaderT::DataType &)>;
 
   LoadAndPlayDataInterface(
-    const std::string & name, const PlayCb & play_cb,
-    std::unique_ptr<DataLoader<T>> data_loader_ptr)
+    const std::string & name, const PlayCb & play_cb, DataLoaderUqPtr data_loader_ptr)
   : PlayDataInterfaceBase(name), play_cb_(play_cb), data_loader_ptr_(std::move(data_loader_ptr))
   {
   }
 
   LoadAndPlayDataInterface(
-    const std::string & name, PlayCb && play_cb, std::unique_ptr<DataLoader<T>> data_loader_ptr)
+    const std::string & name, PlayCb && play_cb, DataLoaderUqPtr data_loader_ptr)
   : PlayDataInterfaceBase(name), play_cb_(play_cb), data_loader_ptr_(std::move(data_loader_ptr))
   {
   }
 
-  [[nodiscard]] virtual bool ready() const { return data_loader_ptr_->ready() && play_cb_; }
+  [[nodiscard]] virtual bool ready() const { return data_loader_ptr_->ready(); }
 
   [[nodiscard]] virtual std::size_t data_size() const { return data_loader_ptr_->data_size(); }
 
@@ -39,15 +40,20 @@ public:
   bool play(const std::size_t idx)
   {
     const auto data_opt = data_loader_ptr_->get_data(idx);
-    if (data_opt.has_value() && play_cb_) {
+    if (!data_opt.has_value()) {
+      return false;
+    }
+
+    if constexpr (DataLoaderT::kReturnValueIsPtr) {
+      return play_cb_(*(data_opt.value()));
+    } else {
       return play_cb_(data_opt.value());
     }
-    return false;
   }
 
 private:
   PlayCb play_cb_;
-  std::unique_ptr<DataLoader<T>> data_loader_ptr_;
+  DataLoaderUqPtr data_loader_ptr_;
 };
 
 }  // namespace r2k_replay
