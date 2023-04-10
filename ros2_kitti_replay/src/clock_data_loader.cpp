@@ -3,12 +3,13 @@
 namespace r2k_replay
 {
 
-ClockDataLoader::ClockDataLoader(const std::string & name) : DataLoader<ClockDataLoader::Type>(name)
+ClockDataLoader::ClockDataLoader(const std::string & name)
+: DataLoader<ClockDataLoader::ReturnType>(name)
 {
 }
 
 ClockDataLoader::ClockDataLoader(const std::string & name, rclcpp::Logger logger)
-: DataLoader<ClockDataLoader::Type>(name, logger)
+: DataLoader<ClockDataLoader::ReturnType>(name, logger)
 {
 }
 
@@ -20,10 +21,10 @@ bool ClockDataLoader::setup_internal(
   return ready();
 }
 
-[[nodiscard]] ClockDataLoader::OptionalType ClockDataLoader::get_data_internal(
+[[nodiscard]] ClockDataLoader::OptionalReturnType ClockDataLoader::get_data_internal(
   const std::size_t idx)
 {
-  ClockDataLoader::Type clock_msg;
+  ClockDataLoader::ReturnType clock_msg;
   clock_msg.set__clock(timestamps_.at(idx));
   return clock_msg;
 }

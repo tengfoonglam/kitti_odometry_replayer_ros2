@@ -91,7 +91,7 @@ public:
     }
 
     // Create load interface
-    LoadAndPlayDataInterface<ClockDataLoader::Type> clock_interface(
+    LoadAndPlayDataInterface clock_interface(
       "clock_interface",
       [pub_ptr = this->create_publisher<ClockDataLoader::DataType>("clock", 10)](const auto & msg) {
         pub_ptr->publish(msg);
@@ -99,7 +99,7 @@ public:
       },
       std::move(clock_loader_ptr));
 
-    LoadAndPlayDataInterface<PoseDataLoader::Type> pose_interface(
+    LoadAndPlayDataInterface pose_interface(
       "pose_interface",
       [broadcast = tf2_ros::TransformBroadcaster(*this)](const auto & msg) mutable {
         broadcast.sendTransform(msg);
@@ -107,7 +107,7 @@ public:
       },
       std::move(pose_loader_ptr));
 
-    LoadAndPlayDataInterface<PointCloudDataLoader::Type> pc_interface(
+    LoadAndPlayDataInterface pc_interface(
       "pc_interface",
       [pub_ptr =
          this->create_publisher<PointCloudDataLoader::DataType>("lidar_pc", 10)](const auto & msg) {

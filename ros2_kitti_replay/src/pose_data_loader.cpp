@@ -6,14 +6,16 @@ namespace r2k_replay
 
 PoseDataLoader::PoseDataLoader(
   const std::string & name, const Header & header, const std::string & child_frame_id)
-: DataLoader<PoseDataLoader::Type>(name), header_(header), child_frame_id_(child_frame_id)
+: DataLoader<PoseDataLoader::ReturnType>(name), header_(header), child_frame_id_(child_frame_id)
 {
 }
 
 PoseDataLoader::PoseDataLoader(
   const std::string & name, rclcpp::Logger logger, const Header & header,
   const std::string & child_frame_id)
-: DataLoader<PoseDataLoader::Type>(name, logger), header_(header), child_frame_id_(child_frame_id)
+: DataLoader<PoseDataLoader::ReturnType>(name, logger),
+  header_(header),
+  child_frame_id_(child_frame_id)
 {
 }
 
@@ -45,9 +47,10 @@ bool PoseDataLoader::setup_internal(
 
 bool PoseDataLoader::prepare_data_internal([[maybe_unused]] const std::size_t idx) { return true; }
 
-[[nodiscard]] PoseDataLoader::OptionalType PoseDataLoader::get_data_internal(const std::size_t idx)
+[[nodiscard]] PoseDataLoader::OptionalReturnType PoseDataLoader::get_data_internal(
+  const std::size_t idx)
 {
-  PoseDataLoader::Type output;
+  PoseDataLoader::ReturnType output;
   output.header = header_;
   output.header.stamp = timestamps_.at(idx);
   output.child_frame_id = child_frame_id_;

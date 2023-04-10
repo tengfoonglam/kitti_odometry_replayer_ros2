@@ -23,7 +23,7 @@ private:
   bool setup_internal(
     const Timestamps & timestamps, [[maybe_unused]] const std::filesystem::path & load_path) final;
   bool prepare_data_internal([[maybe_unused]] const std::size_t idx) final;
-  [[nodiscard]] OptionalType get_data_internal(const std::size_t idx) final;
+  [[nodiscard]] OptionalReturnType get_data_internal(const std::size_t idx) final;
 };
 
 }  // namespace r2k_replay

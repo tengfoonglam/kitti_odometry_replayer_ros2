@@ -24,13 +24,13 @@ public:
 private:
   Header header_;
   std::size_t max_idx_{};
-  PointCloudDataLoader::Type point_cloud_ptr_;
+  PointCloudDataLoader::ReturnType point_cloud_ptr_;
   std::optional<size_t> current_idx_opt_;
   std::filesystem::path load_path_;
 
   bool setup_internal(const Timestamps & timestamps, const std::filesystem::path & load_path) final;
   bool prepare_data_internal(const std::size_t idx) final;
-  [[nodiscard]] OptionalType get_data_internal(const std::size_t idx) final;
+  [[nodiscard]] OptionalReturnType get_data_internal(const std::size_t idx) final;
 };
 
 }  // namespace r2k_replay

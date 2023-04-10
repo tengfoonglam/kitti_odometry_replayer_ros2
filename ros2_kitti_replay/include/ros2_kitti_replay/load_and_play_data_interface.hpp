@@ -11,11 +11,14 @@
 
 namespace r2k_replay
 {
-template <typename T>
+template <
+  typename T,
+  typename =
+    typename std::enable_if<std::is_base_of_v<DataLoader<typename T::ReturnType>, T>>::type>
 class LoadAndPlayDataInterface : public PlayDataInterfaceBase
 {
 public:
-  using DataLoaderT = DataLoader<T>;
+  using DataLoaderT = T;
   using DataLoaderUqPtr = std::unique_ptr<DataLoaderT>;
   using PlayCb = std::function<bool(const typename DataLoaderT::DataType &)>;
 

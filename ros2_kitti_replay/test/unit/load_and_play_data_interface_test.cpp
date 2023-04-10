@@ -8,8 +8,8 @@
 
 namespace
 {
-using MsgType = r2k_replay::ClockDataLoader::Type;
-using ClockInterface = r2k_replay::LoadAndPlayDataInterface<MsgType>;
+using r2k_replay::ClockDataLoader;
+using r2k_replay::LoadAndPlayDataInterface;
 
 }  // namespace
 
@@ -19,19 +19,19 @@ TEST(TestLoadAndPlayDataInterface, NormalOperations)
   const auto timestamps = r2k_replay_test::generate_test_timestamps(1, number_timestamps);
   ASSERT_EQ(timestamps.size(), number_timestamps);
 
-  auto loader_ptr = std::make_unique<r2k_replay::ClockDataLoader>("clock_data_loader");
+  auto loader_ptr = std::make_unique<ClockDataLoader>("clock_data_loader");
   ASSERT_TRUE(loader_ptr->setup(timestamps, ""));
   ASSERT_TRUE(loader_ptr->ready());
   ASSERT_EQ(loader_ptr->data_size(), number_timestamps);
 
   r2k_replay::Timestamp current_timestamp;
 
-  const ClockInterface::PlayCb play_cb = [&](const auto & clock_msg) {
+  const auto play_cb = [&](const auto & clock_msg) {
     current_timestamp = clock_msg.clock;
     return true;
   };
 
-  ClockInterface interface("clock_interface", play_cb, std::move(loader_ptr));
+  LoadAndPlayDataInterface interface("clock_interface", play_cb, std::move(loader_ptr));
   ASSERT_TRUE(interface.ready());
   ASSERT_EQ(interface.data_size(), number_timestamps);
 
@@ -47,9 +47,9 @@ TEST(TestLoadAndPlayDataInterface, NormalOperations)
 
 TEST(TestLoadAndPlayDataInterface, LoaderNotReady)
 {
-  auto loader_ptr = std::make_unique<r2k_replay::ClockDataLoader>("clock_data_loader");
+  auto loader_ptr = std::make_unique<ClockDataLoader>("clock_data_loader");
   ASSERT_FALSE(loader_ptr->ready());
-  ClockInterface interface(
+  LoadAndPlayDataInterface interface(
     "clock_interface", []([[maybe_unused]] const auto & clock_msg) { return true; },
     std::move(loader_ptr));
   ASSERT_EQ(interface.data_size(), std::size_t{0});

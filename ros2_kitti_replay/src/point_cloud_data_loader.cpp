@@ -6,13 +6,13 @@ namespace r2k_replay
 {
 
 PointCloudDataLoader::PointCloudDataLoader(const std::string & name, const Header & header)
-: DataLoader<PointCloudDataLoader::Type>(name), header_(header)
+: DataLoader<PointCloudDataLoader::ReturnType>(name), header_(header)
 {
 }
 
 PointCloudDataLoader::PointCloudDataLoader(
   const std::string & name, rclcpp::Logger logger, const Header & header)
-: DataLoader<PointCloudDataLoader::Type>(name, logger), header_(header)
+: DataLoader<PointCloudDataLoader::ReturnType>(name, logger), header_(header)
 {
 }
 
@@ -64,7 +64,7 @@ bool PointCloudDataLoader::prepare_data_internal(const std::size_t idx)
   return static_cast<bool>(point_cloud_ptr_);
 }
 
-[[nodiscard]] PointCloudDataLoader::OptionalType PointCloudDataLoader::get_data_internal(
+[[nodiscard]] PointCloudDataLoader::OptionalReturnType PointCloudDataLoader::get_data_internal(
   const std::size_t idx)
 {
   if (current_idx_opt_.has_value() && current_idx_opt_.value() == idx && point_cloud_ptr_) {

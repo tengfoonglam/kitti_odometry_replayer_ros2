@@ -16,38 +16,57 @@ namespace r2k_replay
 {
 
 template <class T>
-struct return_underlying_type_if_smart_pointer
+struct return_underlying_type_if_smart_pointer_else_itself
 {
   using type = T;
 };
 
 template <class T>
-struct return_underlying_type_if_smart_pointer<std::shared_ptr<T>>
+struct return_underlying_type_if_smart_pointer_else_itself<std::shared_ptr<T>>
 {
   using type = T;
 };
 
 template <class T>
-struct return_underlying_type_if_smart_pointer<std::unique_ptr<T>>
+struct return_underlying_type_if_smart_pointer_else_itself<std::weak_ptr<T>>
 {
   using type = T;
+};
+
+template <class T>
+struct return_underlying_type_if_smart_pointer_else_itself<std::unique_ptr<T>>
+{
+  using type = T;
+};
+
+template <class T>
+struct is_weak_ptr : std::false_type
+{
+};
+
+template <class T>
+struct is_weak_ptr<std::weak_ptr<T>> : std::true_type
+{
 };
 
 template <typename T>
 class DataLoader : public DataLoaderBase
 {
-public:
-  using DataType = typename return_underlying_type_if_smart_pointer<T>::type;
-  using Type = T;
-  using OptionalType = std::optional<Type>;
+  static_assert(!std::is_pointer_v<T>, "A raw pointer return type is currently not supported.");
+  static_assert(!is_weak_ptr<T>::value, "A weak pointer return type is currently not supported.");
 
-  static constexpr bool kReturnValueIsPtr = !std::is_same_v<DataType, Type>;
+public:
+  using DataType = typename return_underlying_type_if_smart_pointer_else_itself<T>::type;
+  using ReturnType = T;
+  using OptionalReturnType = std::optional<ReturnType>;
+
+  static constexpr bool kReturnValueIsPtr = !std::is_same_v<DataType, ReturnType>;
 
   explicit DataLoader(const std::string & name) : DataLoaderBase(name) {}
 
   DataLoader(const std::string & name, rclcpp::Logger logger) : DataLoaderBase(name, logger) {}
 
-  [[nodiscard]] OptionalType get_data(const std::size_t idx)
+  [[nodiscard]] OptionalReturnType get_data(const std::size_t idx)
   {
     if (!can_process_data(idx, __func__)) {
       return std::nullopt;
@@ -56,7 +75,7 @@ public:
   }
 
 protected:
-  [[nodiscard]] virtual OptionalType get_data_internal(const std::size_t idx) = 0;
+  [[nodiscard]] virtual OptionalReturnType get_data_internal(const std::size_t idx) = 0;
 };
 
 }  // namespace r2k_replay
