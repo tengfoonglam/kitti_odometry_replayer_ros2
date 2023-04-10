@@ -8,7 +8,9 @@ find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
+find_package(ros2_kitti_interface REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
@@ -60,7 +62,9 @@ ament_target_dependencies(${PROJECT_NAME}
                           pcl_ros
                           pcl_conversions
                           rosgraph_msgs
+                          ros2_kitti_interface
                           sensor_msgs
+                          std_srvs
                           tf2
                           tf2_geometry_msgs)
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
@@ -95,7 +99,9 @@ ament_export_dependencies(rclcpp
                           pcl_ros
                           pcl_conversions
                           rosgraph_msgs
+                          ros2_kitti_interface
                           sensor_msgs
+                          std_srvs
                           tf2
                           tf2_geometry_msgs)
 
