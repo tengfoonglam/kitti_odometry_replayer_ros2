@@ -131,16 +131,16 @@ public:
     assert(replayer_ptr_->add_play_data_interface(pose_interface_ptr));
     assert(replayer_ptr_->add_play_data_interface(pc_interface_ptr));
 
-    // Bind services
-    rclcpp::Service<ros2_kitti_interface::srv::Resume>::SharedPtr resume_service =
-      this->create_service<ros2_kitti_interface::srv::Resume>(
-        "resume",
-        std::bind(&KITTIReplayer::resume, this, std::placeholders::_1, std::placeholders::_2));
+    // Add Cb to publish replayer state upon state changes
 
-    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr pause_service =
-      this->create_service<std_srvs::srv::Trigger>(
-        "pause",
-        std::bind(&KITTIReplayer::pause, this, std::placeholders::_1, std::placeholders::_2));
+    // Bind services
+    resume_service_ptr = this->create_service<ros2_kitti_interface::srv::Resume>(
+      "resume",
+      std::bind(&KITTIReplayer::resume, this, std::placeholders::_1, std::placeholders::_2));
+
+    pause_service_ptr = this->create_service<std_srvs::srv::Trigger>(
+      "pause",
+      std::bind(&KITTIReplayer::pause, this, std::placeholders::_1, std::placeholders::_2));
   }
 
 private:
@@ -168,6 +168,15 @@ private:
   }
 
   std::unique_ptr<DataReplayer> replayer_ptr_;
+  rclcpp::Service<ros2_kitti_interface::srv::Resume>::SharedPtr resume_service_ptr;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr pause_service_ptr;
 };
+
+#include <rclcpp_components/register_node_macro.hpp>
+
+// Register the component with class_loader.
+// This acts as a sort of entry point, allowing the component to be discoverable when its library
+// is being loaded into a running process.
+RCLCPP_COMPONENTS_REGISTER_NODE(r2k_replay::KITTIReplayer)
 
 }  // namespace r2k_replay

@@ -7,6 +7,7 @@ find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(ros2_kitti_interface REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -57,6 +58,7 @@ add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
                           rclcpp
+                          rclcpp_components
                           geometry_msgs
                           PCL
                           pcl_ros
@@ -71,7 +73,7 @@ target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 rclcpp_components_register_node(${PROJECT_NAME}
                                 PLUGIN
-                                "${PROJECT_NAME}::ReplayNode"
+                                "r2k_replay::KITTIReplayer"
                                 EXECUTABLE
                                 replayer)
 
@@ -94,6 +96,7 @@ add_subdirectory(apps)
 ament_export_include_directories(include)
 ament_export_libraries(ros2_kitti_replay)
 ament_export_dependencies(rclcpp
+                          rclcpp_components
                           geometry_msgs
                           PCL
                           pcl_ros
@@ -105,6 +108,13 @@ ament_export_dependencies(rclcpp
                           tf2
                           tf2_geometry_msgs)
 
+install(TARGETS ${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
+
 install(TARGETS convert_kitti_point_cloud DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
 
 ament_package()
