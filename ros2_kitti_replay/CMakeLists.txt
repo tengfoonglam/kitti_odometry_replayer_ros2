@@ -7,7 +7,6 @@ find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(ros2_kitti_interface REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -40,7 +39,8 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/data_replayer.hpp"
     "include/${PROJECT_NAME}/load_and_play_data_interface.hpp"
     "include/${PROJECT_NAME}/pose_utils.hpp"
-    "include/${PROJECT_NAME}/pose_data_loader.hpp")
+    "include/${PROJECT_NAME}/pose_data_loader.hpp"
+    "include/${PROJECT_NAME}/kitti_replayer_node.hpp")
 
 set(SOURCE_LIST
     "src/timestamp_utils.cpp"
@@ -51,14 +51,13 @@ set(SOURCE_LIST
     "src/point_cloud_data_loader.cpp"
     "src/pose_utils.cpp"
     "src/pose_data_loader.cpp"
-    "src/replayer_node.cpp")
+    "src/kitti_replayer_node.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
                           rclcpp
-                          rclcpp_components
                           geometry_msgs
                           PCL
                           pcl_ros
@@ -70,12 +69,6 @@ ament_target_dependencies(${PROJECT_NAME}
                           tf2
                           tf2_geometry_msgs)
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
-
-rclcpp_components_register_node(${PROJECT_NAME}
-                                PLUGIN
-                                "r2k_replay::KITTIReplayer"
-                                EXECUTABLE
-                                replayer)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -92,6 +85,12 @@ if(BUILD_TESTING)
 endif()
 
 add_subdirectory(apps)
+
+add_executable(run_kitti_replayer src/main.cpp)
+target_link_libraries(run_kitti_replayer ${PROJECT_NAME})
+ament_target_dependencies(run_kitti_replayer rclcpp)
+
+install(TARGETS run_kitti_replayer DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_export_libraries(ros2_kitti_replay)
