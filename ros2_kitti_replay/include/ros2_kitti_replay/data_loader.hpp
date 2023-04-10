@@ -49,15 +49,15 @@ struct is_weak_ptr<std::weak_ptr<T>> : std::true_type
 {
 };
 
-template <typename T>
+template <typename RT>
 class DataLoader : public DataLoaderBase
 {
-  static_assert(!std::is_pointer_v<T>, "A raw pointer return type is currently not supported.");
-  static_assert(!is_weak_ptr<T>::value, "A weak pointer return type is currently not supported.");
+  static_assert(!std::is_pointer_v<RT>, "A raw pointer return type is currently not supported.");
+  static_assert(!is_weak_ptr<RT>::value, "A weak pointer return type is currently not supported.");
 
 public:
-  using DataType = typename return_underlying_type_if_smart_pointer_else_itself<T>::type;
-  using ReturnType = T;
+  using DataType = typename return_underlying_type_if_smart_pointer_else_itself<RT>::type;
+  using ReturnType = RT;
   using OptionalReturnType = std::optional<ReturnType>;
 
   static constexpr bool kReturnValueIsPtr = !std::is_same_v<DataType, ReturnType>;
