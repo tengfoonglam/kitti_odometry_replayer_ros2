@@ -277,9 +277,8 @@ void DataReplayer::play_loop()
                                       ? timestamps.at(replayer_state.next_idx)
                                       : replayer_state.final_time;
 
-      // TODO(ltf): Remove after debugging
       with_lock(logger_mutex_, [this, seconds = replayer_state.current_time.seconds()]() {
-        RCLCPP_INFO(logger_, "Current time: %fs", seconds);
+        RCLCPP_DEBUG(logger_, "Current time: %fs", seconds);
       });
     });
 

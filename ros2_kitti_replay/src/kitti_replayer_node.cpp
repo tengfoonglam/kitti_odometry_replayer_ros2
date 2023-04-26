@@ -121,9 +121,10 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Create replayer
   replayer_ptr_ = std::make_unique<DataReplayer>("kitti_replayer", timestamps);
-  assert(replayer_ptr_->add_play_data_interface(clock_interface_ptr));
-  assert(replayer_ptr_->add_play_data_interface(pose_interface_ptr));
-  assert(replayer_ptr_->add_play_data_interface(pc_interface_ptr));
+  // TODO(TF): Check if these are added using return bool
+  replayer_ptr_->add_play_data_interface(clock_interface_ptr);
+  replayer_ptr_->add_play_data_interface(pose_interface_ptr);
+  replayer_ptr_->add_play_data_interface(pc_interface_ptr);
 
   // Add Cb to publish replayer state upon state changes
 
