@@ -20,19 +20,9 @@ namespace r2k_replay
   auto output_ptr = std::make_shared<PointCloudMsg>();
 
   // Read binary file and load it into data field
-  // Adapted from tinyurl.com/mr26mmy4
-  std::ifstream file(pc_bin_path);
-
-  if (!file) {
-    return PointCloudMsg::SharedPtr();
-  }
-
-  // Expected data length obtained from KITTI dataset README
-  file.seekg(0, std::ios::end);
-  const auto data_length_bytes = file.tellg();
-  file.seekg(0, std::ios::beg);
-  output_ptr->data.resize(data_length_bytes);
-  file.read(reinterpret_cast<char *>(&output_ptr->data.front()), data_length_bytes);
+  std::ifstream stream(pc_bin_path.string(), std::ios::in | std::ios::binary);
+  output_ptr->data = decltype(output_ptr->data){
+    (std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>()};
 
   // Compute the number of points
   constexpr std::size_t number_fields = 4;
