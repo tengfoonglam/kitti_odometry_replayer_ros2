@@ -9,14 +9,14 @@ from launch_ros.actions import Node
 
 def generate_launch_description() -> LaunchDescription:
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     urdf_filename = LaunchConfiguration('urdf_filename', default='default.urdf.xml')
 
     return LaunchDescription([
         DeclareLaunchArgument(
             'use_sim_time',
-            default_value='false',
-            description='Use simulation (Gazebo) clock if true'),
+            default_value='true',
+            description='Use simulation clock if true'),
         DeclareLaunchArgument(
             'urdf_filename',
             default_value='default.urdf.xml',

@@ -61,12 +61,13 @@ DataReplayer::DataReplayer(
 bool DataReplayer::add_play_data_interface(
   std::shared_ptr<PlayDataInterfaceBase> play_data_interface_ptr)
 {
+  const auto interface_name = play_data_interface_ptr->name();
   if (is_playing()) {
-    with_lock(logger_mutex_, [this, cb_name = std::as_const(play_data_interface_ptr->name())]() {
+    with_lock(logger_mutex_, [this, &interface_name]() {
       RCLCPP_WARN(
         logger_,
-        "Replayer %s could not add play data callback %s because it is in the process of playing",
-        name_.c_str(), cb_name.c_str());
+        "Replayer %s could not add play data interface %s because it is in the process of playing",
+        name_.c_str(), interface_name.c_str());
     });
     return false;
   }
@@ -74,6 +75,11 @@ bool DataReplayer::add_play_data_interface(
     std::scoped_lock lock(cb_mutex_);
     play_data_interface_ptrs_.push_back(play_data_interface_ptr);
   }
+  with_lock(logger_mutex_, [this, &interface_name]() {
+    RCLCPP_INFO(
+      logger_, "Successfully added interface %s to replayer %s", interface_name.c_str(),
+      name_.c_str());
+  });
   return true;
 }
 
@@ -268,7 +274,13 @@ void DataReplayer::play_loop()
     const auto next_index = current_index + 1;
 
     // Play
+    const auto play_start_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
     play_data(current_index);
+    const auto play_end_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+    const auto play_duration = play_end_time - play_start_time;
+    with_lock(logger_mutex_, [this, duration = play_duration.seconds()]() {
+      RCLCPP_DEBUG(logger_, "Time taken to play data: %fs", duration);
+    });
 
     // Update state
     modify_state([this, &timestamps = std::as_const(timestamps_)](auto & replayer_state) {
@@ -291,7 +303,13 @@ void DataReplayer::play_loop()
     }
 
     // Prepare data for next index
+    const auto prep_start_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
     prepare_data(next_index);
+    const auto prep_end_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+    const auto prep_duration = prep_end_time - prep_start_time;
+    with_lock(logger_mutex_, [this, duration = prep_duration.seconds()]() {
+      RCLCPP_DEBUG(logger_, "Time taken for data preparation: %fs", duration);
+    });
 
     // Compute time to wait till next iteration
     const auto iteration_end_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
@@ -311,7 +329,7 @@ void DataReplayer::play_loop()
       with_lock(logger_mutex_, [this, &duration_till_next_play]() {
         RCLCPP_WARN(
           logger_, "Replayer %s behind schedule by %f seconds", name_.c_str(),
-          duration_till_next_play.seconds());
+          -1.0 * duration_till_next_play.seconds());
       });
       continue;
     }

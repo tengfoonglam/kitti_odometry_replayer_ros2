@@ -59,12 +59,12 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   r2k_replay::PoseDataLoader::Header pose_header;
   pose_header.frame_id = "map";
-  const std::string child_id{"ground_truth_pose"};
+  const std::string child_id{"p0"};
   auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
     "pose_loader", this->get_logger().get_child("pose_loader"), pose_header, child_id);
 
   r2k_replay::PointCloudDataLoader::Header pc_header;
-  pc_header.frame_id = "ground_truth_pose";
+  pc_header.frame_id = "lidar";
   auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
     "pc_loader", this->get_logger().get_child("pc_loader"), pc_header);
 
@@ -104,9 +104,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
       broadcast.sendTransform(msg);
       return true;
     },
-    std::move(pose_loader_ptr)
-
-  );
+    std::move(pose_loader_ptr));
 
   auto pc_interface_ptr = make_shared_interface(
     "pc_interface",
