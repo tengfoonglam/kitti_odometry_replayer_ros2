@@ -1,2 +1,2 @@
 uint64 number_steps
-float64 replay_speed 1.0
+float32 replay_speed 1.0

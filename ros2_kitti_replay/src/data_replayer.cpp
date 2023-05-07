@@ -130,14 +130,20 @@ bool DataReplayer::step(const StepRequest & step_request)
 {
   // Return if invalid step request
   const auto state = get_replayer_state();
-  const auto index_range_opt =
-    process_step_request(step_request, state.target_idx, state.data_size);
+  const auto index_range_opt = process_step_request(step_request, state.next_idx, state.data_size);
+
   if (!index_range_opt.has_value()) {
-    with_lock(logger_mutex_, [this, &step_request = std::as_const(step_request)]() {
+    with_lock(logger_mutex_, [this]() {
       RCLCPP_WARN(logger_, "Replayer %s cannot process invalid step request", name_.c_str());
     });
     return false;
   }
+
+  with_lock(logger_mutex_, [this, &step_request = std::as_const(step_request)]() {
+    RCLCPP_INFO(
+      logger_, "Replayer %s playing %zu steps at x%f speed", name_.c_str(),
+      step_request.number_steps, step_request.replay_speed);
+  });
 
   return play_index_range(index_range_opt.value(), step_request.replay_speed);
 }

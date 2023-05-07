@@ -125,11 +125,15 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Bind services
   resume_service_ptr = this->create_service<ros2_kitti_interface::srv::Resume>(
-    "resume",
+    "~/resume",
     std::bind(&KITTIReplayerNode::resume, this, std::placeholders::_1, std::placeholders::_2));
 
+  step_service_ptr = this->create_service<ros2_kitti_interface::srv::Step>(
+    "~/step",
+    std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
+
   pause_service_ptr = this->create_service<std_srvs::srv::Trigger>(
-    "pause",
+    "~/pause",
     std::bind(&KITTIReplayerNode::pause, this, std::placeholders::_1, std::placeholders::_2));
 }
 
@@ -146,6 +150,14 @@ void KITTIReplayerNode::resume(
   std::shared_ptr<ros2_kitti_interface::srv::Resume::Response> response_ptr)
 {
   response_ptr->response.success = replayer_ptr_->resume(request_ptr->request.replay_speed);
+}
+
+void KITTIReplayerNode::step(
+  const std::shared_ptr<ros2_kitti_interface::srv::Step::Request> request_ptr,
+  std::shared_ptr<ros2_kitti_interface::srv::Step::Response> response_ptr)
+{
+  response_ptr->response.success = replayer_ptr_->step(DataReplayer::StepRequest(
+    request_ptr->request.number_steps, request_ptr->request.replay_speed));
 }
 
 void KITTIReplayerNode::pause(
