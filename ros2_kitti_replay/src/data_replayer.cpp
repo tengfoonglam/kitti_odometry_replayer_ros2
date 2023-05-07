@@ -13,7 +13,8 @@ DataReplayer::PlayRequest::PlayRequest(
 {
 }
 
-DataReplayer::StepRequest::StepRequest(const size_t number_steps_in, const float replay_speed_in)
+DataReplayer::StepRequest::StepRequest(
+  const std::size_t number_steps_in, const float replay_speed_in)
 : number_steps(number_steps_in), replay_speed(replay_speed_in)
 {
 }
@@ -213,19 +214,19 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
     RCLCPP_INFO(
       logger_, "Replayer %s starting to play from %fs to %fs at x%f speed", name_.c_str(),
       state_.current_time.seconds(),
-      timestamps_.at(std::min<size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
+      timestamps_.at(std::min<std::size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
       state_.replay_speed);
   });
 
   return true;
 }
 
-[[nodiscard]] size_t DataReplayer::get_next_index() const
+[[nodiscard]] std::size_t DataReplayer::get_next_index() const
 {
   return with_lock(state_mutex_, [&]() { return state_.next_idx; });
 }
 
-void DataReplayer::prepare_data(const size_t index_to_prep)
+void DataReplayer::prepare_data(const std::size_t index_to_prep)
 {
   with_lock(cb_mutex_, [this, index_to_prep]() {
     std::for_each(
@@ -242,7 +243,7 @@ void DataReplayer::prepare_data(const size_t index_to_prep)
   });
 }
 
-void DataReplayer::play_data(const size_t index_to_play)
+void DataReplayer::play_data(const std::size_t index_to_play)
 {
   with_lock(cb_mutex_, [this, index_to_play]() {
     std::for_each(
@@ -484,7 +485,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
 }
 
 [[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
-  const StepRequest & step_request, const size_t next_idx, const size_t data_size)
+  const StepRequest & step_request, const std::size_t next_idx, const std::size_t data_size)
 {
   // Invalid if step size is zero
   if (step_request.number_steps < 1) {
