@@ -9,6 +9,9 @@ namespace r2k_replay
 [[nodiscard]] PointCloudMsg::SharedPtr load_point_cloud_from_file(
   const std::filesystem::path & pc_bin_path)
 {
+  static float count = 0.0;
+  static float total = 0.0;
+
   // Check if text file is .bin file and exists
   if (
     !std::filesystem::exists(pc_bin_path) ||
@@ -20,9 +23,21 @@ namespace r2k_replay
   auto output_ptr = std::make_shared<PointCloudMsg>();
 
   // Read binary file and load it into data field
+  auto start_time = std::chrono::high_resolution_clock::now();
+
   std::ifstream stream(pc_bin_path.string(), std::ios::in | std::ios::binary);
   output_ptr->data = decltype(output_ptr->data){
     (std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>()};
+
+  auto end_time = std::chrono::high_resolution_clock::now();
+  const auto time_taken_us =
+    std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
+  count += 1.0;
+  total += time_taken_us;
+
+  if ((static_cast<size_t>(count) % 100) == 0) {
+    std::cout << "Average read time [ms]: " << (total / count) * 1e-3 << "\n";
+  }
 
   // Compute the number of points
   constexpr std::size_t number_fields = 4;
