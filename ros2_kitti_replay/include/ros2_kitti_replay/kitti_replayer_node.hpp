@@ -28,6 +28,10 @@ private:
     const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
     std::unique_ptr<T> loader_ptr);
 
+  template <typename T>
+  void play_data_interface_check_shutdown_if_fail(
+    const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size);
+
   void resume(
     const std::shared_ptr<ros2_kitti_interface::srv::Resume::Request> request_ptr,
     std::shared_ptr<ros2_kitti_interface::srv::Resume::Response> response_ptr);

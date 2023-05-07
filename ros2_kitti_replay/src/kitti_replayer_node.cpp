@@ -5,6 +5,7 @@
 #include <chrono>
 #include <filesystem>
 #include <ros2_kitti_interface/msg/trigger_response.hpp>
+#include <vector>
 
 #include "ros2_kitti_replay/clock_data_loader.hpp"
 #include "ros2_kitti_replay/point_cloud_data_loader.hpp"
@@ -28,11 +29,10 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   auto parameters_client = rclcpp::SyncParametersClient(this);
   while (!parameters_client.wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
-      RCLCPP_ERROR(
-        this->get_logger(), "Interrupted while waiting for the parameters service. Exiting.");
+      RCLCPP_ERROR(get_logger(), "Interrupted while waiting for the parameters service. Exiting.");
       rclcpp::shutdown();
     }
-    RCLCPP_INFO(this->get_logger(), "Parameters service not available, waiting again...");
+    RCLCPP_INFO(get_logger(), "Parameters service not available, waiting again...");
   }
 
   // Get params
@@ -47,49 +47,20 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   auto timestamps_opt = extract_timestamps_from_file(timestamp_path);
   if (!timestamps_opt.has_value()) {
     RCLCPP_ERROR(
-      this->get_logger(), "Failed to load timestamps from \"%s\". Exiting.",
+      get_logger(), "Failed to load timestamps from \"%s\". Exiting.",
       timestamp_path.string().c_str());
     rclcpp::shutdown();
   }
   const auto & timestamps = timestamps_opt.value();
-
-  // Create data loaders
-  auto clock_loader_ptr =
-    std::make_unique<ClockDataLoader>("clock_loader", this->get_logger().get_child("clock_loader"));
-
-  r2k_replay::PoseDataLoader::Header pose_header;
-  pose_header.frame_id = "map";
-  const std::string child_id{"p0"};
-  auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
-    "pose_loader", this->get_logger().get_child("pose_loader"), pose_header, child_id);
-
-  r2k_replay::PointCloudDataLoader::Header pc_header;
-  pc_header.frame_id = "lidar";
-  auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
-    "pc_loader", this->get_logger().get_child("pc_loader"), pc_header);
-
-  const auto clock_loader_setup_success = clock_loader_ptr->setup(timestamps, "");
-  const auto pose_loader_setup_success = pose_loader_ptr->setup(timestamps, poses_path);
-  const auto pc_loader_setup_success = pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
-
-  // Check if loaders have been setup correctly
-  if (!clock_loader_setup_success || !pose_loader_setup_success || !pc_loader_setup_success) {
-    RCLCPP_ERROR(this->get_logger(), "One of the loaders failed to setup. Exiting.");
-    rclcpp::shutdown();
-  }
-
   const auto number_stamps = timestamps.size();
-  if (
-    number_stamps != clock_loader_ptr->data_size() ||
-    number_stamps != pose_loader_ptr->data_size() || number_stamps != pc_loader_ptr->data_size()) {
-    RCLCPP_ERROR(
-      this->get_logger(),
-      "One of the loaders loaded a number of readings that are different than then number of "
-      "timestamps. Exiting.");
-    rclcpp::shutdown();
-  }
 
   // Create load and play interfaces
+  std::vector<std::shared_ptr<PlayDataInterfaceBase>> play_data_interface_ptrs;
+
+  // Clock
+  auto clock_loader_ptr =
+    std::make_unique<ClockDataLoader>("clock_loader", get_logger().get_child("clock_loader"));
+  clock_loader_ptr->setup(timestamps, "");
   auto clock_interface_ptr = make_shared_interface(
     "clock_interface",
     [pub_ptr = this->create_publisher<ClockDataLoader::DataType>("clock", 10)](const auto & msg) {
@@ -97,7 +68,16 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
       return true;
     },
     std::move(clock_loader_ptr));
+  play_data_interface_check_shutdown_if_fail(*clock_interface_ptr, number_stamps);
+  play_data_interface_ptrs.push_back(clock_interface_ptr);
 
+  // Ground Truth Pose
+  r2k_replay::PoseDataLoader::Header pose_header;
+  pose_header.frame_id = "map";
+  const std::string child_id{"p0"};
+  auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
+    "pose_loader", get_logger().get_child("pose_loader"), pose_header, child_id);
+  pose_loader_ptr->setup(timestamps, poses_path);
   auto pose_interface_ptr = make_shared_interface(
     "pose_interface",
     [broadcast = tf2_ros::TransformBroadcaster(*this)](const auto & msg) mutable {
@@ -105,7 +85,15 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
       return true;
     },
     std::move(pose_loader_ptr));
+  play_data_interface_check_shutdown_if_fail(*pose_interface_ptr, number_stamps);
+  play_data_interface_ptrs.push_back(pose_interface_ptr);
 
+  // Point Cloud
+  r2k_replay::PointCloudDataLoader::Header pc_header;
+  pc_header.frame_id = "lidar";
+  auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
+    "pc_loader", get_logger().get_child("pc_loader"), pc_header);
+  pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
   auto pc_interface_ptr = make_shared_interface(
     "pc_interface",
     [pub_ptr =
@@ -113,16 +101,20 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
       pub_ptr->publish(msg);
       return true;
     },
-    std::move(pc_loader_ptr)
+    std::move(pc_loader_ptr));
+  play_data_interface_check_shutdown_if_fail(*pc_interface_ptr, number_stamps);
+  play_data_interface_ptrs.push_back(pc_interface_ptr);
 
-  );
-
-  // Create replayer
+  // Create replayer and add interfaces
   replayer_ptr_ = std::make_unique<DataReplayer>("kitti_replayer", timestamps);
-  // TODO(TF): Check if these are added using return bool
-  replayer_ptr_->add_play_data_interface(clock_interface_ptr);
-  replayer_ptr_->add_play_data_interface(pose_interface_ptr);
-  replayer_ptr_->add_play_data_interface(pc_interface_ptr);
+  for (auto interface_ptr : play_data_interface_ptrs) {
+    if (!replayer_ptr_->add_play_data_interface(interface_ptr)) {
+      RCLCPP_ERROR(
+        get_logger(), "Failed to add %s Play Data Interface to Replayer. Exiting.",
+        interface_ptr->name().c_str());
+      rclcpp::shutdown();
+    }
+  }
 
   // Add Cb to publish replayer state upon state changes
 
@@ -156,6 +148,28 @@ void KITTIReplayerNode::pause(
   std::shared_ptr<std_srvs::srv::Trigger::Response> response_ptr)
 {
   response_ptr->success = replayer_ptr_->pause();
+}
+
+template <typename T>
+void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
+  const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size)
+{
+  const auto interface_name = interface.name();
+
+  if (expected_data_size != interface.data_size()) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "%s Play Data Interface loaded a number of readings (%zu) that is different from the "
+      "number of timestamps (%zu). Exiting.",
+      interface_name.c_str(), expected_data_size, interface.data_size());
+    rclcpp::shutdown();
+  }
+
+  if (!interface.ready()) {
+    RCLCPP_ERROR(
+      get_logger(), "%s Play Data Interface failed to setup. Exiting.", interface_name.c_str());
+    rclcpp::shutdown();
+  }
 }
 
 }  // namespace r2k_replay
