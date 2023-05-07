@@ -7,7 +7,8 @@
 with section("parse"):
 
     # Specify structure for custom cmake functions
-    additional_commands = {'add_custom_command': {'flags': [], 'kwargs': {'OUTPUT': '*', 'COMMAND': '*', 'ARGS': '*'}}}
+    additional_commands = {'add_custom_command': {'flags': [],
+                                                  'kwargs': {'OUTPUT': '*', 'COMMAND': '*', 'ARGS': '*'}}}
 
     # Override configurations per-command where available
     override_spec = []

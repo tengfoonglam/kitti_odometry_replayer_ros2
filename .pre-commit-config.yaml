@@ -17,13 +17,18 @@ repos:
     rev: v1.3.5
     hooks:
       - id: clang-format
-        args: [--style=file]
-      - id: clang-tidy
-      - id: oclint
-      - id: uncrustify
+        args: [--style=file, -i]
+      # ROS2 clang-format and uncrustify configs conflict with each other, disable uncrustify for now (See https://github.com/ament/ament_lint/issues/146)
+      # - id: uncrustify
+      #   args: ["-c", "ament_code_style.cfg", "--replace"]
       - id: cppcheck
+        args: ["-f", "--inline-suppr", "-q", "-rp", "--suppress=internalAstError", "--suppress=unknownMacro",
+              "--suppress=missingIncludeSystem","--suppress=unusedStructMember", "--suppress=unusedFunction",
+              "--suppress=unmatchedSuppression"]
       - id: cpplint
-      - id: include-what-you-use
+        # Linelength/filters mainly obtained from https://github.com/ament/ament_lint/blob/c01b035957dda939e8cffd33f431d26bd83ce233/ament_cpplint/ament_cpplint/main.py
+        # legal/copyright and build/include_order are added temporarily to speed up development, will be addressed in the future
+        args: ["--linelength=100", "--filter=-legal/copyright,-build/include_order,-build/c++11,-runtime/references,-whitespace/braces,-whitespace/indent,-whitespace/parens,-whitespace/semicolon,-build/header_guard"]
   - repo: https://github.com/pre-commit/mirrors-autopep8
     rev: 'v2.0.1'
     hooks:
@@ -43,6 +48,7 @@ repos:
     rev: 1.4.2
     hooks:
       - id: cmakelint
+        args: ["--filter=-whitespace/indent"]
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.10
     hooks:

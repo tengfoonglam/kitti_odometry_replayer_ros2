@@ -52,3 +52,7 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# Uncrustify backup files
+*.unc-backup~
+*.unc-backup.md5~
