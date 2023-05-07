@@ -65,7 +65,7 @@ public:
 
   bool add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase> play_data_interface_ptr);
 
-  bool set_state_change_cb(const StateChangeCallback & state_change_cb);
+  bool set_state_change_cb(StateChangeCallback && state_change_cb);
 
   [[nodiscard]] ReplayerState get_replayer_state() const;
 

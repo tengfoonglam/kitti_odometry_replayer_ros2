@@ -83,7 +83,7 @@ bool DataReplayer::add_play_data_interface(
   return true;
 }
 
-bool DataReplayer::set_state_change_cb(const StateChangeCallback & state_change_cb)
+bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
 {
   if (is_playing()) {
     with_lock(logger_mutex_, [this]() {
@@ -104,7 +104,7 @@ bool DataReplayer::set_state_change_cb(const StateChangeCallback & state_change_
           name_.c_str());
       });
     }
-    state_change_cb_ = state_change_cb;
+    state_change_cb_ = std::move(state_change_cb);
   });
 
   return true;

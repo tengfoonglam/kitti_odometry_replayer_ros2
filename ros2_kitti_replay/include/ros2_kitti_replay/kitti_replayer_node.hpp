@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <ros2_kitti_interface/msg/replayer_state.hpp>
 #include <ros2_kitti_interface/srv/resume.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
@@ -16,10 +17,16 @@ namespace r2k_replay
 class KITTIReplayerNode : public rclcpp::Node
 {
 public:
+  using ReplayerStateMsg = ros2_kitti_interface::msg::ReplayerState;
+
   explicit KITTIReplayerNode(const rclcpp::NodeOptions & options);
+
+  [[nodiscard]] static ReplayerStateMsg replayer_state_to_msg(
+    const DataReplayer::ReplayerState & replayer_state);
 
 private:
   std::unique_ptr<DataReplayer> replayer_ptr_;
+  std::shared_ptr<rclcpp::Publisher<ReplayerStateMsg>> state_publisher_ptr_;
   rclcpp::Service<ros2_kitti_interface::srv::Resume>::SharedPtr resume_service_ptr;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr pause_service_ptr;
 

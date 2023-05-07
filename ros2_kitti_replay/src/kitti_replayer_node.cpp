@@ -117,6 +117,11 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   }
 
   // Add Cb to publish replayer state upon state changes
+  auto state_change_cb = [pub_ptr = this->create_publisher<ReplayerStateMsg>("replayer_state", 10)](
+                           const DataReplayer::ReplayerState & replayer_state) {
+    pub_ptr->publish(replayer_state_to_msg(replayer_state));
+  };
+  replayer_ptr_->set_state_change_cb(std::move(state_change_cb));
 
   // Bind services
   resume_service_ptr = this->create_service<ros2_kitti_interface::srv::Resume>(
@@ -170,6 +175,21 @@ void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
       get_logger(), "%s Play Data Interface failed to setup. Exiting.", interface_name.c_str());
     rclcpp::shutdown();
   }
+}
+
+[[nodiscard]] KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
+  const DataReplayer::ReplayerState & replayer_state)
+{
+  ReplayerStateMsg output;
+  output.is_playing = replayer_state.playing;
+  output.replay_speed = replayer_state.replay_speed;
+  output.start_time = replayer_state.start_time;
+  output.current_time = replayer_state.current_time;
+  output.final_time = replayer_state.final_time;
+  output.next_idx = replayer_state.next_idx;
+  output.target_idx = replayer_state.target_idx;
+  output.data_size = replayer_state.data_size;
+  return output;
 }
 
 }  // namespace r2k_replay
