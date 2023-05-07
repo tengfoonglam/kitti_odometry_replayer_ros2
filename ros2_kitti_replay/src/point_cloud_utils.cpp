@@ -9,9 +9,6 @@ namespace r2k_replay
 [[nodiscard]] PointCloudMsg::SharedPtr load_point_cloud_from_file(
   const std::filesystem::path & pc_bin_path)
 {
-  static float count = 0.0;
-  static float total = 0.0;
-
   // Check if text file is .bin file and exists
   if (
     !std::filesystem::exists(pc_bin_path) ||
@@ -24,30 +21,18 @@ namespace r2k_replay
 
   // Read binary file and load it into data field
   // Adapted from tinyurl.com/mr26mmy4
-  auto start_time = std::chrono::high_resolution_clock::now();
-
   std::ifstream file(pc_bin_path);
 
   if (!file) {
     return PointCloudMsg::SharedPtr();
   }
 
-  // Expected data length obtained from KITTI dataset README
   file.seekg(0, std::ios::end);
   const auto data_length_bytes = file.tellg();
   file.seekg(0, std::ios::beg);
+
   output_ptr->data.resize(data_length_bytes);
   file.read(reinterpret_cast<char *>(&output_ptr->data.front()), data_length_bytes);
-
-  auto end_time = std::chrono::high_resolution_clock::now();
-  const auto time_taken_us =
-    std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
-  count += 1.0;
-  total += time_taken_us;
-
-  if ((static_cast<size_t>(count) % 100) == 0) {
-    std::cout << "Average read time [ms]: " << (total / count) * 1e-3 << "\n";
-  }
 
   // Compute the number of points
   constexpr std::size_t number_fields = 4;
