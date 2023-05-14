@@ -143,7 +143,7 @@ public:
   {
     ASSERT_TRUE(
       replayer.set_time_range(SetTimeRangeRequest(kTimestamps.front(), kTimestamps.back())));
-    ASSERT_TRUE(replayer.resume());
+    ASSERT_TRUE(replayer.play());
     ASSERT_TRUE(replayer.is_playing());
     std::this_thread::sleep_for(
       std::chrono::nanoseconds(kNumberTimestamps / size_t{2} * kTimestampIntervalNs));
@@ -202,11 +202,11 @@ TEST_F(TestDataReplayer, EmptyTimestampInitializationTest)
   ASSERT_EQ(empty_replayer.get_replayer_state(), ReplayerState());
 }
 
-TEST_F(TestDataReplayer, ResumeTest)
+TEST_F(TestDataReplayer, PlayTest)
 {
-  ASSERT_TRUE(replayer.resume());
+  ASSERT_TRUE(replayer.play());
   wait_till_replayer_no_longer_playing();
-  ASSERT_FALSE(replayer.resume());
+  ASSERT_FALSE(replayer.play());
   assert_timeline_played_exactly_once();
 }
 
@@ -214,7 +214,7 @@ TEST_F(TestDataReplayer, SetTimeRangeBasicTest)
 {
   ASSERT_TRUE(
     replayer.set_time_range(SetTimeRangeRequest(kTimestamps.front(), kTimestamps.back())));
-  ASSERT_TRUE(replayer.resume());
+  ASSERT_TRUE(replayer.play());
   wait_till_replayer_no_longer_playing();
   assert_timeline_played_exactly_once();
 }
@@ -225,7 +225,7 @@ TEST_F(TestDataReplayer, DestructorTest)
     auto scoped_replayer = DataReplayer{"Scoped Test Replayer", kTimestamps};
     ASSERT_TRUE(scoped_replayer.add_play_data_interface(play_interface_ptr));
     ASSERT_TRUE(scoped_replayer.set_state_change_cb(get_state_change_callback()));
-    ASSERT_TRUE(scoped_replayer.resume());
+    ASSERT_TRUE(scoped_replayer.play());
     std::this_thread::sleep_for(std::chrono::nanoseconds(kTimestampIntervalNs));
   }
   assert_timeline_played_partially();
@@ -241,7 +241,7 @@ TEST_F(TestDataReplayer, SetTimeRangeSegmentTest)
 
   ASSERT_TRUE(replayer.set_time_range(
     SetTimeRangeRequest(truncated_timestamp.front(), truncated_timestamp.back())));
-  ASSERT_TRUE(replayer.resume());
+  ASSERT_TRUE(replayer.play());
   wait_till_replayer_no_longer_playing();
   assert_timeline_played_exactly_once(start_index, truncated_timestamp);
 }
@@ -261,7 +261,7 @@ TEST_F(TestDataReplayer, PauseWhilePlayingTest)
   const auto resume_idx = paused_state.next_idx;
   play_interface_ptr->reset();
   ASSERT_FALSE(replayer.is_playing());
-  ASSERT_TRUE(replayer.resume());
+  ASSERT_TRUE(replayer.play());
 
   wait_till_replayer_no_longer_playing();
   ASSERT_FALSE(replayer.is_playing());
@@ -315,7 +315,7 @@ TEST_P(TestDataReplayerSpeedFactor, SpeedFactorTests)
   const auto speed_factor = GetParam();
 
   auto start_time = std::chrono::high_resolution_clock::now();
-  ASSERT_TRUE(replayer.resume(speed_factor));
+  ASSERT_TRUE(replayer.play(speed_factor));
   wait_till_replayer_no_longer_playing();
   auto end_time = std::chrono::high_resolution_clock::now();
   const auto time_taken =

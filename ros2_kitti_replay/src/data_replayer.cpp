@@ -149,6 +149,12 @@ bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_req
     replayer_state.next_idx = start_index;
     replayer_state.target_time = timestamps_.at(target_index);
     replayer_state.target_idx = target_index;
+
+    with_lock(logger_mutex_, [this, &replayer_state = std::as_const(replayer_state)]() {
+      RCLCPP_INFO(
+        logger_, "Replayer set to play time range between from %fs to %fs",
+        replayer_state.current_time.seconds(), replayer_state.target_time.seconds());
+    });
   });
 
   return true;
@@ -176,7 +182,7 @@ bool DataReplayer::step(const StepRequest & step_request)
   return play_index_range(index_range_opt.value(), step_request.replay_speed);
 }
 
-bool DataReplayer::resume(const float replay_speed)
+bool DataReplayer::play(const float replay_speed)
 {
   const auto state = get_replayer_state();
   const bool resumable = state.next_idx < state.data_size && state.next_idx <= state.target_idx;
@@ -186,7 +192,7 @@ bool DataReplayer::resume(const float replay_speed)
     with_lock(logger_mutex_, [this]() {
       RCLCPP_WARN(
         logger_,
-        "Replayer %s cannot resume because it has either reached the target time or the end of the "
+        "Replayer %s cannot play because it has either reached the target time or the end of the "
         "timeline",
         name_.c_str());
     });

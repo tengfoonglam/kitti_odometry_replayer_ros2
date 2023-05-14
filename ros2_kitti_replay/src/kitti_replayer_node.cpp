@@ -124,9 +124,9 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   replayer_ptr_->set_state_change_cb(std::move(state_change_cb));
 
   // Bind services
-  resume_service_ptr = this->create_service<ros2_kitti_interface::srv::Resume>(
-    "~/resume",
-    std::bind(&KITTIReplayerNode::resume, this, std::placeholders::_1, std::placeholders::_2));
+  play_service_ptr = this->create_service<ros2_kitti_interface::srv::Play>(
+    "~/Play",
+    std::bind(&KITTIReplayerNode::play, this, std::placeholders::_1, std::placeholders::_2));
 
   step_service_ptr = this->create_service<ros2_kitti_interface::srv::Step>(
     "~/step",
@@ -145,11 +145,11 @@ std::shared_ptr<LoadAndPlayDataInterface<T>> KITTIReplayerNode::make_shared_inte
   return std::make_shared<LoadAndPlayDataInterface<T>>(name, std::move(cb), std::move(loader_ptr));
 }
 
-void KITTIReplayerNode::resume(
-  const std::shared_ptr<ros2_kitti_interface::srv::Resume::Request> request_ptr,
-  std::shared_ptr<ros2_kitti_interface::srv::Resume::Response> response_ptr)
+void KITTIReplayerNode::play(
+  const std::shared_ptr<ros2_kitti_interface::srv::Play::Request> request_ptr,
+  std::shared_ptr<ros2_kitti_interface::srv::Play::Response> response_ptr)
 {
-  response_ptr->response.success = replayer_ptr_->resume(request_ptr->request.replay_speed);
+  response_ptr->response.success = replayer_ptr_->play(request_ptr->request.replay_speed);
 }
 
 void KITTIReplayerNode::step(

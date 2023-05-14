@@ -67,7 +67,7 @@ public:
 
   [[nodiscard]] ReplayerState get_replayer_state() const;
 
-  bool resume(const float replay_speed = 1.0f);
+  bool play(const float replay_speed = 1.0f);
 
   bool set_time_range(const SetTimeRangeRequest & set_time_range_request);
 

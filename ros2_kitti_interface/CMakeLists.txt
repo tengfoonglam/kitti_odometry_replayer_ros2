@@ -9,11 +9,11 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
                            "msg/SetTimeRangeRequest.msg"
                            "msg/ReplayerState.msg"
-                           "msg/ResumeRequest.msg"
+                           "msg/PlayRequest.msg"
                            "msg/StepRequest.msg"
                            "msg/TriggerResponse.msg"
                            "srv/SetTimeRange.srv"
-                           "srv/Resume.srv"
+                           "srv/Play.srv"
                            "srv/Step.srv"
                            DEPENDENCIES
                            std_msgs
