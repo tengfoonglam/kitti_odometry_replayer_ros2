@@ -123,20 +123,20 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   replayer_ptr_->set_state_change_cb(std::move(state_change_cb));
 
   // Bind services
-  set_time_range_service_ptr = create_service<ros2_kitti_interface::srv::SetTimeRange>(
+  set_time_range_service_ptr = create_service<SetTimeRangeSrv>(
     "~/set_time_range",
     std::bind(
       &KITTIReplayerNode::set_time_range, this, std::placeholders::_1, std::placeholders::_2));
 
-  step_service_ptr = create_service<ros2_kitti_interface::srv::Step>(
+  step_service_ptr = create_service<StepSrv>(
     "~/step",
     std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
 
-  play_service_ptr = create_service<ros2_kitti_interface::srv::Play>(
+  play_service_ptr = create_service<PlaySrv>(
     "~/play",
     std::bind(&KITTIReplayerNode::play, this, std::placeholders::_1, std::placeholders::_2));
 
-  pause_service_ptr = create_service<std_srvs::srv::Trigger>(
+  pause_service_ptr = create_service<TriggerSrv>(
     "~/pause",
     std::bind(&KITTIReplayerNode::pause, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -150,30 +150,30 @@ std::shared_ptr<LoadAndPlayDataInterface<T>> KITTIReplayerNode::make_shared_inte
 }
 
 void KITTIReplayerNode::play(
-  const std::shared_ptr<ros2_kitti_interface::srv::Play::Request> request_ptr,
-  std::shared_ptr<ros2_kitti_interface::srv::Play::Response> response_ptr)
+  const std::shared_ptr<PlaySrv::Request> request_ptr,
+  std::shared_ptr<PlaySrv::Response> response_ptr)
 {
   response_ptr->response.success = replayer_ptr_->play(request_ptr->request.replay_speed);
 }
 
 void KITTIReplayerNode::step(
-  const std::shared_ptr<ros2_kitti_interface::srv::Step::Request> request_ptr,
-  std::shared_ptr<ros2_kitti_interface::srv::Step::Response> response_ptr)
+  const std::shared_ptr<StepSrv::Request> request_ptr,
+  std::shared_ptr<StepSrv::Response> response_ptr)
 {
   response_ptr->response.success = replayer_ptr_->step(DataReplayer::StepRequest(
     request_ptr->request.number_steps, request_ptr->request.replay_speed));
 }
 
 void KITTIReplayerNode::pause(
-  [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request_ptr,
-  std::shared_ptr<std_srvs::srv::Trigger::Response> response_ptr)
+  [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,
+  std::shared_ptr<TriggerSrv::Response> response_ptr)
 {
   response_ptr->success = replayer_ptr_->pause();
 }
 
 void KITTIReplayerNode::set_time_range(
-  const std::shared_ptr<ros2_kitti_interface::srv::SetTimeRange::Request> request_ptr,
-  std::shared_ptr<ros2_kitti_interface::srv::SetTimeRange::Response> response_ptr)
+  const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
+  std::shared_ptr<SetTimeRangeSrv::Response> response_ptr)
 {
   response_ptr->response.success = replayer_ptr_->set_time_range(
     {Timestamp(request_ptr->request.start_time, RCL_SYSTEM_TIME),

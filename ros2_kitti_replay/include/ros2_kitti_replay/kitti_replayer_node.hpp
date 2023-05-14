@@ -20,6 +20,10 @@ class KITTIReplayerNode : public rclcpp::Node
 {
 public:
   using ReplayerStateMsg = ros2_kitti_interface::msg::ReplayerState;
+  using PlaySrv = ros2_kitti_interface::srv::Play;
+  using SetTimeRangeSrv = ros2_kitti_interface::srv::SetTimeRange;
+  using StepSrv = ros2_kitti_interface::srv::Step;
+  using TriggerSrv = std_srvs::srv::Trigger;
 
   explicit KITTIReplayerNode(const rclcpp::NodeOptions & options);
 
@@ -29,10 +33,10 @@ public:
 private:
   std::unique_ptr<DataReplayer> replayer_ptr_;
   std::shared_ptr<rclcpp::Publisher<ReplayerStateMsg>> state_publisher_ptr_;
-  rclcpp::Service<ros2_kitti_interface::srv::Play>::SharedPtr play_service_ptr;
-  rclcpp::Service<ros2_kitti_interface::srv::Step>::SharedPtr step_service_ptr;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr pause_service_ptr;
-  rclcpp::Service<ros2_kitti_interface::srv::SetTimeRange>::SharedPtr set_time_range_service_ptr;
+  rclcpp::Service<PlaySrv>::SharedPtr play_service_ptr;
+  rclcpp::Service<StepSrv>::SharedPtr step_service_ptr;
+  rclcpp::Service<TriggerSrv>::SharedPtr pause_service_ptr;
+  rclcpp::Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr;
 
   template <typename T>
   static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
@@ -44,20 +48,20 @@ private:
     const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size);
 
   void play(
-    const std::shared_ptr<ros2_kitti_interface::srv::Play::Request> request_ptr,
-    std::shared_ptr<ros2_kitti_interface::srv::Play::Response> response_ptr);
+    const std::shared_ptr<PlaySrv::Request> request_ptr,
+    std::shared_ptr<PlaySrv::Response> response_ptr);
 
   void step(
-    const std::shared_ptr<ros2_kitti_interface::srv::Step::Request> request_ptr,
-    std::shared_ptr<ros2_kitti_interface::srv::Step::Response> response_ptr);
+    const std::shared_ptr<StepSrv::Request> request_ptr,
+    std::shared_ptr<StepSrv::Response> response_ptr);
 
   void pause(
-    [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request_ptr,
-    std::shared_ptr<std_srvs::srv::Trigger::Response> response_ptr);
+    [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,
+    std::shared_ptr<TriggerSrv::Response> response_ptr);
 
   void set_time_range(
-    const std::shared_ptr<ros2_kitti_interface::srv::SetTimeRange::Request> request_ptr,
-    std::shared_ptr<ros2_kitti_interface::srv::SetTimeRange::Response> response_ptr);
+    const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
+    std::shared_ptr<SetTimeRangeSrv::Response> response_ptr);
 };
 
 }  // namespace r2k_replay
