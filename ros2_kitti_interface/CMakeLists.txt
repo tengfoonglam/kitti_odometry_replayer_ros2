@@ -12,8 +12,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
                            "msg/PlayRequest.msg"
                            "msg/StepRequest.msg"
                            "msg/TriggerResponse.msg"
-                           "srv/SetTimeRange.srv"
                            "srv/Play.srv"
+                           "srv/SetTimeRange.srv"
                            "srv/Step.srv"
                            DEPENDENCIES
                            std_msgs

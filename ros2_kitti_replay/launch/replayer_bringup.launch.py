@@ -22,11 +22,13 @@ def generate_launch_description() -> LaunchDescription:
         "dataset_path", default=str(Path().home() / "kitti_dataset")
     )
 
+    dataset_number_padded = PythonExpression(['f"{', dataset_number, ':02}"'])
+
     timestamp_path = PathJoinSubstitution(
         [
             dataset_path,
             "data_odometry_calib/dataset/sequences",
-            dataset_number,
+            dataset_number_padded,
             "times.txt",
         ]
     )
@@ -41,7 +43,7 @@ def generate_launch_description() -> LaunchDescription:
         [
             dataset_path,
             "data_odometry_velodyne/dataset/sequences",
-            dataset_number,
+            dataset_number_padded,
             "velodyne",
         ]
     )
@@ -57,7 +59,7 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "dataset_number",
                 default_value="00",
-                description="Dataset number to load. Must be a double digit number. e.g. 00, 10",
+                description="Dataset number to load. Omit any leading zeros.",
             ),
             DeclareLaunchArgument(
                 "dataset_path",

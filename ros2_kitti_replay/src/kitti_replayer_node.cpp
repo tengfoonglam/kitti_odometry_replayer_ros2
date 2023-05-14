@@ -21,9 +21,9 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   // Declare Node params
-  this->declare_parameter("timestamp_path", "");
-  this->declare_parameter("poses_path", "");
-  this->declare_parameter("point_cloud_folder_path", "");
+  declare_parameter("timestamp_path", "");
+  declare_parameter("poses_path", "");
+  declare_parameter("point_cloud_folder_path", "");
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -63,7 +63,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   clock_loader_ptr->setup(timestamps, "");
   auto clock_interface_ptr = make_shared_interface(
     "clock_interface",
-    [pub_ptr = this->create_publisher<ClockDataLoader::DataType>("clock", 10)](const auto & msg) {
+    [pub_ptr = create_publisher<ClockDataLoader::DataType>("clock", 10)](const auto & msg) {
       pub_ptr->publish(msg);
       return true;
     },
@@ -96,8 +96,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
   auto pc_interface_ptr = make_shared_interface(
     "pc_interface",
-    [pub_ptr =
-       this->create_publisher<PointCloudDataLoader::DataType>("lidar_pc", 10)](const auto & msg) {
+    [pub_ptr = create_publisher<PointCloudDataLoader::DataType>("lidar_pc", 10)](const auto & msg) {
       pub_ptr->publish(msg);
       return true;
     },
@@ -117,22 +116,27 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   }
 
   // Add Cb to publish replayer state upon state changes
-  auto state_change_cb = [pub_ptr = this->create_publisher<ReplayerStateMsg>("replayer_state", 10)](
+  auto state_change_cb = [pub_ptr = create_publisher<ReplayerStateMsg>("replayer_state", 10)](
                            const DataReplayer::ReplayerState & replayer_state) {
     pub_ptr->publish(replayer_state_to_msg(replayer_state));
   };
   replayer_ptr_->set_state_change_cb(std::move(state_change_cb));
 
   // Bind services
-  play_service_ptr = this->create_service<ros2_kitti_interface::srv::Play>(
-    "~/Play",
-    std::bind(&KITTIReplayerNode::play, this, std::placeholders::_1, std::placeholders::_2));
+  set_time_range_service_ptr = create_service<ros2_kitti_interface::srv::SetTimeRange>(
+    "~/set_time_range",
+    std::bind(
+      &KITTIReplayerNode::set_time_range, this, std::placeholders::_1, std::placeholders::_2));
 
-  step_service_ptr = this->create_service<ros2_kitti_interface::srv::Step>(
+  step_service_ptr = create_service<ros2_kitti_interface::srv::Step>(
     "~/step",
     std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
 
-  pause_service_ptr = this->create_service<std_srvs::srv::Trigger>(
+  play_service_ptr = create_service<ros2_kitti_interface::srv::Play>(
+    "~/play",
+    std::bind(&KITTIReplayerNode::play, this, std::placeholders::_1, std::placeholders::_2));
+
+  pause_service_ptr = create_service<std_srvs::srv::Trigger>(
     "~/pause",
     std::bind(&KITTIReplayerNode::pause, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -165,6 +169,15 @@ void KITTIReplayerNode::pause(
   std::shared_ptr<std_srvs::srv::Trigger::Response> response_ptr)
 {
   response_ptr->success = replayer_ptr_->pause();
+}
+
+void KITTIReplayerNode::set_time_range(
+  const std::shared_ptr<ros2_kitti_interface::srv::SetTimeRange::Request> request_ptr,
+  std::shared_ptr<ros2_kitti_interface::srv::SetTimeRange::Response> response_ptr)
+{
+  response_ptr->response.success = replayer_ptr_->set_time_range(
+    {Timestamp(request_ptr->request.start_time, RCL_SYSTEM_TIME),
+     Timestamp(request_ptr->request.end_time, RCL_SYSTEM_TIME)});
 }
 
 template <typename T>
