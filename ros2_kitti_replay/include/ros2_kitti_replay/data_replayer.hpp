@@ -34,14 +34,11 @@ public:
     friend bool operator==(const ReplayerState & lhs, const ReplayerState & rhs);
   };
 
-  struct PlayRequest
+  struct SetTimeRangeRequest
   {
     Timestamp start_time;
     Timestamp target_time;
-    float replay_speed{1.0f};
-    PlayRequest(
-      const Timestamp & start_time_in, const Timestamp & target_time_in,
-      const float replay_speed_in = 1.0f);
+    SetTimeRangeRequest(const Timestamp & start_time_in, const Timestamp & target_time_in);
   };
 
   struct StepRequest
@@ -72,7 +69,7 @@ public:
 
   bool resume(const float replay_speed = 1.0f);
 
-  bool play(const PlayRequest & play_request);
+  bool set_time_range(const SetTimeRangeRequest & set_time_range_request);
 
   bool step(const StepRequest & step_request);
 
@@ -84,8 +81,8 @@ public:
 
   ~DataReplayer();
 
-  [[nodiscard]] static IndexRangeOpt process_play_request(
-    const PlayRequest & play_request, const Timestamps & timestamps);
+  [[nodiscard]] static IndexRangeOpt process_set_time_range_request(
+    const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps);
 
   [[nodiscard]] static IndexRangeOpt process_step_request(
     const StepRequest & step_request, const std::size_t next_idx, const std::size_t data_size);

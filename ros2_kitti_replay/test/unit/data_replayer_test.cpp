@@ -16,7 +16,7 @@ using r2k_replay::DataReplayer;
 using r2k_replay::PlayDataInterfaceBase;
 using r2k_replay::Timestamp;
 using r2k_replay::Timestamps;
-using PlayRequest = r2k_replay::DataReplayer::PlayRequest;
+using SetTimeRangeRequest = r2k_replay::DataReplayer::SetTimeRangeRequest;
 using ReplayerState = r2k_replay::DataReplayer::ReplayerState;
 using StateChangeCallback = r2k_replay::DataReplayer::StateChangeCallback;
 using StepRequest = r2k_replay::DataReplayer::StepRequest;
@@ -141,7 +141,9 @@ public:
 
   void play_timeline_halfway(const std::function<void()> & interrupt_play_cb)
   {
-    ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
+    ASSERT_TRUE(
+      replayer.set_time_range(SetTimeRangeRequest(kTimestamps.front(), kTimestamps.back())));
+    ASSERT_TRUE(replayer.resume());
     ASSERT_TRUE(replayer.is_playing());
     std::this_thread::sleep_for(
       std::chrono::nanoseconds(kNumberTimestamps / size_t{2} * kTimestampIntervalNs));
@@ -200,18 +202,20 @@ TEST_F(TestDataReplayer, EmptyTimestampInitializationTest)
   ASSERT_EQ(empty_replayer.get_replayer_state(), ReplayerState());
 }
 
-TEST_F(TestDataReplayer, PlayTest)
-{
-  ASSERT_TRUE(replayer.play(PlayRequest(kTimestamps.front(), kTimestamps.back())));
-  wait_till_replayer_no_longer_playing();
-  assert_timeline_played_exactly_once();
-}
-
 TEST_F(TestDataReplayer, ResumeTest)
 {
   ASSERT_TRUE(replayer.resume());
   wait_till_replayer_no_longer_playing();
   ASSERT_FALSE(replayer.resume());
+  assert_timeline_played_exactly_once();
+}
+
+TEST_F(TestDataReplayer, SetTimeRangeBasicTest)
+{
+  ASSERT_TRUE(
+    replayer.set_time_range(SetTimeRangeRequest(kTimestamps.front(), kTimestamps.back())));
+  ASSERT_TRUE(replayer.resume());
+  wait_till_replayer_no_longer_playing();
   assert_timeline_played_exactly_once();
 }
 
@@ -227,7 +231,7 @@ TEST_F(TestDataReplayer, DestructorTest)
   assert_timeline_played_partially();
 }
 
-TEST_F(TestDataReplayer, PlaySegmentTest)
+TEST_F(TestDataReplayer, SetTimeRangeSegmentTest)
 {
   constexpr size_t start_index = 3;
   constexpr size_t segment_length = 3;
@@ -235,7 +239,9 @@ TEST_F(TestDataReplayer, PlaySegmentTest)
   const Timestamps truncated_timestamp{
     &kTimestamps[start_index], &kTimestamps[start_index + segment_length]};
 
-  ASSERT_TRUE(replayer.play(PlayRequest(truncated_timestamp.front(), truncated_timestamp.back())));
+  ASSERT_TRUE(replayer.set_time_range(
+    SetTimeRangeRequest(truncated_timestamp.front(), truncated_timestamp.back())));
+  ASSERT_TRUE(replayer.resume());
   wait_till_replayer_no_longer_playing();
   assert_timeline_played_exactly_once(start_index, truncated_timestamp);
 }

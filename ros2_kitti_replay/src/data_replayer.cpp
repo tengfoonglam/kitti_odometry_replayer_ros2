@@ -7,9 +7,9 @@
 namespace r2k_replay
 {
 
-DataReplayer::PlayRequest::PlayRequest(
-  const Timestamp & start_time_in, const Timestamp & target_time_in, const float replay_speed_in)
-: start_time(start_time_in), target_time(target_time_in), replay_speed(replay_speed_in)
+DataReplayer::SetTimeRangeRequest::SetTimeRangeRequest(
+  const Timestamp & start_time_in, const Timestamp & target_time_in)
+: start_time(start_time_in), target_time(target_time_in)
 {
 }
 
@@ -115,20 +115,43 @@ bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
   return true;
 }
 
-bool DataReplayer::play(const PlayRequest & play_request)
+bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_request)
 {
-  // Return if invalid play request
-  const auto index_range_opt = process_play_request(play_request, timestamps_);
-  if (!index_range_opt.has_value()) {
-    with_lock(logger_mutex_, [this, &play_request = std::as_const(play_request)]() {
-      RCLCPP_WARN(
-        logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
-        play_request.start_time.seconds(), play_request.target_time.seconds());
+  // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
+  // bug
+  std::scoped_lock lock(state_mutex_);
+
+  // Return if already playing
+  if (state_.playing) {
+    with_lock(logger_mutex_, [this]() {
+      RCLCPP_WARN(logger_, "Cannot set time range when replayer %s is playing", name_.c_str());
     });
     return false;
   }
 
-  return play_index_range(index_range_opt.value(), play_request.replay_speed);
+  // Return if invalid play request
+  const auto index_range_opt = process_set_time_range_request(set_time_range_request, timestamps_);
+  if (!index_range_opt.has_value()) {
+    with_lock(
+      logger_mutex_, [this, &set_time_range_request = std::as_const(set_time_range_request)]() {
+        RCLCPP_WARN(
+          logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
+          set_time_range_request.start_time.seconds(),
+          set_time_range_request.target_time.seconds());
+      });
+    return false;
+  }
+
+  // Modify next and target times
+  const auto [start_index, target_index] = index_range_opt.value();
+  modify_state_no_lock([start_index, target_index, this](auto & replayer_state) {
+    replayer_state.current_time = timestamps_.at(start_index);
+    replayer_state.next_idx = start_index;
+    replayer_state.target_time = timestamps_.at(target_index);
+    replayer_state.target_idx = target_index;
+  });
+
+  return true;
 }
 
 bool DataReplayer::step(const StepRequest & step_request)
@@ -447,8 +470,8 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   modify_state_no_lock(modify_cb);
 };
 
-[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_play_request(
-  const PlayRequest & play_request, const Timestamps & timestamps)
+[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
+  const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
   if (timestamps.empty()) {
@@ -456,8 +479,8 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   }
 
   // Aliases
-  const auto & start_time = play_request.start_time;
-  const auto & target_time = play_request.target_time;
+  const auto & start_time = set_time_range_request.start_time;
+  const auto & target_time = set_time_range_request.target_time;
 
   // Return if start_time is after last timestamp or target_time is before first timestamp
   if (start_time > timestamps.back() || target_time < timestamps.front()) {
