@@ -12,6 +12,7 @@ def generate_launch_description() -> LaunchDescription:
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
     urdf_filename = LaunchConfiguration("urdf_filename", default="default.urdf.xml")
     launch_rviz = LaunchConfiguration("launch_rviz", default="true")
+    frame_prefix = LaunchConfiguration("frame_prefix", default="")
 
     return LaunchDescription(
         [
@@ -30,12 +31,19 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="true",
                 description="Launch RVIZ Visualization",
             ),
+            DeclareLaunchArgument(
+                "frame_prefix",
+                default_value="",
+                description="Prefix to the tf frame names of the launched URDF",
+            ),
             Node(
                 package="robot_state_publisher",
                 executable="robot_state_publisher",
                 name="robot_state_publisher",
                 output="screen",
-                parameters=[{"use_sim_time": use_sim_time}],
+                parameters=[
+                    {"use_sim_time": use_sim_time, "frame_prefix": frame_prefix}
+                ],
                 arguments=[
                     PathJoinSubstitution(
                         [
