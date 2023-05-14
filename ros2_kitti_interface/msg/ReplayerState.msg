@@ -2,6 +2,7 @@ bool is_playing
 float64 replay_speed
 builtin_interfaces/Time start_time
 builtin_interfaces/Time current_time
+builtin_interfaces/Time target_time
 builtin_interfaces/Time final_time
 uint64 next_idx
 uint64 target_idx

@@ -25,6 +25,7 @@ public:
     float replay_speed{1.0f};
     Timestamp start_time;
     Timestamp current_time;
+    Timestamp target_time;
     Timestamp final_time;
     std::size_t next_idx{};
     std::size_t target_idx{};

@@ -6,3 +6,7 @@ ros2 service call /kitti_replayer/step ros2_kitti_interface/srv/Step "{request: 
 
 for point cloud visualization to be correct:
 - replay speed must match the frame rate of RVIZ (x1.0 -> 10Hz, x2.0 -> 20Hz, etc)
+
+
+for optimal performance:
+- place dataset on a SSD card

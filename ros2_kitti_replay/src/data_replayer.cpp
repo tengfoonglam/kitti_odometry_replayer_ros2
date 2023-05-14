@@ -28,8 +28,9 @@ bool operator==(const DataReplayer::ReplayerState & lhs, const DataReplayer::Rep
 {
   return (lhs.playing == rhs.playing) && (lhs.replay_speed == rhs.replay_speed) &&
          (lhs.start_time == rhs.start_time) && (lhs.current_time == rhs.current_time) &&
-         (lhs.final_time == rhs.final_time) && (lhs.next_idx == rhs.next_idx) &&
-         (lhs.target_idx == rhs.target_idx) && (lhs.data_size == rhs.data_size);
+         (lhs.target_time == rhs.target_time) && (lhs.final_time == rhs.final_time) &&
+         (lhs.next_idx == rhs.next_idx) && (lhs.target_idx == rhs.target_idx) &&
+         (lhs.data_size == rhs.data_size);
 }
 
 DataReplayer::DataReplayer(
@@ -48,8 +49,11 @@ DataReplayer::DataReplayer(
 
   modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
     replayer_state.start_time = timestamps.front();
+    replayer_state.current_time = timestamps.front();
+    replayer_state.target_time = timestamps.back();
     replayer_state.final_time = timestamps.back();
     replayer_state.data_size = timestamps.size();
+    replayer_state.next_idx = 0;
     replayer_state.target_idx = timestamps.size() - 1;
   });
 }
@@ -199,6 +203,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
     replayer_state.playing = true;
     replayer_state.current_time = timestamps_.at(start_index);
     replayer_state.next_idx = start_index;
+    replayer_state.target_time = timestamps_.at(target_index);
     replayer_state.target_idx = target_index;
     replayer_state.replay_speed = std::max(0.0f, replay_speed);
   });

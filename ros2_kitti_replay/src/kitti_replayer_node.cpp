@@ -197,6 +197,7 @@ void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
   output.replay_speed = replayer_state.replay_speed;
   output.start_time = replayer_state.start_time;
   output.current_time = replayer_state.current_time;
+  output.target_time = replayer_state.target_time;
   output.final_time = replayer_state.final_time;
   output.next_idx = replayer_state.next_idx;
   output.target_idx = replayer_state.target_idx;
