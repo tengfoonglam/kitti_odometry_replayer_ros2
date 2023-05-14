@@ -39,7 +39,7 @@ private:
   rclcpp::Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr;
 
   template <typename T>
-  static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
+  [[nodiscard]] static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
     const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
     std::unique_ptr<T> loader_ptr);
 

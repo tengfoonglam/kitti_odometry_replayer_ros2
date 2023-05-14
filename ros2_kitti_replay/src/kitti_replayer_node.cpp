@@ -142,7 +142,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 }
 
 template <typename T>
-std::shared_ptr<LoadAndPlayDataInterface<T>> KITTIReplayerNode::make_shared_interface(
+[[nodiscard]] std::shared_ptr<LoadAndPlayDataInterface<T>> KITTIReplayerNode::make_shared_interface(
   const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
   std::unique_ptr<T> loader_ptr)
 {
