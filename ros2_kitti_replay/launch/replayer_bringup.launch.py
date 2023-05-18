@@ -1,6 +1,6 @@
 import os
 
-from pathlib import Path
+# from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -19,7 +19,7 @@ def generate_launch_description() -> LaunchDescription:
 
     dataset_number = LaunchConfiguration("dataset_number", default="00")
     dataset_path = LaunchConfiguration(
-        "dataset_path", default=str(Path().home() / "kitti_dataset")
+        "dataset_path", default="/media/ltf/LTFUbuntuSSD/kitti_dataset"
     )
 
     dataset_number_padded = PythonExpression(['f"{', dataset_number, ':02}"'])
@@ -63,7 +63,7 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument(
                 "dataset_path",
-                default_value=str(Path().home() / "kitti_dataset"),
+                default_value="/media/ltf/LTFUbuntuSSD/kitti_dataset",
                 description="Path where all dataset folders are located",
             ),
             IncludeLaunchDescription(
