@@ -2,6 +2,7 @@
 #define ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
 
 #include <memory>
+#include <optional>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_kitti_interface/msg/replayer_state.hpp>
 #include <ros2_kitti_interface/srv/play.hpp>
@@ -12,6 +13,7 @@
 
 #include "ros2_kitti_replay/data_replayer.hpp"
 #include "ros2_kitti_replay/load_and_play_data_interface.hpp"
+#include "ros2_kitti_replay/pose_utils.hpp"
 
 namespace r2k_replay
 {
@@ -31,6 +33,8 @@ public:
     const DataReplayer::ReplayerState & replayer_state);
 
 private:
+  std::optional<Transforms> ground_truth_path_opt_;
+
   std::unique_ptr<DataReplayer> replayer_ptr_;
   std::shared_ptr<rclcpp::Publisher<ReplayerStateMsg>> state_publisher_ptr_;
   rclcpp::Service<PlaySrv>::SharedPtr play_service_ptr;
@@ -62,6 +66,8 @@ private:
   void set_time_range(
     const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
     std::shared_ptr<SetTimeRangeSrv::Response> response_ptr);
+
+  void publish_ground_truth_path(const Transforms & transforms);
 };
 
 }  // namespace r2k_replay

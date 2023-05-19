@@ -4,7 +4,9 @@
 
 #include <chrono>
 #include <filesystem>
+#include <nav_msgs/msg/path.hpp>
 #include <ros2_kitti_interface/msg/trigger_response.hpp>
+#include <std_msgs/msg/header.hpp>
 #include <vector>
 
 #include "ros2_kitti_replay/clock_data_loader.hpp"
@@ -43,6 +45,14 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   const auto point_cloud_folder_path = std::filesystem::path(
     parameters_client.get_parameter("point_cloud_folder_path", std::string{""}));
 
+  // Load ground truth pose (if available)
+  ground_truth_path_opt_ = extract_poses_from_file(poses_path);
+  if (ground_truth_path_opt_.has_value()) {
+    RCLCPP_INFO(get_logger(), "Ground truth path loaded for this dataset");
+  } else {
+    RCLCPP_WARN(get_logger(), "Ground truth path not available for this dataset");
+  }
+
   // Load timestamps
   auto timestamps_opt = extract_timestamps_from_file(timestamp_path);
   if (!timestamps_opt.has_value()) {
@@ -71,7 +81,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   play_data_interface_check_shutdown_if_fail(*clock_interface_ptr, number_stamps);
   play_data_interface_ptrs.push_back(clock_interface_ptr);
 
-  // Ground Truth Pose
+  // Ground Truth Pose (if available)
   r2k_replay::PoseDataLoader::Header pose_header;
   pose_header.frame_id = "map";
   const std::string child_id{"p0"};
@@ -216,6 +226,30 @@ void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
   output.target_idx = replayer_state.target_idx;
   output.data_size = replayer_state.data_size;
   return output;
+}
+
+void KITTIReplayerNode::publish_ground_truth_path(const Transforms & transforms)
+{
+  auto path_pub_ptr = create_publisher<nav_msgs::msg::Path>("ground_truth_path", 10);
+
+  std_msgs::msg::Header header;
+  header.frame_id = "map";
+
+  auto msg_ptr = std::make_unique<nav_msgs::msg::Path>();
+  msg_ptr->header = header;
+  msg_ptr->poses.reserve(transforms.size());
+
+  using PoseStamped = decltype(msg_ptr->poses)::value_type;
+
+  std::transform(
+    std::cbegin(transforms), std::cend(transforms), std::begin(msg_ptr->poses),
+    [&header]([[maybe_unused]] const auto & transform) {
+      PoseStamped pose_stamped;
+      pose_stamped.header = header;
+      return pose_stamped;
+    });
+
+  path_pub_ptr->publish(std::move(msg_ptr));
 }
 
 }  // namespace r2k_replay

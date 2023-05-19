@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ros2_kitti_replay LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
@@ -57,11 +58,12 @@ add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
-                          rclcpp
                           geometry_msgs
+                          nav_msgs
                           PCL
                           pcl_ros
                           pcl_conversions
+                          rclcpp
                           rosgraph_msgs
                           ros2_kitti_interface
                           sensor_msgs
