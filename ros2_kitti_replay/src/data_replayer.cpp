@@ -77,7 +77,7 @@ bool DataReplayer::add_play_data_interface(
     return false;
   }
   {
-    std::scoped_lock lock(cb_mutex_);
+    std::scoped_lock lock(interface_mutex_);
     play_data_interface_ptrs_.push_back(play_data_interface_ptr);
   }
   with_lock(logger_mutex_, [this, &interface_name]() {
@@ -257,41 +257,41 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
 
 [[nodiscard]] std::size_t DataReplayer::get_next_index() const
 {
-  return with_lock(state_mutex_, [&]() { return state_.next_idx; });
+  return with_lock(state_mutex_, [&state_ = std::as_const(state_)]() { return state_.next_idx; });
 }
 
 void DataReplayer::prepare_data(const std::size_t index_to_prep)
 {
-  with_lock(cb_mutex_, [this, index_to_prep]() {
-    std::for_each(
-      std::cbegin(play_data_interface_ptrs_), std::cend(play_data_interface_ptrs_),
-      [this, index_to_prep](const auto & cb_ptr) {
-        const auto prepare_success = cb_ptr->prepare(index_to_prep);
-        if (!prepare_success) {
-          with_lock(logger_mutex_, [this, name = cb_ptr->name(), index_to_prep]() {
-            RCLCPP_WARN(
-              logger_, "Failed to prepare data for %s, index %ld", name.c_str(), index_to_prep);
-          });
-        }
-      });
-  });
+  std::scoped_lock lock(interface_mutex_);
+
+  std::for_each(
+    std::cbegin(play_data_interface_ptrs_), std::cend(play_data_interface_ptrs_),
+    [this, index_to_prep](const auto & interface_ptr) {
+      const auto prepare_success = interface_ptr->prepare(index_to_prep);
+      if (!prepare_success) {
+        with_lock(logger_mutex_, [this, name = interface_ptr->name(), index_to_prep]() {
+          RCLCPP_WARN(
+            logger_, "Failed to prepare data for %s, index %ld", name.c_str(), index_to_prep);
+        });
+      }
+    });
 }
 
 void DataReplayer::play_data(const std::size_t index_to_play)
 {
-  with_lock(cb_mutex_, [this, index_to_play]() {
-    std::for_each(
-      std::cbegin(play_data_interface_ptrs_), std::cend(play_data_interface_ptrs_),
-      [this, index_to_play](const auto & cb_ptr) {
-        const auto play_success = cb_ptr->play(index_to_play);
-        if (!play_success) {
-          with_lock(logger_mutex_, [this, name = cb_ptr->name(), index_to_play]() {
-            RCLCPP_WARN(
-              logger_, "Failed to play data for %s, index %ld", name.c_str(), index_to_play);
-          });
-        }
-      });
-  });
+  std::scoped_lock lock(interface_mutex_);
+
+  std::for_each(
+    std::cbegin(play_data_interface_ptrs_), std::cend(play_data_interface_ptrs_),
+    [this, index_to_play](const auto & interface_ptr) {
+      const auto play_success = interface_ptr->play(index_to_play);
+      if (!play_success) {
+        with_lock(logger_mutex_, [this, name = interface_ptr->name(), index_to_play]() {
+          RCLCPP_WARN(
+            logger_, "Failed to play data for %s, index %ld", name.c_str(), index_to_play);
+        });
+      }
+    });
 }
 
 void DataReplayer::play_loop()
@@ -376,7 +376,7 @@ void DataReplayer::play_loop()
     }
 
     // Else wait
-    std::unique_lock lock(state_mutex_);
+    std::unique_lock lock(flag_mutex_);
     play_thread_cv_.wait_for(
       lock, duration_till_next_play.to_chrono<std::chrono::nanoseconds>(),
       [&play_thread_shutdown_flag_ = std::as_const(play_thread_shutdown_flag_)] [[nodiscard]] () {

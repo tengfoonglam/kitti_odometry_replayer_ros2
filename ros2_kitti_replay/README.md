@@ -10,3 +10,4 @@ for point cloud visualization to be correct:
 
 for optimal performance:
 - place dataset on a SSD card
+- if 30s delay between frames, try another USB Port

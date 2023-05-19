@@ -4,7 +4,11 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    LaunchConfiguration,
+    PathJoinSubstitution,
+    PythonExpression,
+)
 from launch_ros.actions import Node
 
 
@@ -13,6 +17,7 @@ def generate_launch_description() -> LaunchDescription:
     urdf_filename = LaunchConfiguration("urdf_filename", default="default.urdf.xml")
     launch_rviz = LaunchConfiguration("launch_rviz", default="true")
     frame_prefix = LaunchConfiguration("frame_prefix", default="")
+    p0_frame_id = PythonExpression(['f"', frame_prefix, 'p0"'])
 
     return LaunchDescription(
         [
@@ -35,6 +40,12 @@ def generate_launch_description() -> LaunchDescription:
                 "frame_prefix",
                 default_value="",
                 description="Prefix to the tf frame names of the launched URDF",
+            ),
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                output="screen",
+                arguments=["0", "0", "0", "0", "0", "0", "map", p0_frame_id],
             ),
             Node(
                 package="robot_state_publisher",

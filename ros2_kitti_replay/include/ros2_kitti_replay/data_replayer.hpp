@@ -99,13 +99,17 @@ private:
   rclcpp::Logger logger_;
 
   mutable std::mutex thread_mutex_;
-  std::atomic_bool play_thread_shutdown_flag_{false};
-  std::condition_variable play_thread_cv_;
   std::shared_ptr<std::thread> play_thread_ptr_;
 
+  mutable std::mutex flag_mutex_;
+  std::atomic_bool play_thread_shutdown_flag_{false};
+  std::condition_variable play_thread_cv_;
+
   mutable std::mutex cb_mutex_;
-  std::vector<std::shared_ptr<PlayDataInterfaceBase>> play_data_interface_ptrs_;
   StateChangeCallback state_change_cb_;
+
+  mutable std::mutex interface_mutex_;
+  std::vector<std::shared_ptr<PlayDataInterfaceBase>> play_data_interface_ptrs_;
 
   template <typename Callable>
   static inline auto with_lock(std::mutex & mutex, Callable callable) -> decltype(callable())
