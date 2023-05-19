@@ -116,12 +116,6 @@ endif()
 
 add_subdirectory(apps)
 
-# add_executable(run_kitti_replayer src/run_kitti_replayer.cpp)
-# target_link_libraries(run_kitti_replayer ${PROJECT_NAME})
-# ament_target_dependencies(run_kitti_replayer rclcpp)
-
-# install(TARGETS run_kitti_replayer DESTINATION lib/${PROJECT_NAME})
-
 ament_export_include_directories(include)
 ament_export_libraries(ros2_kitti_replay)
 ament_export_dependencies(rclcpp
