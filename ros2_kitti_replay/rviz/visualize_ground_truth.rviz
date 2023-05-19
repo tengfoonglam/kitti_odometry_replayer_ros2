@@ -6,6 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /PointCloud21
+        - /Path1
+        - /Path1/Topic1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -130,6 +132,8 @@ Visualization Manager:
         All Enabled: true
         lidar:
           Value: true
+        map:
+          Value: true
         p0:
           Value: true
         p1:
@@ -154,7 +158,26 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        {}
+        map:
+          p0:
+            lidar:
+              {}
+            p1:
+              {}
+            p2:
+              {}
+            p3:
+              {}
+            vehicle:
+              {}
+            wbl:
+              {}
+            wbr:
+              {}
+            wfl:
+              {}
+            wfr:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -190,6 +213,34 @@ Visualization Manager:
         Value: /lidar_pc
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: Axes
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /ground_truth_path
       Value: true
   Enabled: true
   Global Options:

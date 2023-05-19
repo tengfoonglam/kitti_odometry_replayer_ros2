@@ -4,7 +4,6 @@
 
 #include <chrono>
 #include <filesystem>
-#include <nav_msgs/msg/path.hpp>
 #include <ros2_kitti_interface/msg/trigger_response.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <vector>
@@ -16,6 +15,13 @@
 
 namespace r2k_replay
 {
+
+const rclcpp::QoS KITTIReplayerNode::kLatchingQoS{
+  rclcpp::QoSInitialization{RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT, 1},
+  rmw_qos_profile_t{
+    RMW_QOS_POLICY_HISTORY_KEEP_LAST, 10, RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+    RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL, RMW_QOS_DEADLINE_DEFAULT, RMW_QOS_LIFESPAN_DEFAULT,
+    RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT, RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT, false}};
 
 KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 : Node("kitti_replayer", options)
@@ -49,6 +55,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   ground_truth_path_opt_ = extract_poses_from_file(poses_path);
   if (ground_truth_path_opt_.has_value()) {
     RCLCPP_INFO(get_logger(), "Ground truth path loaded for this dataset");
+    gt_path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("ground_truth_path", kLatchingQoS);
+    publish_ground_truth_path(ground_truth_path_opt_.value());
   } else {
     RCLCPP_WARN(get_logger(), "Ground truth path not available for this dataset");
   }
@@ -230,26 +238,36 @@ void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
 
 void KITTIReplayerNode::publish_ground_truth_path(const Transforms & transforms)
 {
-  auto path_pub_ptr = create_publisher<nav_msgs::msg::Path>("ground_truth_path", 10);
+  if (!gt_path_pub_ptr_) {
+    RCLCPP_WARN(
+      get_logger(), "Ground truth path publisher no initialized yet, cannot publish path.");
+    return;
+  }
 
   std_msgs::msg::Header header;
   header.frame_id = "map";
 
   auto msg_ptr = std::make_unique<nav_msgs::msg::Path>();
   msg_ptr->header = header;
-  msg_ptr->poses.reserve(transforms.size());
+  msg_ptr->poses.resize(transforms.size());
 
   using PoseStamped = decltype(msg_ptr->poses)::value_type;
-
   std::transform(
     std::cbegin(transforms), std::cend(transforms), std::begin(msg_ptr->poses),
-    [&header]([[maybe_unused]] const auto & transform) {
+    [&header](const auto & transform) {
       PoseStamped pose_stamped;
       pose_stamped.header = header;
+      pose_stamped.pose.position.x = transform.translation.x;
+      pose_stamped.pose.position.y = transform.translation.y;
+      pose_stamped.pose.position.z = transform.translation.z;
+      pose_stamped.pose.orientation.w = transform.rotation.w;
+      pose_stamped.pose.orientation.x = transform.rotation.x;
+      pose_stamped.pose.orientation.y = transform.rotation.y;
+      pose_stamped.pose.orientation.z = transform.rotation.z;
       return pose_stamped;
     });
 
-  path_pub_ptr->publish(std::move(msg_ptr));
+  gt_path_pub_ptr_->publish(std::move(msg_ptr));
 }
 
 }  // namespace r2k_replay

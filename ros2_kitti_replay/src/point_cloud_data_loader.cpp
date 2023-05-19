@@ -27,7 +27,7 @@ bool PointCloudDataLoader::setup_internal(
     max_idx_ = std::min(pc_idx_opt.value(), timestamps_.size() - 1);
     ready_ = true;
     RCLCPP_INFO(
-      logger_, "%s point cloud data loader setup successfully. Number of point clouds: %zu",
+      logger_, "%s point cloud data loader setup successful. Number of point clouds: %zu",
       name().c_str(), max_idx_ + 1);
   } else {
     if (timestamps.empty()) {

@@ -18,6 +18,9 @@ bool ClockDataLoader::setup_internal(
 {
   timestamps_ = timestamps;
   ready_ = true;
+  RCLCPP_INFO(
+    logger_, "%s Clock data loader setup successful. Number of timestamps: %zu", name().c_str(),
+    timestamps_.size());
   return ready();
 }
 

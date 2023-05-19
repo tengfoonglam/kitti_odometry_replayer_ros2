@@ -2,6 +2,7 @@
 #define ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
 
 #include <memory>
+#include <nav_msgs/msg/path.hpp>
 #include <optional>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_kitti_interface/msg/replayer_state.hpp>
@@ -27,6 +28,8 @@ public:
   using StepSrv = ros2_kitti_interface::srv::Step;
   using TriggerSrv = std_srvs::srv::Trigger;
 
+  static const rclcpp::QoS kLatchingQoS;
+
   explicit KITTIReplayerNode(const rclcpp::NodeOptions & options);
 
   [[nodiscard]] static ReplayerStateMsg replayer_state_to_msg(
@@ -41,6 +44,7 @@ private:
   rclcpp::Service<StepSrv>::SharedPtr step_service_ptr;
   rclcpp::Service<TriggerSrv>::SharedPtr pause_service_ptr;
   rclcpp::Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr;
+  std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Path>> gt_path_pub_ptr_;
 
   template <typename T>
   [[nodiscard]] static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
