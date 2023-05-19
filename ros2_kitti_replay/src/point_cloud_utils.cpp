@@ -1,6 +1,6 @@
 #include "ros2_kitti_replay/point_cloud_utils.hpp"
 
-#include <fstream>
+#include <cstdio>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
 namespace r2k_replay
@@ -20,19 +20,17 @@ namespace r2k_replay
   auto output_ptr = std::make_shared<PointCloudMsg>();
 
   // Read binary file and load it into data field
-  // Adapted from tinyurl.com/mr26mmy4
-  std::ifstream file(pc_bin_path);
+  // Adapted from readme of KITTI Odometry devkit
 
-  if (!file) {
+  const size_t data_length = std::filesystem::file_size(pc_bin_path);
+  output_ptr->data.resize(data_length);
+  auto * stream_ptr = std::fopen(pc_bin_path.c_str(), "rb");
+  if (!stream_ptr) {
     return PointCloudMsg::SharedPtr();
   }
-
-  file.seekg(0, std::ios::end);
-  const auto data_length_bytes = file.tellg();
-  file.seekg(0, std::ios::beg);
-
-  output_ptr->data.resize(data_length_bytes);
-  file.read(reinterpret_cast<char *>(&output_ptr->data.front()), data_length_bytes);
+  constexpr auto element_size = sizeof(decltype(output_ptr->data)::value_type);
+  std::fread(output_ptr->data.data(), element_size, data_length, stream_ptr);
+  std::fclose(stream_ptr);
 
   // Compute the number of points
   constexpr std::size_t number_fields = 4;
