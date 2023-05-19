@@ -86,7 +86,7 @@ endif()
 
 add_subdirectory(apps)
 
-add_executable(run_kitti_replayer src/main.cpp)
+add_executable(run_kitti_replayer src/run_kitti_replayer.cpp)
 target_link_libraries(run_kitti_replayer ${PROJECT_NAME})
 ament_target_dependencies(run_kitti_replayer rclcpp)
 
