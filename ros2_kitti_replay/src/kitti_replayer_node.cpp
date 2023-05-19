@@ -287,3 +287,6 @@ void KITTIReplayerNode::publish_ground_truth_path(const Transforms & transforms)
 }
 
 }  // namespace r2k_replay
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(r2k_replay::KITTIReplayerNode)
