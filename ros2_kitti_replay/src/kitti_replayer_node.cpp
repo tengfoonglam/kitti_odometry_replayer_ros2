@@ -134,7 +134,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   }
 
   // Add Cb to publish replayer state upon state changes
-  auto state_change_cb = [pub_ptr = create_publisher<ReplayerStateMsg>("replayer_state", 10)](
+  auto state_change_cb = [pub_ptr =
+                            create_publisher<ReplayerStateMsg>("replayer_state", kLatchingQoS)](
                            const DataReplayer::ReplayerState & replayer_state) {
     pub_ptr->publish(replayer_state_to_msg(replayer_state));
   };
