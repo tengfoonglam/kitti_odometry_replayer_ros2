@@ -72,16 +72,15 @@ def generate_launch_description() -> LaunchDescription:
                 name="robot_state_publisher",
                 output="screen",
                 parameters=[
-                    {
-                        "use_sim_time": use_sim_time,
-                        "frame_prefix": frame_prefix,
-                        "robot_description": PathJoinSubstitution(
-                            [
-                                get_package_share_directory("ros2_kitti_description"),
-                                urdf_filename,
-                            ]
-                        ),
-                    }
+                    {"use_sim_time": use_sim_time, "frame_prefix": frame_prefix}
+                ],
+                arguments=[
+                    PathJoinSubstitution(
+                        [
+                            get_package_share_directory("ros2_kitti_description"),
+                            urdf_filename,
+                        ]
+                    )
                 ],
             ),
             Node(
