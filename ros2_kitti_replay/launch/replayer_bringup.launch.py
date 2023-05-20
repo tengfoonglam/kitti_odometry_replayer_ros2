@@ -84,7 +84,7 @@ def generate_launch_description() -> LaunchDescription:
                 name="replayer_container",
                 namespace="",
                 package="rclcpp_components",
-                executable="component_container",
+                executable="component_container_mt",
                 composable_node_descriptions=[
                     ComposableNode(
                         package="ros2_kitti_replay",
