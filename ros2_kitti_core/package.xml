@@ -3,7 +3,7 @@
 <package format="2">
   <name>ros2_kitti_core</name>
   <version>0.1.0</version>
-  <description>Replay Utilities for the KITTI Datasets</description>
+  <description>Core I/O and replaying classes/methods for ros2_kitti</description>
   <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>
   <license>BSD 3-clause</license>
 
