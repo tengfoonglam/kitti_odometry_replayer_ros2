@@ -25,6 +25,13 @@ const rclcpp::QoS KITTIReplayerNode::kLatchingQoS{
 KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 : Node("kitti_replayer", options)
 {
+  using r2k_core::ClockDataLoader;
+  using r2k_core::extract_poses_from_file;
+  using r2k_core::extract_timestamps_from_file;
+  using r2k_core::PlayDataInterfaceBase;
+  using r2k_core::PointCloudDataLoader;
+  using r2k_core::PoseDataLoader;
+
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   // Declare Node params
@@ -90,7 +97,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Ground Truth Pose (if available)
   if (ground_truth_path_opt_.has_value()) {
-    r2k_core::PoseDataLoader::Header pose_header;
+    PoseDataLoader::Header pose_header;
     pose_header.frame_id = "map";
     const std::string child_id{"p0"};
     auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
@@ -108,7 +115,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   }
 
   // Point Cloud
-  r2k_core::PointCloudDataLoader::Header pc_header;
+  PointCloudDataLoader::Header pc_header;
   pc_header.frame_id = "lidar";
   auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
     "pc_loader", get_logger().get_child("pc_loader"), pc_header);
@@ -162,11 +169,13 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 }
 
 template <typename T>
-[[nodiscard]] std::shared_ptr<LoadAndPlayDataInterface<T>> KITTIReplayerNode::make_shared_interface(
-  const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
+[[nodiscard]] std::shared_ptr<r2k_core::LoadAndPlayDataInterface<T>>
+KITTIReplayerNode::make_shared_interface(
+  const std::string & name, typename r2k_core::LoadAndPlayDataInterface<T>::PlayCb && cb,
   std::unique_ptr<T> loader_ptr)
 {
-  return std::make_shared<LoadAndPlayDataInterface<T>>(name, std::move(cb), std::move(loader_ptr));
+  return std::make_shared<r2k_core::LoadAndPlayDataInterface<T>>(
+    name, std::move(cb), std::move(loader_ptr));
 }
 
 void KITTIReplayerNode::play(
@@ -195,6 +204,8 @@ void KITTIReplayerNode::set_time_range(
   const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
   std::shared_ptr<SetTimeRangeSrv::Response> response_ptr)
 {
+  using r2k_core::Timestamp;
+
   const auto success = replayer_ptr_->set_time_range(
     {Timestamp(request_ptr->request.start_time, RCL_SYSTEM_TIME),
      Timestamp(request_ptr->request.end_time, RCL_SYSTEM_TIME)});
@@ -215,7 +226,7 @@ void KITTIReplayerNode::set_time_range(
 
 template <typename T>
 void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
-  const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size)
+  const r2k_core::LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size)
 {
   const auto interface_name = interface.name();
 
