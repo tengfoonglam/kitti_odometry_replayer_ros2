@@ -29,6 +29,8 @@ public:
   using SetTimeRangeSrv = ros2_kitti_interface::srv::SetTimeRange;
   using StepSrv = ros2_kitti_interface::srv::Step;
   using TriggerSrv = std_srvs::srv::Trigger;
+  template <typename T>
+  using LoadAndPlayDataInterface = r2k_core::LoadAndPlayDataInterface<T>;
 
   static const rclcpp::QoS kLatchingQoS;
 
@@ -49,13 +51,13 @@ private:
   std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Path>> gt_path_pub_ptr_;
 
   template <typename T>
-  [[nodiscard]] static std::shared_ptr<r2k_core::LoadAndPlayDataInterface<T>> make_shared_interface(
-    const std::string & name, typename r2k_core::LoadAndPlayDataInterface<T>::PlayCb && cb,
+  [[nodiscard]] static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
+    const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
     std::unique_ptr<T> loader_ptr);
 
   template <typename T>
   void play_data_interface_check_shutdown_if_fail(
-    const r2k_core::LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size);
+    const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size);
 
   void play(
     const std::shared_ptr<PlaySrv::Request> request_ptr,

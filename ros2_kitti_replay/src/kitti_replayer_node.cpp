@@ -169,13 +169,12 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 }
 
 template <typename T>
-[[nodiscard]] std::shared_ptr<r2k_core::LoadAndPlayDataInterface<T>>
+[[nodiscard]] std::shared_ptr<KITTIReplayerNode::LoadAndPlayDataInterface<T>>
 KITTIReplayerNode::make_shared_interface(
-  const std::string & name, typename r2k_core::LoadAndPlayDataInterface<T>::PlayCb && cb,
+  const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
   std::unique_ptr<T> loader_ptr)
 {
-  return std::make_shared<r2k_core::LoadAndPlayDataInterface<T>>(
-    name, std::move(cb), std::move(loader_ptr));
+  return std::make_shared<LoadAndPlayDataInterface<T>>(name, std::move(cb), std::move(loader_ptr));
 }
 
 void KITTIReplayerNode::play(
@@ -226,7 +225,7 @@ void KITTIReplayerNode::set_time_range(
 
 template <typename T>
 void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
-  const r2k_core::LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size)
+  const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size)
 {
   const auto interface_name = interface.name();
 
