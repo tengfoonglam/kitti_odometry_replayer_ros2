@@ -1,19 +1,18 @@
-#include "ros2_kitti_core/kitti_replayer_node.hpp"
+#include "ros2_kitti_replay/kitti_replayer_node.hpp"
 
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <chrono>
 #include <filesystem>
+#include <ros2_kitti_core/clock_data_loader.hpp>
+#include <ros2_kitti_core/point_cloud_data_loader.hpp>
+#include <ros2_kitti_core/pose_data_loader.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
 #include <ros2_kitti_interface/msg/trigger_response.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <vector>
 
-#include "ros2_kitti_core/clock_data_loader.hpp"
-#include "ros2_kitti_core/point_cloud_data_loader.hpp"
-#include "ros2_kitti_core/pose_data_loader.hpp"
-#include "ros2_kitti_core/timestamp_utils.hpp"
-
-namespace r2k_core
+namespace r2k_replay
 {
 
 const rclcpp::QoS KITTIReplayerNode::kLatchingQoS{
@@ -286,7 +285,7 @@ void KITTIReplayerNode::publish_ground_truth_path(const Transforms & transforms)
   gt_path_pub_ptr_->publish(std::move(msg_ptr));
 }
 
-}  // namespace r2k_core
+}  // namespace r2k_replay
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(r2k_core::KITTIReplayerNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(r2k_replay::KITTIReplayerNode)

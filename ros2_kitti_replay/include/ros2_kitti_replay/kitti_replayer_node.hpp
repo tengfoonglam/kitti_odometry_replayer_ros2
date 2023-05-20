@@ -1,10 +1,13 @@
-#ifndef ROS2_KITTI_CORE__KITTI_REPLAYER_NODE_HPP_
-#define ROS2_KITTI_CORE__KITTI_REPLAYER_NODE_HPP_
+#ifndef ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
+#define ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
 
 #include <memory>
 #include <nav_msgs/msg/path.hpp>
 #include <optional>
 #include <rclcpp/rclcpp.hpp>
+#include <ros2_kitti_core/data_replayer.hpp>
+#include <ros2_kitti_core/load_and_play_data_interface.hpp>
+#include <ros2_kitti_core/pose_utils.hpp>
 #include <ros2_kitti_interface/msg/replayer_state.hpp>
 #include <ros2_kitti_interface/srv/play.hpp>
 #include <ros2_kitti_interface/srv/set_time_range.hpp>
@@ -12,16 +15,16 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
 
-#include "ros2_kitti_core/data_replayer.hpp"
-#include "ros2_kitti_core/load_and_play_data_interface.hpp"
-#include "ros2_kitti_core/pose_utils.hpp"
-
-namespace r2k_core
+namespace r2k_replay
 {
 
 class KITTIReplayerNode : public rclcpp::Node
 {
 public:
+  using r2k_core::DataReplayer;
+  using r2k_core::LoadAndPlayDataInterface;
+  using r2k_core::Transforms;
+
   using ReplayerStateMsg = ros2_kitti_interface::msg::ReplayerState;
   using PlaySrv = ros2_kitti_interface::srv::Play;
   using SetTimeRangeSrv = ros2_kitti_interface::srv::SetTimeRange;
@@ -74,6 +77,6 @@ private:
   void publish_ground_truth_path(const Transforms & transforms);
 };
 
-}  // namespace r2k_core
+}  // namespace r2k_replay
 
-#endif  // ROS2_KITTI_CORE__KITTI_REPLAYER_NODE_HPP_
+#endif  // ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_

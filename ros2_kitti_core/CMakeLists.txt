@@ -7,10 +7,8 @@ find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(std_srvs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
@@ -62,7 +60,6 @@ ament_target_dependencies(${PROJECT_NAME}
                           rclcpp
                           rosgraph_msgs
                           sensor_msgs
-                          std_srvs
                           tf2
                           tf2_geometry_msgs)
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
@@ -86,15 +83,12 @@ add_subdirectory(apps)
 ament_export_include_directories(include)
 ament_export_libraries(ros2_kitti_core)
 ament_export_dependencies(rclcpp
-                          rclcpp_components
                           geometry_msgs
                           PCL
                           pcl_ros
                           pcl_conversions
                           rosgraph_msgs
-                          ros2_kitti_interface
                           sensor_msgs
-                          std_srvs
                           tf2
                           tf2_geometry_msgs)
 
@@ -102,6 +96,8 @@ install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
+
+install(DIRECTORY include/ DESTINATION include/)
 
 install(TARGETS convert_kitti_point_cloud DESTINATION lib/${PROJECT_NAME})
 
