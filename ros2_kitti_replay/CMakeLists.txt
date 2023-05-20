@@ -34,10 +34,10 @@ set(SOURCE_LIST "src/kitti_replayer_node.cpp")
 # create ament index resource which references the libraries in the binary dir
 set(node_plugins "")
 
-add_library(ros2_kitti_replay SHARED ${HEADER_LIST} ${SOURCE_LIST})
-target_include_directories(ros2_kitti_replay PUBLIC include)
-target_compile_definitions(ros2_kitti_replay PRIVATE "COMPOSITION_BUILDING_DLL")
-ament_target_dependencies(ros2_kitti_replay
+add_library(${PROJECT_NAME} SHARED ${HEADER_LIST} ${SOURCE_LIST})
+target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_compile_definitions(${PROJECT_NAME} PRIVATE "COMPOSITION_BUILDING_DLL")
+ament_target_dependencies(${PROJECT_NAME}
                           nav_msgs
                           rclcpp
                           rclcpp_components
@@ -46,7 +46,7 @@ ament_target_dependencies(ros2_kitti_replay
                           std_msgs
                           std_srvs
                           tf2)
-rclcpp_components_register_nodes(ros2_kitti_replay
+rclcpp_components_register_nodes(${PROJECT_NAME}
                                  "r2k_replay::KITTIReplayerNode")
 set(node_plugins
     "${node_plugins}r2k_replay::KITTIReplayerNode;\
