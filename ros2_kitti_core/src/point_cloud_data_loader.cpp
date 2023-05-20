@@ -1,8 +1,8 @@
-#include "ros2_kitti_replay/point_cloud_data_loader.hpp"
+#include "ros2_kitti_core/point_cloud_data_loader.hpp"
 
 #include <algorithm>
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 PointCloudDataLoader::PointCloudDataLoader(const std::string & name, const Header & header)
@@ -71,4 +71,4 @@ bool PointCloudDataLoader::prepare_data_internal(const std::size_t idx)
   return std::nullopt;
 }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

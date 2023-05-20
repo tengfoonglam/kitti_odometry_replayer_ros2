@@ -4,11 +4,11 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <ros2_kitti_replay/timestamp_utils.hpp>
-#include <ros2_kitti_replay_test/test_with_io.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
+#include <ros2_kitti_core_test/test_with_io.hpp>
 #include <string_view>
 
-class TestExtractTimestampsFromFile : public r2k_replay_test::TestWithIO
+class TestExtractTimestampsFromFile : public r2k_core_test::TestWithIO
 {
 public:
   static constexpr std::array<double, 3> kTestTimestamps{1.0, 2.0, 3.0};
@@ -34,7 +34,7 @@ TEST_F(TestExtractTimestampsFromFile, NonExistentTest)
 {
   const auto non_existent_file_path = kTestFolderPath / "non_existent_file.txt";
   ASSERT_FALSE(std::filesystem::exists(non_existent_file_path));
-  const auto result = r2k_replay::extract_timestamps_from_file(non_existent_file_path);
+  const auto result = r2k_core::extract_timestamps_from_file(non_existent_file_path);
   ASSERT_FALSE(result.has_value());
 }
 
@@ -43,7 +43,7 @@ TEST_F(TestExtractTimestampsFromFile, NotTxtFileTest)
   const auto non_txt_file_path = kTestFolderPath / "timestamp_file.csv";
   write_timestamps_file(non_txt_file_path, kTestTimestamps);
   ASSERT_TRUE(std::filesystem::exists(non_txt_file_path));
-  const auto result = r2k_replay::extract_timestamps_from_file(non_txt_file_path);
+  const auto result = r2k_core::extract_timestamps_from_file(non_txt_file_path);
   ASSERT_FALSE(result.has_value());
 }
 
@@ -52,7 +52,7 @@ TEST_F(TestExtractTimestampsFromFile, NormalOperation)
   const auto txt_file_path = kTestFolderPath / "timestamp_file.txt";
   write_timestamps_file(txt_file_path, kTestTimestamps);
   ASSERT_TRUE(std::filesystem::exists(txt_file_path));
-  const auto result = r2k_replay::extract_timestamps_from_file(txt_file_path);
+  const auto result = r2k_core::extract_timestamps_from_file(txt_file_path);
   ASSERT_TRUE(result.has_value());
   const auto extracted_timestamps = result.value();
   ASSERT_EQ(extracted_timestamps.size(), kTestTimestamps.size());
@@ -66,7 +66,7 @@ TEST_F(TestExtractTimestampsFromFile, EmptyFile)
   const auto txt_file_path = kTestFolderPath / "timestamp_file.txt";
   write_timestamps_file(txt_file_path, std::array<decltype(kTestTimestamps)::value_type, 0>{});
   ASSERT_TRUE(std::filesystem::exists(txt_file_path));
-  const auto result = r2k_replay::extract_timestamps_from_file(txt_file_path);
+  const auto result = r2k_core::extract_timestamps_from_file(txt_file_path);
   ASSERT_TRUE(result.has_value());
   ASSERT_TRUE(result.value().empty());
 }

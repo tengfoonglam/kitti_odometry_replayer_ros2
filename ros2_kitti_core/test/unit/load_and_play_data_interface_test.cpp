@@ -1,22 +1,22 @@
 #include <gtest/gtest.h>
 
 #include <memory>
-#include <ros2_kitti_replay/clock_data_loader.hpp>
-#include <ros2_kitti_replay/load_and_play_data_interface.hpp>
-#include <ros2_kitti_replay/timestamp_utils.hpp>
-#include <ros2_kitti_replay_test/test_utils.hpp>
+#include <ros2_kitti_core/clock_data_loader.hpp>
+#include <ros2_kitti_core/load_and_play_data_interface.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
+#include <ros2_kitti_core_test/test_utils.hpp>
 
 namespace
 {
-using r2k_replay::ClockDataLoader;
-using r2k_replay::LoadAndPlayDataInterface;
+using r2k_core::ClockDataLoader;
+using r2k_core::LoadAndPlayDataInterface;
 
 }  // namespace
 
 TEST(TestLoadAndPlayDataInterface, NormalOperations)
 {
   constexpr std::size_t number_timestamps = 3;
-  const auto timestamps = r2k_replay_test::generate_test_timestamps(1, number_timestamps);
+  const auto timestamps = r2k_core_test::generate_test_timestamps(1, number_timestamps);
   ASSERT_EQ(timestamps.size(), number_timestamps);
 
   auto loader_ptr = std::make_unique<ClockDataLoader>("clock_data_loader");
@@ -24,7 +24,7 @@ TEST(TestLoadAndPlayDataInterface, NormalOperations)
   ASSERT_TRUE(loader_ptr->ready());
   ASSERT_EQ(loader_ptr->data_size(), number_timestamps);
 
-  r2k_replay::Timestamp current_timestamp;
+  r2k_core::Timestamp current_timestamp;
 
   const auto play_cb = [&](const auto & clock_msg) {
     current_timestamp = clock_msg.clock;

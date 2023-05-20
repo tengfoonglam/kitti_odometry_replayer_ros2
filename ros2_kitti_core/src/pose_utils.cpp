@@ -1,4 +1,4 @@
-#include "ros2_kitti_replay/pose_utils.hpp"
+#include "ros2_kitti_core/pose_utils.hpp"
 
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Transform.h>
@@ -10,7 +10,7 @@
 #include <sstream>
 #include <string>
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 [[nodiscard]] std::optional<Transforms> extract_poses_from_file(
@@ -66,4 +66,4 @@ namespace r2k_replay
   return output;
 }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

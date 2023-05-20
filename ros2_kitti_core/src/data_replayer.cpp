@@ -1,10 +1,10 @@
-#include "ros2_kitti_replay/data_replayer.hpp"
+#include "ros2_kitti_core/data_replayer.hpp"
 
 #include <chrono>
 #include <functional>
 #include <type_traits>
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 DataReplayer::SetTimeRangeRequest::SetTimeRangeRequest(
@@ -536,4 +536,4 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   return std::make_pair(next_idx, target_idx);
 }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

@@ -1,16 +1,16 @@
-#ifndef ROS2_KITTI_REPLAY__POSE_DATA_LOADER_HPP_
-#define ROS2_KITTI_REPLAY__POSE_DATA_LOADER_HPP_
+#ifndef ROS2_KITTI_CORE__POSE_DATA_LOADER_HPP_
+#define ROS2_KITTI_CORE__POSE_DATA_LOADER_HPP_
 
 #include <cstdint>
 #include <filesystem>
 #include <std_msgs/msg/header.hpp>
 #include <string>
 
-#include "ros2_kitti_replay/data_loader.hpp"
-#include "ros2_kitti_replay/pose_utils.hpp"
-#include "ros2_kitti_replay/timestamp_utils.hpp"
+#include "ros2_kitti_core/data_loader.hpp"
+#include "ros2_kitti_core/pose_utils.hpp"
+#include "ros2_kitti_core/timestamp_utils.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 class PoseDataLoader final : public DataLoader<TransformStamped>
@@ -34,6 +34,6 @@ private:
   [[nodiscard]] OptionalReturnType get_data_internal(const std::size_t idx) final;
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__POSE_DATA_LOADER_HPP_
+#endif  // ROS2_KITTI_CORE__POSE_DATA_LOADER_HPP_

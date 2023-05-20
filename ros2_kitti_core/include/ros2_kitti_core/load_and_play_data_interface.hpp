@@ -1,15 +1,15 @@
-#ifndef ROS2_KITTI_REPLAY__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
-#define ROS2_KITTI_REPLAY__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
+#ifndef ROS2_KITTI_CORE__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
+#define ROS2_KITTI_CORE__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
 
 #include <functional>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "ros2_kitti_replay/data_loader.hpp"
-#include "ros2_kitti_replay/play_data_interface_base.hpp"
+#include "ros2_kitti_core/data_loader.hpp"
+#include "ros2_kitti_core/play_data_interface_base.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 template <
   typename T,
@@ -59,6 +59,6 @@ private:
   DataLoaderUqPtr data_loader_ptr_;
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__LOAD_AND_PLAY_DATA_INTERFACE_HPP_
+#endif  // ROS2_KITTI_CORE__LOAD_AND_PLAY_DATA_INTERFACE_HPP_

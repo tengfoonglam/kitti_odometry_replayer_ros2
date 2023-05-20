@@ -3,9 +3,9 @@
 #include <iostream>
 #include <string>
 
-#include "ros2_kitti_replay/timestamp_utils.hpp"
+#include "ros2_kitti_core/timestamp_utils.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 [[nodiscard]] std::optional<Timestamps> extract_timestamps_from_file(
@@ -34,4 +34,4 @@ namespace r2k_replay
   return output;
 }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

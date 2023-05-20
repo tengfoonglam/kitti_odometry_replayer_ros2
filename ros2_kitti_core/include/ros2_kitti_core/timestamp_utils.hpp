@@ -1,12 +1,12 @@
-#ifndef ROS2_KITTI_REPLAY__TIMESTAMPS_HPP_
-#define ROS2_KITTI_REPLAY__TIMESTAMPS_HPP_
+#ifndef ROS2_KITTI_CORE__TIMESTAMPS_HPP_
+#define ROS2_KITTI_CORE__TIMESTAMPS_HPP_
 
 #include <filesystem>
 #include <optional>
 #include <rclcpp/time.hpp>
 #include <vector>
 
-namespace r2k_replay
+namespace r2k_core
 {
 using Timestamp = rclcpp::Time;
 using Timestamps = std::vector<rclcpp::Time>;
@@ -24,6 +24,6 @@ using Timestamps = std::vector<rclcpp::Time>;
 [[nodiscard]] std::optional<Timestamps> extract_timestamps_from_file(
   const std::filesystem::path & times_path);
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__TIMESTAMPS_HPP_
+#endif  // ROS2_KITTI_CORE__TIMESTAMPS_HPP_

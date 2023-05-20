@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY_TEST__TEST_WITH_IO_HPP_
-#define ROS2_KITTI_REPLAY_TEST__TEST_WITH_IO_HPP_
+#ifndef ROS2_KITTI_CORE_TEST__TEST_WITH_IO_HPP_
+#define ROS2_KITTI_CORE_TEST__TEST_WITH_IO_HPP_
 
 #include <gtest/gtest.h>
 
@@ -7,7 +7,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace r2k_replay_test
+namespace r2k_core_test
 {
 
 class TestWithIO : public ::testing::Test
@@ -22,6 +22,6 @@ protected:
 const std::filesystem::path TestWithIO::kTestFolderPath{
   std::filesystem::temp_directory_path() / "test"};
 
-}  // namespace r2k_replay_test
+}  // namespace r2k_core_test
 
-#endif  // ROS2_KITTI_REPLAY_TEST__TEST_WITH_IO_HPP_
+#endif  // ROS2_KITTI_CORE_TEST__TEST_WITH_IO_HPP_

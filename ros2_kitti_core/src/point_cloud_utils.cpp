@@ -1,9 +1,9 @@
-#include "ros2_kitti_replay/point_cloud_utils.hpp"
+#include "ros2_kitti_core/point_cloud_utils.hpp"
 
 #include <cstdio>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 [[nodiscard]] PointCloudMsg::SharedPtr load_point_cloud_from_file(
@@ -100,4 +100,4 @@ namespace r2k_replay
   return answer;
 }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

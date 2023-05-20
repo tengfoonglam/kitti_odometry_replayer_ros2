@@ -1,7 +1,7 @@
-#include "ros2_kitti_replay/pose_data_loader.hpp"
+#include "ros2_kitti_core/pose_data_loader.hpp"
 
 #include <algorithm>
-namespace r2k_replay
+namespace r2k_core
 {
 
 PoseDataLoader::PoseDataLoader(
@@ -58,4 +58,4 @@ bool PoseDataLoader::prepare_data_internal([[maybe_unused]] const std::size_t id
   return output;
 }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

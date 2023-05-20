@@ -2,24 +2,24 @@
 
 #include <chrono>
 #include <mutex>
-#include <ros2_kitti_replay/data_replayer.hpp>
-#include <ros2_kitti_replay/play_data_interface_base.hpp>
-#include <ros2_kitti_replay/timestamp_utils.hpp>
-#include <ros2_kitti_replay_test/test_utils.hpp>
+#include <ros2_kitti_core/data_replayer.hpp>
+#include <ros2_kitti_core/play_data_interface_base.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
+#include <ros2_kitti_core_test/test_utils.hpp>
 #include <string>
 #include <thread>
 #include <vector>
 
 namespace
 {
-using r2k_replay::DataReplayer;
-using r2k_replay::PlayDataInterfaceBase;
-using r2k_replay::Timestamp;
-using r2k_replay::Timestamps;
-using SetTimeRangeRequest = r2k_replay::DataReplayer::SetTimeRangeRequest;
-using ReplayerState = r2k_replay::DataReplayer::ReplayerState;
-using StateChangeCallback = r2k_replay::DataReplayer::StateChangeCallback;
-using StepRequest = r2k_replay::DataReplayer::StepRequest;
+using r2k_core::DataReplayer;
+using r2k_core::PlayDataInterfaceBase;
+using r2k_core::Timestamp;
+using r2k_core::Timestamps;
+using SetTimeRangeRequest = r2k_core::DataReplayer::SetTimeRangeRequest;
+using ReplayerState = r2k_core::DataReplayer::ReplayerState;
+using StateChangeCallback = r2k_core::DataReplayer::StateChangeCallback;
+using StepRequest = r2k_core::DataReplayer::StepRequest;
 
 class PlayDataTestInterface final : public PlayDataInterfaceBase
 {

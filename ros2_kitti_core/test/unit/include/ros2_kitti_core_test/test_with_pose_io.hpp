@@ -1,20 +1,20 @@
-#ifndef ROS2_KITTI_REPLAY_TEST__TEST_WITH_POSE_IO_HPP_
-#define ROS2_KITTI_REPLAY_TEST__TEST_WITH_POSE_IO_HPP_
+#ifndef ROS2_KITTI_CORE_TEST__TEST_WITH_POSE_IO_HPP_
+#define ROS2_KITTI_CORE_TEST__TEST_WITH_POSE_IO_HPP_
 
 #include <gtest/gtest.h>
 
 #include <array>
 #include <filesystem>
-#include <ros2_kitti_replay/pose_utils.hpp>
+#include <ros2_kitti_core/pose_utils.hpp>
 #include <string>
 #include <vector>
 
-#include "ros2_kitti_replay_test/test_with_io.hpp"
+#include "ros2_kitti_core_test/test_with_io.hpp"
 
-namespace r2k_replay_test
+namespace r2k_core_test
 {
 
-class TestWithPoseIO : public r2k_replay_test::TestWithIO
+class TestWithPoseIO : public r2k_core_test::TestWithIO
 {
 public:
   template <typename T>
@@ -47,6 +47,6 @@ public:
   }
 };
 
-}  // namespace r2k_replay_test
+}  // namespace r2k_core_test
 
-#endif  // ROS2_KITTI_REPLAY_TEST__TEST_WITH_POSE_IO_HPP_
+#endif  // ROS2_KITTI_CORE_TEST__TEST_WITH_POSE_IO_HPP_

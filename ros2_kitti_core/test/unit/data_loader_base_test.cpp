@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
-#include <ros2_kitti_replay/data_loader_base.hpp>
-#include <ros2_kitti_replay/timestamp_utils.hpp>
+#include <ros2_kitti_core/data_loader_base.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
 #include <string>
 #include <utility>
 
@@ -12,19 +12,19 @@ public:
   static constexpr const char * kMockDataLoaderName{"mock_data_loader"};
   static constexpr std::size_t kTimeStampsNumber{3};
   static const std::filesystem::path kMockLoadPath;
-  static const r2k_replay::Timestamps kTestTimestamps;
+  static const r2k_core::Timestamps kTestTimestamps;
 
-  class MockDataLoader final : public r2k_replay::DataLoaderBase
+  class MockDataLoader final : public r2k_core::DataLoaderBase
   {
   public:
     explicit MockDataLoader(const std::string & name = std::string(kMockDataLoaderName))
-    : r2k_replay::DataLoaderBase(name)
+    : r2k_core::DataLoaderBase(name)
     {
     }
 
   protected:
     bool setup_internal(
-      const r2k_replay::Timestamps & timestamps,
+      const r2k_core::Timestamps & timestamps,
       [[maybe_unused]] const std::filesystem::path & load_path) final
     {
       timestamps_ = timestamps;
@@ -37,7 +37,7 @@ public:
 };
 const std::filesystem::path TestDataLoaderBase::kMockLoadPath{
   std::filesystem::temp_directory_path()};
-const r2k_replay::Timestamps TestDataLoaderBase::kTestTimestamps(
+const r2k_core::Timestamps TestDataLoaderBase::kTestTimestamps(
   TestDataLoaderBase::kTimeStampsNumber);
 
 TEST_F(TestDataLoaderBase, NameTest)
@@ -54,7 +54,7 @@ TEST_F(TestDataLoaderBase, SetupTest)
   ASSERT_TRUE(loader.setup(kTestTimestamps, kMockLoadPath));
   ASSERT_TRUE(loader.ready());
   ASSERT_EQ(loader.data_size(), kTestTimestamps.size());
-  ASSERT_FALSE(loader.setup(r2k_replay::Timestamps(4), kMockLoadPath));
+  ASSERT_FALSE(loader.setup(r2k_core::Timestamps(4), kMockLoadPath));
   ASSERT_TRUE(loader.ready());
   ASSERT_EQ(loader.data_size(), kTestTimestamps.size());
 }

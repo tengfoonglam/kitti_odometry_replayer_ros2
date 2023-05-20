@@ -3,7 +3,7 @@
 
 #include <filesystem>
 #include <iostream>
-#include <ros2_kitti_replay/point_cloud_utils.hpp>
+#include <ros2_kitti_core/point_cloud_utils.hpp>
 
 int main(int argc, char const * argv[])
 {
@@ -18,14 +18,14 @@ int main(int argc, char const * argv[])
   }
 
   const std::filesystem::path input_path{bin_to_load};
-  auto msg_ptr = r2k_replay::load_point_cloud_from_file(bin_to_load);
+  auto msg_ptr = r2k_core::load_point_cloud_from_file(bin_to_load);
 
   if (!msg_ptr) {
     std::cerr << "Failed to load KITTI .bin point cloud from " << bin_to_load;
     return 1;
   }
 
-  r2k_replay::PointCloudPCLType pcl_cloud;
+  r2k_core::PointCloudPCLType pcl_cloud;
   pcl::fromROSMsg(*msg_ptr, pcl_cloud);
 
   std::filesystem::path output_path{input_path};

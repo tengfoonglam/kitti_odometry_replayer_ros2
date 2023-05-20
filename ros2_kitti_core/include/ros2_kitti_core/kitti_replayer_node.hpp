@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
-#define ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
+#ifndef ROS2_KITTI_CORE__KITTI_REPLAYER_NODE_HPP_
+#define ROS2_KITTI_CORE__KITTI_REPLAYER_NODE_HPP_
 
 #include <memory>
 #include <nav_msgs/msg/path.hpp>
@@ -12,11 +12,11 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
 
-#include "ros2_kitti_replay/data_replayer.hpp"
-#include "ros2_kitti_replay/load_and_play_data_interface.hpp"
-#include "ros2_kitti_replay/pose_utils.hpp"
+#include "ros2_kitti_core/data_replayer.hpp"
+#include "ros2_kitti_core/load_and_play_data_interface.hpp"
+#include "ros2_kitti_core/pose_utils.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 class KITTIReplayerNode : public rclcpp::Node
@@ -74,6 +74,6 @@ private:
   void publish_ground_truth_path(const Transforms & transforms);
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
+#endif  // ROS2_KITTI_CORE__KITTI_REPLAYER_NODE_HPP_

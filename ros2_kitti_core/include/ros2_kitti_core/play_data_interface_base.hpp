@@ -1,10 +1,10 @@
-#ifndef ROS2_KITTI_REPLAY__PLAY_DATA_INTERFACE_BASE_HPP_
-#define ROS2_KITTI_REPLAY__PLAY_DATA_INTERFACE_BASE_HPP_
+#ifndef ROS2_KITTI_CORE__PLAY_DATA_INTERFACE_BASE_HPP_
+#define ROS2_KITTI_CORE__PLAY_DATA_INTERFACE_BASE_HPP_
 
 #include <cstdint>
 #include <string>
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 class PlayDataInterfaceBase
@@ -22,6 +22,6 @@ protected:
   std::string name_;
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__PLAY_DATA_INTERFACE_BASE_HPP_
+#endif  // ROS2_KITTI_CORE__PLAY_DATA_INTERFACE_BASE_HPP_

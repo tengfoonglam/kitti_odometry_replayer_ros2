@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(ros2_kitti_replay LANGUAGES CXX)
+project(ros2_kitti_core LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
@@ -90,9 +90,9 @@ ament_target_dependencies(kitti_replayer_component
                           std_msgs
                           tf2)
 rclcpp_components_register_nodes(kitti_replayer_component
-                                 "r2k_replay::KITTIReplayerNode")
+                                 "r2k_core::KITTIReplayerNode")
 set(node_plugins
-    "${node_plugins}r2k_replay::KITTIReplayerNode;\
+    "${node_plugins}r2k_core::KITTIReplayerNode;\
     $<TARGET_FILE:kitti_replayer_component>\n")
 
 if(BUILD_TESTING)
@@ -117,7 +117,7 @@ endif()
 add_subdirectory(apps)
 
 ament_export_include_directories(include)
-ament_export_libraries(ros2_kitti_replay)
+ament_export_libraries(ros2_kitti_core)
 ament_export_dependencies(rclcpp
                           rclcpp_components
                           geometry_msgs

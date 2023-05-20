@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <ros2_kitti_replay/point_cloud_data_loader.hpp>
-#include <ros2_kitti_replay/timestamp_utils.hpp>
-#include <ros2_kitti_replay_test/test_utils.hpp>
-#include <ros2_kitti_replay_test/test_with_point_cloud_io.hpp>
+#include <ros2_kitti_core/point_cloud_data_loader.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
+#include <ros2_kitti_core_test/test_utils.hpp>
+#include <ros2_kitti_core_test/test_with_point_cloud_io.hpp>
 
 class TestPointCloudDataLoader
-: public r2k_replay_test::TestWithPointCloudIO,
+: public r2k_core_test::TestWithPointCloudIO,
   public ::testing::WithParamInterface<std::tuple<std::size_t, std::size_t>>
 {
 };
@@ -17,8 +17,8 @@ TEST_P(TestPointCloudDataLoader, NormalOperation)
   const auto [number_timestamps, number_point_clouds] = GetParam();
 
   const auto timestamps = (number_timestamps == 0)
-                            ? r2k_replay::Timestamps{}
-                            : r2k_replay_test::generate_test_timestamps(
+                            ? r2k_core::Timestamps{}
+                            : r2k_core_test::generate_test_timestamps(
                                 0, number_timestamps > 1 ? number_timestamps - 1 : 0);
   ASSERT_EQ(number_timestamps, timestamps.size());
 
@@ -35,10 +35,10 @@ TEST_P(TestPointCloudDataLoader, NormalOperation)
 
   write_kitti_bin_files(pc_indices, kTestFolderPath, point_clouds);
 
-  r2k_replay::PointCloudDataLoader::Header header;
+  r2k_core::PointCloudDataLoader::Header header;
   header.frame_id = "test_id";
 
-  r2k_replay::PointCloudDataLoader loader{"TestPointCloudDataLoader", header};
+  r2k_core::PointCloudDataLoader loader{"TestPointCloudDataLoader", header};
 
   ASSERT_FALSE(loader.prepare_data(0));
   ASSERT_FALSE(loader.get_data(0).has_value());
@@ -73,10 +73,10 @@ TEST_P(TestPointCloudDataLoader, NormalOperation)
       const auto data_ptr = data_opt.value();
       ASSERT_TRUE(static_cast<bool>(data_ptr));
       ASSERT_EQ(header.frame_id, data_ptr->header.frame_id);
-      const auto header_timestamp = r2k_replay::Timestamp(data_ptr->header.stamp);
+      const auto header_timestamp = r2k_core::Timestamp(data_ptr->header.stamp);
       ASSERT_EQ(timestamps.at(i).nanoseconds(), header_timestamp.nanoseconds());
 
-      r2k_replay::PointCloudPCLType pcl_cloud;
+      r2k_core::PointCloudPCLType pcl_cloud;
       pcl::fromROSMsg(*data_ptr, pcl_cloud);
       ASSERT_EQ(pcl_cloud.size(), i);
 

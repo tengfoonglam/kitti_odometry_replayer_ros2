@@ -1,18 +1,18 @@
-#ifndef ROS2_KITTI_REPLAY__POINT_CLOUD_DATA_LOADER_HPP_
-#define ROS2_KITTI_REPLAY__POINT_CLOUD_DATA_LOADER_HPP_
+#ifndef ROS2_KITTI_CORE__POINT_CLOUD_DATA_LOADER_HPP_
+#define ROS2_KITTI_CORE__POINT_CLOUD_DATA_LOADER_HPP_
 
 #include <optional>
 #include <std_msgs/msg/header.hpp>
 #include <string>
 
-#include "ros2_kitti_replay/data_loader.hpp"
-#include "ros2_kitti_replay/point_cloud_utils.hpp"
-#include "ros2_kitti_replay/timestamp_utils.hpp"
+#include "ros2_kitti_core/data_loader.hpp"
+#include "ros2_kitti_core/point_cloud_utils.hpp"
+#include "ros2_kitti_core/timestamp_utils.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
-class PointCloudDataLoader final : public DataLoader<r2k_replay::PointCloudMsg::SharedPtr>
+class PointCloudDataLoader final : public DataLoader<r2k_core::PointCloudMsg::SharedPtr>
 {
 public:
   using Header = std_msgs::msg::Header;
@@ -33,5 +33,5 @@ private:
   [[nodiscard]] OptionalReturnType get_data_internal(const std::size_t idx) final;
 };
 
-}  // namespace r2k_replay
-#endif  // ROS2_KITTI_REPLAY__POINT_CLOUD_DATA_LOADER_HPP_
+}  // namespace r2k_core
+#endif  // ROS2_KITTI_CORE__POINT_CLOUD_DATA_LOADER_HPP_

@@ -3,19 +3,19 @@
 
 #include <array>
 #include <filesystem>
-#include <ros2_kitti_replay/point_cloud_utils.hpp>
-#include <ros2_kitti_replay_test/test_with_point_cloud_io.hpp>
+#include <ros2_kitti_core/point_cloud_utils.hpp>
+#include <ros2_kitti_core_test/test_with_point_cloud_io.hpp>
 
-class TestLoadPointCloudFromFile : public r2k_replay_test::TestWithPointCloudIO
+class TestLoadPointCloudFromFile : public r2k_core_test::TestWithPointCloudIO
 {
 };
 
 TEST_F(TestLoadPointCloudFromFile, NonExistentTest)
 {
   const auto non_existent_file_path =
-    kTestFolderPath / (std::string{"non_existent_file"} + r2k_replay::kKittiPCExtention);
+    kTestFolderPath / (std::string{"non_existent_file"} + r2k_core::kKittiPCExtention);
   ASSERT_FALSE(std::filesystem::exists(non_existent_file_path));
-  const auto pc_ptr = r2k_replay::load_point_cloud_from_file(non_existent_file_path);
+  const auto pc_ptr = r2k_core::load_point_cloud_from_file(non_existent_file_path);
   ASSERT_FALSE(pc_ptr);
 }
 
@@ -24,19 +24,19 @@ TEST_F(TestLoadPointCloudFromFile, NotBinFileTest)
   const auto non_bin_file_path = kTestFolderPath / "non_existent_file.pcd";
   write_bin_file(non_bin_file_path, kTestPoints);
   ASSERT_TRUE(std::filesystem::exists(non_bin_file_path));
-  const auto pc_ptr = r2k_replay::load_point_cloud_from_file(non_bin_file_path);
+  const auto pc_ptr = r2k_core::load_point_cloud_from_file(non_bin_file_path);
   ASSERT_FALSE(pc_ptr);
 }
 
 TEST_F(TestLoadPointCloudFromFile, EmptyFile)
 {
   const auto empty_file_path =
-    kTestFolderPath / (std::string{"empty_file"} + r2k_replay::kKittiPCExtention);
+    kTestFolderPath / (std::string{"empty_file"} + r2k_core::kKittiPCExtention);
   write_bin_file(empty_file_path, {});
   ASSERT_TRUE(std::filesystem::exists(empty_file_path));
-  const auto pc_ptr = r2k_replay::load_point_cloud_from_file(empty_file_path);
+  const auto pc_ptr = r2k_core::load_point_cloud_from_file(empty_file_path);
   ASSERT_TRUE(pc_ptr);
-  r2k_replay::PointCloudPCLType pcl_cloud;
+  r2k_core::PointCloudPCLType pcl_cloud;
   pcl::fromROSMsg(*pc_ptr, pcl_cloud);
   ASSERT_EQ(pcl_cloud.size(), std::size_t{0});
 }
@@ -44,12 +44,12 @@ TEST_F(TestLoadPointCloudFromFile, EmptyFile)
 TEST_F(TestLoadPointCloudFromFile, NormalOperation)
 {
   const auto bin_file_path =
-    kTestFolderPath / (std::string{"000000"} + r2k_replay::kKittiPCExtention);
+    kTestFolderPath / (std::string{"000000"} + r2k_core::kKittiPCExtention);
   write_bin_file(bin_file_path, kTestPoints);
   ASSERT_TRUE(std::filesystem::exists(bin_file_path));
-  const auto pc_ptr = r2k_replay::load_point_cloud_from_file(bin_file_path);
+  const auto pc_ptr = r2k_core::load_point_cloud_from_file(bin_file_path);
   ASSERT_TRUE(pc_ptr);
-  r2k_replay::PointCloudPCLType pcl_cloud;
+  r2k_core::PointCloudPCLType pcl_cloud;
   pcl::fromROSMsg(*pc_ptr, pcl_cloud);
   ASSERT_EQ(pcl_cloud.size(), kTestPoints.size());
   for (std::size_t i = 0; i < kTestPoints.size(); i++) {
@@ -67,7 +67,7 @@ class IsKittiPointCloudFileTest : public ::testing::TestWithParam<std::tuple<std
 TEST_P(IsKittiPointCloudFileTest, NormalOperation)
 {
   const auto [input, expected_answer] = GetParam();
-  ASSERT_EQ(r2k_replay::is_kitti_point_cloud_file(std::filesystem::path(input)), expected_answer);
+  ASSERT_EQ(r2k_core::is_kitti_point_cloud_file(std::filesystem::path(input)), expected_answer);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -88,7 +88,7 @@ TEST_P(TestFromIndexToPointCloudFilePath, NormalOperation)
 {
   const auto [idx, pc_path, expected_answer] = GetParam();
   ASSERT_EQ(
-    r2k_replay::from_index_to_point_cloud_file_path(idx, pc_path),
+    r2k_core::from_index_to_point_cloud_file_path(idx, pc_path),
     std::filesystem::path(expected_answer));
 }
 
@@ -101,7 +101,7 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(1234567, "/home/user", "/home/user/1234567.bin")));
 
 class TestGetLastIndexOfPointCLoudSequence
-: public r2k_replay_test::TestWithPointCloudIO,
+: public r2k_core_test::TestWithPointCloudIO,
   public ::testing::WithParamInterface<
     std::tuple<std::vector<std::size_t>, std::optional<std::size_t>>>
 {
@@ -112,7 +112,7 @@ TEST_P(TestGetLastIndexOfPointCLoudSequence, NormalOperation)
   const auto [indices, expected_answer] = GetParam();
   write_kitti_bin_files(
     indices, kTestFolderPath, std::vector<KITTIPoints>(indices.size(), KITTIPoints{}));
-  const auto output = r2k_replay::get_last_index_of_point_cloud_sequence(kTestFolderPath);
+  const auto output = r2k_core::get_last_index_of_point_cloud_sequence(kTestFolderPath);
   ASSERT_EQ(output, expected_answer);
 }
 

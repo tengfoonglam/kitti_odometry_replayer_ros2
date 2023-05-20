@@ -8,7 +8,7 @@
   <license>BSD 3-clause</license>
 
   <exec_depend>ros2_kitti_description</exec_depend>
-  <exec_depend>ros2_kitti_replay</exec_depend>
+  <exec_depend>ros2_kitti_core</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

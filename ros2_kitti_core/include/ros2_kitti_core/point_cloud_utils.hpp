@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__POINT_CLOUD_UTILS_HPP_
-#define ROS2_KITTI_REPLAY__POINT_CLOUD_UTILS_HPP_
+#ifndef ROS2_KITTI_CORE__POINT_CLOUD_UTILS_HPP_
+#define ROS2_KITTI_CORE__POINT_CLOUD_UTILS_HPP_
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -8,7 +8,7 @@
 #include <optional>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 using PointCloudMsg = sensor_msgs::msg::PointCloud2;
@@ -28,6 +28,6 @@ constexpr const char kKittiPCExtention[]{".bin"};
 [[nodiscard]] std::optional<std::size_t> get_last_index_of_point_cloud_sequence(
   const std::filesystem::path & pc_path);
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__POINT_CLOUD_UTILS_HPP_
+#endif  // ROS2_KITTI_CORE__POINT_CLOUD_UTILS_HPP_

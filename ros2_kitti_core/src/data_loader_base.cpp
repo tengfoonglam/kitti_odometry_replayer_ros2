@@ -1,6 +1,6 @@
-#include "ros2_kitti_replay/data_loader_base.hpp"
+#include "ros2_kitti_core/data_loader_base.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 DataLoaderBase::DataLoaderBase(const std::string & name, rclcpp::Logger logger)
@@ -50,4 +50,4 @@ bool DataLoaderBase::can_process_data(const std::size_t idx, const std::string &
   }
 }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

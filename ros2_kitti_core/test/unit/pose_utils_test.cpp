@@ -5,10 +5,10 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <ros2_kitti_replay/pose_utils.hpp>
-#include <ros2_kitti_replay_test/test_with_pose_io.hpp>
+#include <ros2_kitti_core/pose_utils.hpp>
+#include <ros2_kitti_core_test/test_with_pose_io.hpp>
 
-class TestExtractPosesFromFile : public r2k_replay_test::TestWithPoseIO
+class TestExtractPosesFromFile : public r2k_core_test::TestWithPoseIO
 {
 public:
   static const std::array<tf2::Transform, 5> kTestPoses;
@@ -24,7 +24,7 @@ TEST_F(TestExtractPosesFromFile, NonExistentTest)
 {
   const auto non_existent_file_path = kTestFolderPath / "non_existent_file.txt";
   ASSERT_FALSE(std::filesystem::exists(non_existent_file_path));
-  const auto result = r2k_replay::extract_poses_from_file(non_existent_file_path);
+  const auto result = r2k_core::extract_poses_from_file(non_existent_file_path);
   ASSERT_FALSE(result.has_value());
 }
 
@@ -33,7 +33,7 @@ TEST_F(TestExtractPosesFromFile, NotTxtFileTest)
   const auto non_txt_file_path = kTestFolderPath / "timestamp_file.csv";
   write_poses_file(non_txt_file_path, kTestPoses);
   ASSERT_TRUE(std::filesystem::exists(non_txt_file_path));
-  const auto result = r2k_replay::extract_poses_from_file(non_txt_file_path);
+  const auto result = r2k_core::extract_poses_from_file(non_txt_file_path);
   ASSERT_FALSE(result.has_value());
 }
 
@@ -42,7 +42,7 @@ TEST_F(TestExtractPosesFromFile, NormalOperation)
   const auto txt_file_path = kTestFolderPath / "pose_file.txt";
   write_poses_file(txt_file_path, kTestPoses);
   ASSERT_TRUE(std::filesystem::exists(txt_file_path));
-  const auto result = r2k_replay::extract_poses_from_file(txt_file_path);
+  const auto result = r2k_core::extract_poses_from_file(txt_file_path);
   ASSERT_TRUE(result.has_value());
   const auto extracted_poses = result.value();
   ASSERT_EQ(extracted_poses.size(), extracted_poses.size());
@@ -58,7 +58,7 @@ TEST_F(TestExtractPosesFromFile, EmptyFile)
   const auto txt_file_path = kTestFolderPath / "timestamp_file.txt";
   write_poses_file(txt_file_path, std::array<decltype(kTestPoses)::value_type, 0>{});
   ASSERT_TRUE(std::filesystem::exists(txt_file_path));
-  const auto result = r2k_replay::extract_poses_from_file(txt_file_path);
+  const auto result = r2k_core::extract_poses_from_file(txt_file_path);
   ASSERT_TRUE(result.has_value());
   ASSERT_TRUE(result.value().empty());
 }

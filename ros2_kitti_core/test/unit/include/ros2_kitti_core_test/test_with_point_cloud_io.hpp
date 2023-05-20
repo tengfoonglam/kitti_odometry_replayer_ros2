@@ -1,20 +1,20 @@
-#ifndef ROS2_KITTI_REPLAY_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_
-#define ROS2_KITTI_REPLAY_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_
+#ifndef ROS2_KITTI_CORE_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_
+#define ROS2_KITTI_CORE_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_
 
 #include <gtest/gtest.h>
 
 #include <array>
 #include <filesystem>
-#include <ros2_kitti_replay/point_cloud_utils.hpp>
+#include <ros2_kitti_core/point_cloud_utils.hpp>
 #include <string>
 #include <vector>
 
-#include "ros2_kitti_replay_test/test_with_io.hpp"
+#include "ros2_kitti_core_test/test_with_io.hpp"
 
-namespace r2k_replay_test
+namespace r2k_core_test
 {
 
-class TestWithPointCloudIO : public r2k_replay_test::TestWithIO
+class TestWithPointCloudIO : public r2k_core_test::TestWithIO
 {
 public:
   using KITTIPoint = std::array<float, 4>;
@@ -29,7 +29,7 @@ public:
     ASSERT_EQ(indices.size(), point_clouds.size());
 
     for (std::size_t i = 0; i < indices.size(); i++) {
-      const auto file_path = r2k_replay::from_index_to_point_cloud_file_path(indices.at(i), folder);
+      const auto file_path = r2k_core::from_index_to_point_cloud_file_path(indices.at(i), folder);
       write_bin_file(file_path, point_clouds.at(i));
     }
   }
@@ -60,6 +60,6 @@ const TestWithPointCloudIO::KITTIPoints TestWithPointCloudIO::kTestPoints{
   {9.0f, 10.0f, 11.0f, 12.0f},
   {13.0f, 14.0f, 15.0f, 16.0f},
   {17.0f, 18.0f, 19.0f, 20.0f}};
-}  // namespace r2k_replay_test
+}  // namespace r2k_core_test
 
-#endif  // ROS2_KITTI_REPLAY_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_
+#endif  // ROS2_KITTI_CORE_TEST__TEST_WITH_POINT_CLOUD_IO_HPP_

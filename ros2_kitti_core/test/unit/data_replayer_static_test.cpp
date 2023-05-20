@@ -1,15 +1,15 @@
 #include <gtest/gtest.h>
 
-#include <ros2_kitti_replay/data_replayer.hpp>
-#include <ros2_kitti_replay/timestamp_utils.hpp>
-#include <ros2_kitti_replay_test/test_utils.hpp>
+#include <ros2_kitti_core/data_replayer.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
+#include <ros2_kitti_core_test/test_utils.hpp>
 #include <tuple>
 
 namespace
 {
-using r2k_replay::DataReplayer;
-using r2k_replay::Timestamp;
-using r2k_replay::Timestamps;
+using r2k_core::DataReplayer;
+using r2k_core::Timestamp;
+using r2k_core::Timestamps;
 using SetTimeRangeRequest = DataReplayer::SetTimeRangeRequest;
 using StepRequest = DataReplayer::StepRequest;
 using IndexRangeOpt = DataReplayer::IndexRangeOpt;
@@ -38,7 +38,7 @@ public:
   static constexpr std::size_t kEndTimeS{5};
 };
 const Timestamps TestProcessSetTimeRangeRequestNormalOperations::kTimestamps =
-  r2k_replay_test::generate_test_timestamps(
+  r2k_core_test::generate_test_timestamps(
     TestProcessSetTimeRangeRequestNormalOperations::kStartTimeS,
     TestProcessSetTimeRangeRequestNormalOperations::kEndTimeS);
 

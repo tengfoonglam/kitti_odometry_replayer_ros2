@@ -1,6 +1,6 @@
-#include "ros2_kitti_replay/clock_data_loader.hpp"
+#include "ros2_kitti_core/clock_data_loader.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 ClockDataLoader::ClockDataLoader(const std::string & name)
@@ -34,4 +34,4 @@ bool ClockDataLoader::setup_internal(
 
 bool ClockDataLoader::prepare_data_internal([[maybe_unused]] const std::size_t idx) { return true; }
 
-}  // namespace r2k_replay
+}  // namespace r2k_core

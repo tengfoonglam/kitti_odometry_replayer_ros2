@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__CLOCK_DATA_LOADER_HPP_
-#define ROS2_KITTI_REPLAY__CLOCK_DATA_LOADER_HPP_
+#ifndef ROS2_KITTI_CORE__CLOCK_DATA_LOADER_HPP_
+#define ROS2_KITTI_CORE__CLOCK_DATA_LOADER_HPP_
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <cstdint>
@@ -7,10 +7,10 @@
 #include <rosgraph_msgs/msg/clock.hpp>
 #include <string>
 
-#include "ros2_kitti_replay/data_loader.hpp"
-#include "ros2_kitti_replay/timestamp_utils.hpp"
+#include "ros2_kitti_core/data_loader.hpp"
+#include "ros2_kitti_core/timestamp_utils.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 class ClockDataLoader final : public DataLoader<rosgraph_msgs::msg::Clock>
@@ -26,6 +26,6 @@ private:
   [[nodiscard]] OptionalReturnType get_data_internal(const std::size_t idx) final;
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__CLOCK_DATA_LOADER_HPP_
+#endif  // ROS2_KITTI_CORE__CLOCK_DATA_LOADER_HPP_

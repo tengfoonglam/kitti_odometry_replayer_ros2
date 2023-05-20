@@ -87,8 +87,8 @@ def generate_launch_description() -> LaunchDescription:
                 executable="component_container_mt",
                 composable_node_descriptions=[
                     ComposableNode(
-                        package="ros2_kitti_replay",
-                        plugin="r2k_replay::KITTIReplayerNode",
+                        package="ros2_kitti_core",
+                        plugin="r2k_core::KITTIReplayerNode",
                         name="kitti_replayer",
                         parameters=[
                             {
@@ -110,7 +110,7 @@ def generate_launch_description() -> LaunchDescription:
                 arguments=[
                     "-d"
                     + os.path.join(
-                        get_package_share_directory("ros2_kitti_replay"),
+                        get_package_share_directory("ros2_kitti_core"),
                         "rviz",
                         "visualize_ground_truth.rviz",
                     )

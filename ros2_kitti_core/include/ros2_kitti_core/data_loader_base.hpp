@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__DATA_LOADER_BASE_HPP_
-#define ROS2_KITTI_REPLAY__DATA_LOADER_BASE_HPP_
+#ifndef ROS2_KITTI_CORE__DATA_LOADER_BASE_HPP_
+#define ROS2_KITTI_CORE__DATA_LOADER_BASE_HPP_
 
 #include <cstdint>
 #include <filesystem>
@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "ros2_kitti_replay/timestamp_utils.hpp"
+#include "ros2_kitti_core/timestamp_utils.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 class DataLoaderBase
@@ -37,6 +37,6 @@ protected:
   virtual bool prepare_data_internal(const std::size_t idx) = 0;
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__DATA_LOADER_BASE_HPP_
+#endif  // ROS2_KITTI_CORE__DATA_LOADER_BASE_HPP_

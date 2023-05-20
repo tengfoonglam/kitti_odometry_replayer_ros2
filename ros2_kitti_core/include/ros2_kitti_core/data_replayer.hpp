@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__DATA_REPLAYER_HPP_
-#define ROS2_KITTI_REPLAY__DATA_REPLAYER_HPP_
+#ifndef ROS2_KITTI_CORE__DATA_REPLAYER_HPP_
+#define ROS2_KITTI_CORE__DATA_REPLAYER_HPP_
 
 #include <functional>
 #include <memory>
@@ -10,10 +10,10 @@
 #include <utility>
 #include <vector>
 
-#include "ros2_kitti_replay/data_loader.hpp"
-#include "ros2_kitti_replay/play_data_interface_base.hpp"
+#include "ros2_kitti_core/data_loader.hpp"
+#include "ros2_kitti_core/play_data_interface_base.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 class DataReplayer
@@ -135,6 +135,6 @@ private:
   bool play_index_range(const IndexRange & index_range, const float replay_speed);
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__DATA_REPLAYER_HPP_
+#endif  // ROS2_KITTI_CORE__DATA_REPLAYER_HPP_

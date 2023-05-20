@@ -1,5 +1,5 @@
-#ifndef ROS2_KITTI_REPLAY__DATA_LOADER_HPP_
-#define ROS2_KITTI_REPLAY__DATA_LOADER_HPP_
+#ifndef ROS2_KITTI_CORE__DATA_LOADER_HPP_
+#define ROS2_KITTI_CORE__DATA_LOADER_HPP_
 
 #include <cstdint>
 #include <filesystem>
@@ -9,10 +9,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "ros2_kitti_replay/data_loader_base.hpp"
-#include "ros2_kitti_replay/timestamp_utils.hpp"
+#include "ros2_kitti_core/data_loader_base.hpp"
+#include "ros2_kitti_core/timestamp_utils.hpp"
 
-namespace r2k_replay
+namespace r2k_core
 {
 
 template <class T>
@@ -78,6 +78,6 @@ protected:
   [[nodiscard]] virtual OptionalReturnType get_data_internal(const std::size_t idx) = 0;
 };
 
-}  // namespace r2k_replay
+}  // namespace r2k_core
 
-#endif  // ROS2_KITTI_REPLAY__DATA_LOADER_HPP_
+#endif  // ROS2_KITTI_CORE__DATA_LOADER_HPP_
