@@ -45,7 +45,17 @@ def generate_launch_description() -> LaunchDescription:
                 package="tf2_ros",
                 executable="static_transform_publisher",
                 output="screen",
-                arguments=["0", "0", "0", "0", "0", "0", "map", p0_frame_id],
+                arguments=[
+                    "0.0",
+                    "0.0",
+                    "0.0",
+                    "0.0",
+                    "0.0",
+                    "0.0",
+                    "1.0",
+                    "map",
+                    p0_frame_id,
+                ],
             ),
             Node(
                 package="robot_state_publisher",

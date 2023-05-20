@@ -11,6 +11,6 @@ ___
    * `ros2 run ros2_kitti_description generate_urdfs -d [insert calib folder location here]/data_odometry_calib`
    * If package has been installed correctly, URDFs will be automatically saved to the shared directory of this installed package. Otherwise, they will be saved to the user's home directory
 4. To visualize the generated URDFs, run
-   * `ros2 launch ros2_kitti_description visualize_urdf.launch.py urdf_filename:=default.urdf.xml`
+   * `ros2 launch ros2_kitti_description load_urdf.launch.py urdf_filename:=default.urdf.xml`
    * Replace `default.urdf.xml` with the desired file you want to view
    * URDFs must be located in the package's shared directory

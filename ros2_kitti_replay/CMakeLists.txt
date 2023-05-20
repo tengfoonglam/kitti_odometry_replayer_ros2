@@ -76,7 +76,7 @@ set(node_plugins "")
 add_library(kitti_replayer_component SHARED
             "src/kitti_replayer_node.cpp"
             "include/${PROJECT_NAME}/kitti_replayer_node.hpp")
-target_include_directories(${PROJECT_NAME}
+target_include_directories(kitti_replayer_component
                            PUBLIC "include/${PROJECT_NAME}/\
                            kitti_replayer_node.hpp")
 target_link_libraries(kitti_replayer_component ${PROJECT_NAME})

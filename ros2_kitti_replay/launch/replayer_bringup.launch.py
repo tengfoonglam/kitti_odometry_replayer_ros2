@@ -10,8 +10,9 @@ from launch.substitutions import (
     PathJoinSubstitution,
     PythonExpression,
 )
-from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import ComposableNodeContainer, Node
+from launch_ros.descriptions import ComposableNode
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -70,7 +71,7 @@ def generate_launch_description() -> LaunchDescription:
                 launch_description_source=PythonLaunchDescriptionSource(
                     [
                         get_package_share_directory("ros2_kitti_description"),
-                        "/visualize_urdf.launch.py",
+                        "/load_urdf.launch.py",
                     ]
                 ),
                 launch_arguments={
@@ -79,24 +80,27 @@ def generate_launch_description() -> LaunchDescription:
                     "launch_rviz": "False",
                 }.items(),
             ),
-            Node(
-                package="ros2_kitti_replay",
-                executable="run_kitti_replayer",
-                name="kitti_replayer",
+            ComposableNodeContainer(
+                name="replayer_container",
+                namespace="",
+                package="rclcpp_components",
+                executable="component_container",
+                composable_node_descriptions=[
+                    ComposableNode(
+                        package="ros2_kitti_replay",
+                        plugin="r2k_replay::KITTIReplayerNode",
+                        name="kitti_replayer",
+                        parameters=[
+                            {
+                                "use_sim_time": use_sim_time,
+                                "timestamp_path": timestamp_path,
+                                "poses_path": poses_path,
+                                "point_cloud_folder_path": point_cloud_folder_path,
+                            }
+                        ],
+                    ),
+                ],
                 output="screen",
-                parameters=[
-                    {
-                        "use_sim_time": use_sim_time,
-                        "timestamp_path": timestamp_path,
-                        "poses_path": poses_path,
-                        "point_cloud_folder_path": point_cloud_folder_path,
-                    }
-                ],
-                arguments=[
-                    "--ros-args",
-                    "--log-level",
-                    LaunchConfiguration("log_level"),
-                ],
             ),
             Node(
                 package="rviz2",
