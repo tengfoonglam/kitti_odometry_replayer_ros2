@@ -1,21 +1,19 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>ros2_kitti_replay</name>
+  <name>ros2_kitti_core</name>
   <version>0.1.0</version>
-  <description>Replayer for the KITTI Odometry Dataset</description>
+  <description>Core I/O and replaying classes/methods for ros2_kitti</description>
   <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>
   <license>BSD 3-clause</license>
 
-  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>libpcl-all-dev</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>pcl_conversions</exec_depend>
   <exec_depend>rclcpp</exec_depend>
-  <exec_depend>rclcpp_components</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
-  <exec_depend>ros2_kitti_core</exec_depend>
-  <exec_depend>ros2_kitti_description</exec_depend>
-  <exec_depend>ros2_kitti_interface</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_srvs</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>tf2_geometry_msgs</exec_depend>
 

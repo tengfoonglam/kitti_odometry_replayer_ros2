@@ -1,6 +1,6 @@
 import os
 
-from pathlib import Path
+# from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -10,8 +10,9 @@ from launch.substitutions import (
     PathJoinSubstitution,
     PythonExpression,
 )
-from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import ComposableNodeContainer, Node
+from launch_ros.descriptions import ComposableNode
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -19,14 +20,16 @@ def generate_launch_description() -> LaunchDescription:
 
     dataset_number = LaunchConfiguration("dataset_number", default="00")
     dataset_path = LaunchConfiguration(
-        "dataset_path", default=str(Path().home() / "kitti_dataset")
+        "dataset_path", default="/media/ltf/LTFUbuntuSSD/kitti_dataset"
     )
+
+    dataset_number_padded = PythonExpression(['f"{', dataset_number, ':02}"'])
 
     timestamp_path = PathJoinSubstitution(
         [
             dataset_path,
             "data_odometry_calib/dataset/sequences",
-            dataset_number,
+            dataset_number_padded,
             "times.txt",
         ]
     )
@@ -41,7 +44,7 @@ def generate_launch_description() -> LaunchDescription:
         [
             dataset_path,
             "data_odometry_velodyne/dataset/sequences",
-            dataset_number,
+            dataset_number_padded,
             "velodyne",
         ]
     )
@@ -57,18 +60,18 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "dataset_number",
                 default_value="00",
-                description="Dataset number to load. Must be a double digit number. e.g. 00, 10",
+                description="Dataset number to load. Omit any leading zeros.",
             ),
             DeclareLaunchArgument(
                 "dataset_path",
-                default_value=str(Path().home() / "kitti_dataset"),
+                default_value="/media/ltf/LTFUbuntuSSD/kitti_dataset",
                 description="Path where all dataset folders are located",
             ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
                     [
                         get_package_share_directory("ros2_kitti_description"),
-                        "/visualize_urdf.launch.py",
+                        "/load_urdf.launch.py",
                     ]
                 ),
                 launch_arguments={
@@ -77,24 +80,27 @@ def generate_launch_description() -> LaunchDescription:
                     "launch_rviz": "False",
                 }.items(),
             ),
-            Node(
-                package="ros2_kitti_replay",
-                executable="run_kitti_replayer",
-                name="kitti_replayer",
+            ComposableNodeContainer(
+                name="replayer_container",
+                namespace="",
+                package="rclcpp_components",
+                executable="component_container_mt",
+                composable_node_descriptions=[
+                    ComposableNode(
+                        package="ros2_kitti_replay",
+                        plugin="r2k_replay::KITTIReplayerNode",
+                        name="kitti_replayer",
+                        parameters=[
+                            {
+                                "use_sim_time": use_sim_time,
+                                "timestamp_path": timestamp_path,
+                                "poses_path": poses_path,
+                                "point_cloud_folder_path": point_cloud_folder_path,
+                            }
+                        ],
+                    ),
+                ],
                 output="screen",
-                parameters=[
-                    {
-                        "use_sim_time": use_sim_time,
-                        "timestamp_path": timestamp_path,
-                        "poses_path": poses_path,
-                        "point_cloud_folder_path": point_cloud_folder_path,
-                    }
-                ],
-                arguments=[
-                    "--ros-args",
-                    "--log-level",
-                    LaunchConfiguration("log_level"),
-                ],
             ),
             Node(
                 package="rviz2",

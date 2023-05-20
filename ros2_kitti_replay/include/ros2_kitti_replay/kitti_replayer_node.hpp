@@ -2,15 +2,18 @@
 #define ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
 
 #include <memory>
+#include <nav_msgs/msg/path.hpp>
+#include <optional>
 #include <rclcpp/rclcpp.hpp>
+#include <ros2_kitti_core/data_replayer.hpp>
+#include <ros2_kitti_core/load_and_play_data_interface.hpp>
+#include <ros2_kitti_core/pose_utils.hpp>
 #include <ros2_kitti_interface/msg/replayer_state.hpp>
-#include <ros2_kitti_interface/srv/resume.hpp>
+#include <ros2_kitti_interface/srv/play.hpp>
+#include <ros2_kitti_interface/srv/set_time_range.hpp>
 #include <ros2_kitti_interface/srv/step.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
-
-#include "ros2_kitti_replay/data_replayer.hpp"
-#include "ros2_kitti_replay/load_and_play_data_interface.hpp"
 
 namespace r2k_replay
 {
@@ -18,7 +21,18 @@ namespace r2k_replay
 class KITTIReplayerNode : public rclcpp::Node
 {
 public:
+  using DataReplayer = r2k_core::DataReplayer;
+  using Transforms = r2k_core::Transforms;
+
   using ReplayerStateMsg = ros2_kitti_interface::msg::ReplayerState;
+  using PlaySrv = ros2_kitti_interface::srv::Play;
+  using SetTimeRangeSrv = ros2_kitti_interface::srv::SetTimeRange;
+  using StepSrv = ros2_kitti_interface::srv::Step;
+  using TriggerSrv = std_srvs::srv::Trigger;
+  template <typename T>
+  using LoadAndPlayDataInterface = r2k_core::LoadAndPlayDataInterface<T>;
+
+  static const rclcpp::QoS kLatchingQoS;
 
   explicit KITTIReplayerNode(const rclcpp::NodeOptions & options);
 
@@ -26,14 +40,18 @@ public:
     const DataReplayer::ReplayerState & replayer_state);
 
 private:
+  std::optional<Transforms> ground_truth_path_opt_;
+
   std::unique_ptr<DataReplayer> replayer_ptr_;
   std::shared_ptr<rclcpp::Publisher<ReplayerStateMsg>> state_publisher_ptr_;
-  rclcpp::Service<ros2_kitti_interface::srv::Resume>::SharedPtr resume_service_ptr;
-  rclcpp::Service<ros2_kitti_interface::srv::Step>::SharedPtr step_service_ptr;
-  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr pause_service_ptr;
+  rclcpp::Service<PlaySrv>::SharedPtr play_service_ptr;
+  rclcpp::Service<StepSrv>::SharedPtr step_service_ptr;
+  rclcpp::Service<TriggerSrv>::SharedPtr pause_service_ptr;
+  rclcpp::Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr;
+  std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Path>> gt_path_pub_ptr_;
 
   template <typename T>
-  static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
+  [[nodiscard]] static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
     const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
     std::unique_ptr<T> loader_ptr);
 
@@ -41,17 +59,23 @@ private:
   void play_data_interface_check_shutdown_if_fail(
     const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size);
 
-  void resume(
-    const std::shared_ptr<ros2_kitti_interface::srv::Resume::Request> request_ptr,
-    std::shared_ptr<ros2_kitti_interface::srv::Resume::Response> response_ptr);
+  void play(
+    const std::shared_ptr<PlaySrv::Request> request_ptr,
+    std::shared_ptr<PlaySrv::Response> response_ptr);
 
   void step(
-    const std::shared_ptr<ros2_kitti_interface::srv::Step::Request> request_ptr,
-    std::shared_ptr<ros2_kitti_interface::srv::Step::Response> response_ptr);
+    const std::shared_ptr<StepSrv::Request> request_ptr,
+    std::shared_ptr<StepSrv::Response> response_ptr);
 
   void pause(
-    [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> request_ptr,
-    std::shared_ptr<std_srvs::srv::Trigger::Response> response_ptr);
+    [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,
+    std::shared_ptr<TriggerSrv::Response> response_ptr);
+
+  void set_time_range(
+    const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
+    std::shared_ptr<SetTimeRangeSrv::Response> response_ptr);
+
+  void publish_ground_truth_path(const Transforms & transforms);
 };
 
 }  // namespace r2k_replay

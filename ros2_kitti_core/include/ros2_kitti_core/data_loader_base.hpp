@@ -1,0 +1,42 @@
+#ifndef ROS2_KITTI_CORE__DATA_LOADER_BASE_HPP_
+#define ROS2_KITTI_CORE__DATA_LOADER_BASE_HPP_
+
+#include <cstdint>
+#include <filesystem>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
+#include <string>
+#include <utility>
+
+#include "ros2_kitti_core/timestamp_utils.hpp"
+
+namespace r2k_core
+{
+
+class DataLoaderBase
+{
+public:
+  explicit DataLoaderBase(const std::string & name);
+  DataLoaderBase(const std::string & name, rclcpp::Logger logger);
+  [[nodiscard]] constexpr bool ready() const noexcept { return ready_; };
+  [[nodiscard]] const std::string & name() const noexcept { return name_; };
+  [[nodiscard]] virtual std::size_t data_size() const;
+  bool setup(const Timestamps & timestamps, const std::filesystem::path & load_path);
+  bool prepare_data(const std::size_t idx);
+  virtual ~DataLoaderBase() = default;
+
+protected:
+  bool ready_{false};
+  std::string name_;
+  rclcpp::Logger logger_;
+  Timestamps timestamps_;
+
+  bool can_process_data(const std::size_t idx, const std::string & call_name);
+  virtual bool setup_internal(
+    const Timestamps & timestamps, const std::filesystem::path & load_path) = 0;
+  virtual bool prepare_data_internal(const std::size_t idx) = 0;
+};
+
+}  // namespace r2k_core
+
+#endif  // ROS2_KITTI_CORE__DATA_LOADER_BASE_HPP_
