@@ -3,14 +3,12 @@ cmake_minimum_required(VERSION 3.5)
 project(ros2_kitti_core LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
-find_package(ros2_kitti_interface REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -63,45 +61,14 @@ ament_target_dependencies(${PROJECT_NAME}
                           pcl_conversions
                           rclcpp
                           rosgraph_msgs
-                          ros2_kitti_interface
                           sensor_msgs
                           std_srvs
                           tf2
                           tf2_geometry_msgs)
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
-# create ament index resource which references the libraries in the binary dir
-set(node_plugins "")
-
-add_library(kitti_replayer_component SHARED
-            "src/kitti_replayer_node.cpp"
-            "include/${PROJECT_NAME}/kitti_replayer_node.hpp")
-target_include_directories(kitti_replayer_component
-                           PUBLIC "include/${PROJECT_NAME}/\
-                           kitti_replayer_node.hpp")
-target_link_libraries(kitti_replayer_component ${PROJECT_NAME})
-target_compile_definitions(kitti_replayer_component
-                           PRIVATE "COMPOSITION_BUILDING_DLL")
-ament_target_dependencies(kitti_replayer_component
-                          nav_msgs
-                          rclcpp
-                          rclcpp_components
-                          ros2_kitti_interface
-                          std_msgs
-                          tf2)
-rclcpp_components_register_nodes(kitti_replayer_component
-                                 "r2k_core::KITTIReplayerNode")
-set(node_plugins
-    "${node_plugins}r2k_core::KITTIReplayerNode;\
-    $<TARGET_FILE:kitti_replayer_component>\n")
-
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-
-  file(GENERATE
-       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test_ament_index/\
-       $<CONFIG>/share/ament_index/resource_index/node_plugin/${PROJECT_NAME}"
-       CONTENT "${node_plugins}")
 
   # Bypass copyright and uncrustify checks
   set(ament_cmake_copyright_FOUND TRUE)
@@ -131,14 +98,11 @@ ament_export_dependencies(rclcpp
                           tf2
                           tf2_geometry_msgs)
 
-install(TARGETS ${PROJECT_NAME} kitti_replayer_component
+install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
 
 install(TARGETS convert_kitti_point_cloud DESTINATION lib/${PROJECT_NAME})
-
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
-install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME}/)
 
 ament_package()
