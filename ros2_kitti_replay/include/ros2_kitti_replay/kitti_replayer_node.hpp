@@ -18,7 +18,7 @@
 namespace r2k_replay
 {
 
-class KITTIReplayerNode : public rclcpp::Node
+class KITTIReplayerNode final : public rclcpp::Node
 {
 public:
   using DataReplayer = r2k_core::DataReplayer;
@@ -32,6 +32,11 @@ public:
   template <typename T>
   using LoadAndPlayDataInterface = r2k_core::LoadAndPlayDataInterface<T>;
 
+  template <typename T>
+  using Publisher = rclcpp::Publisher<T>;
+  template <typename T>
+  using Service = rclcpp::Service<T>;
+
   static const rclcpp::QoS kLatchingQoS;
 
   explicit KITTIReplayerNode(const rclcpp::NodeOptions & options);
@@ -43,12 +48,12 @@ private:
   std::optional<Transforms> ground_truth_path_opt_;
 
   std::unique_ptr<DataReplayer> replayer_ptr_;
-  std::shared_ptr<rclcpp::Publisher<ReplayerStateMsg>> state_publisher_ptr_;
-  rclcpp::Service<PlaySrv>::SharedPtr play_service_ptr;
-  rclcpp::Service<StepSrv>::SharedPtr step_service_ptr;
-  rclcpp::Service<TriggerSrv>::SharedPtr pause_service_ptr;
-  rclcpp::Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr;
-  std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Path>> gt_path_pub_ptr_;
+  std::shared_ptr<Publisher<ReplayerStateMsg>> state_publisher_ptr_;
+  Service<PlaySrv>::SharedPtr play_service_ptr_;
+  Service<StepSrv>::SharedPtr step_service_ptr_;
+  Service<TriggerSrv>::SharedPtr pause_service_ptr_;
+  Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr_;
+  std::shared_ptr<Publisher<nav_msgs::msg::Path>> gt_path_pub_ptr_;
 
   template <typename T>
   [[nodiscard]] static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(

@@ -35,6 +35,8 @@ ament_target_dependencies(${PROJECT_NAME}
                           nav_msgs
                           rclcpp
                           sensor_msgs
+                          std_msgs
+                          std_srvs
                           tf2
                           tf2_geometry_msgs)
 
