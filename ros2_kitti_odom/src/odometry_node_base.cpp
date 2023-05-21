@@ -51,9 +51,9 @@ void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::ConstShared
   point_cloud_cb_internal(pc_ptr);
 }
 
-void OdometryNodeBase::notify_new_transform(
-  [[maybe_unused]] geometry_msgs::msg::TransformStamped transform)
+void OdometryNodeBase::notify_new_transform(geometry_msgs::msg::TransformStamped transform)
 {
+  tf_broadcaster_ptr_->sendTransform(transform);
 }
 
 }  // namespace r2k_odom
