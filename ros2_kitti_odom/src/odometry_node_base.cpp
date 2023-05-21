@@ -51,9 +51,20 @@ void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::ConstShared
   point_cloud_cb_internal(pc_ptr);
 }
 
-void OdometryNodeBase::notify_new_transform(geometry_msgs::msg::TransformStamped transform)
+void OdometryNodeBase::notify_new_transform(geometry_msgs::msg::TransformStamped transform_stamped)
 {
-  tf_broadcaster_ptr_->sendTransform(transform);
+  tf_broadcaster_ptr_->sendTransform(transform_stamped);
+
+  auto odom_msg_ptr = std::make_unique<nav_msgs::msg::Odometry>();
+  odom_msg_ptr->header = transform_stamped.header;
+  odom_msg_ptr->pose.pose.position.x = transform_stamped.transform.translation.x;
+  odom_msg_ptr->pose.pose.position.y = transform_stamped.transform.translation.y;
+  odom_msg_ptr->pose.pose.position.z = transform_stamped.transform.translation.z;
+  odom_msg_ptr->pose.pose.orientation.w = transform_stamped.transform.rotation.w;
+  odom_msg_ptr->pose.pose.orientation.x = transform_stamped.transform.rotation.x;
+  odom_msg_ptr->pose.pose.orientation.y = transform_stamped.transform.rotation.y;
+  odom_msg_ptr->pose.pose.orientation.z = transform_stamped.transform.rotation.z;
+  odometry_pub_ptr_->publish(std::move(odom_msg_ptr));
 }
 
 }  // namespace r2k_odom

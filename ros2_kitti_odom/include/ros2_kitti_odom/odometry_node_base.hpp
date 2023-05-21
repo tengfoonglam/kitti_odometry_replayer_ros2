@@ -37,7 +37,7 @@ protected:
   void point_cloud_cb(sensor_msgs::msg::PointCloud2::ConstSharedPtr pc_ptr);
 
   virtual bool reset_internal() { return true; }
-  virtual void notify_new_transform(geometry_msgs::msg::TransformStamped transform);
+  virtual void notify_new_transform(geometry_msgs::msg::TransformStamped transform_stamped);
   virtual void point_cloud_cb_internal(
     [[maybe_unused]] sensor_msgs::msg::PointCloud2::ConstSharedPtr pc_ptr)
   {
