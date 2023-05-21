@@ -8,6 +8,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <string>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace r2k_odom
@@ -16,6 +17,8 @@ namespace r2k_odom
 class OdometryNodeBase : public rclcpp::Node
 {
 public:
+  constexpr static const char * const kDefaultOdomChildId{"p0"};
+
   using TriggerSrv = std_srvs::srv::Trigger;
 
   template <typename T>
@@ -45,6 +48,7 @@ protected:
   Service<TriggerSrv>::SharedPtr reset_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Odometry>> odometry_pub_ptr_;
   std::shared_ptr<Subscription<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
+  std::string odom_child_id_;
 };
 
 }  // namespace r2k_odom
