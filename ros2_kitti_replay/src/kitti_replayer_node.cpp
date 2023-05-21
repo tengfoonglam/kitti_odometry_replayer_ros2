@@ -150,20 +150,20 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   replayer_ptr_->set_state_change_cb(std::move(state_change_cb));
 
   // Bind services
-  set_time_range_service_ptr = create_service<SetTimeRangeSrv>(
+  set_time_range_service_ptr_ = create_service<SetTimeRangeSrv>(
     "~/set_time_range",
     std::bind(
       &KITTIReplayerNode::set_time_range, this, std::placeholders::_1, std::placeholders::_2));
 
-  step_service_ptr = create_service<StepSrv>(
+  step_service_ptr_ = create_service<StepSrv>(
     "~/step",
     std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
 
-  play_service_ptr = create_service<PlaySrv>(
+  play_service_ptr_ = create_service<PlaySrv>(
     "~/play",
     std::bind(&KITTIReplayerNode::play, this, std::placeholders::_1, std::placeholders::_2));
 
-  pause_service_ptr = create_service<TriggerSrv>(
+  pause_service_ptr_ = create_service<TriggerSrv>(
     "~/pause",
     std::bind(&KITTIReplayerNode::pause, this, std::placeholders::_1, std::placeholders::_2));
 }

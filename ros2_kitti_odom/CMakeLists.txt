@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(ros2_kitti_replay LANGUAGES CXX)
+project(ros2_kitti_odom LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
-find_package(ros2_kitti_core REQUIRED)
-find_package(ros2_kitti_interface REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -27,38 +24,24 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                       -pedantic)
 endif()
 
-set(HEADER_LIST "include/${PROJECT_NAME}/kitti_replayer_node.hpp")
+set(HEADER_LIST "include/${PROJECT_NAME}/odometry_node_base.hpp")
 
-set(SOURCE_LIST "src/kitti_replayer_node.cpp")
+set(SOURCE_LIST "src/odometry_node_base.cpp")
 
-# create ament index resource which references the libraries in the binary dir
-set(node_plugins "")
+add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_LIST} ${SOURCE_LIST})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_compile_definitions(${PROJECT_NAME} PRIVATE "COMPOSITION_BUILDING_DLL")
 ament_target_dependencies(${PROJECT_NAME}
                           nav_msgs
                           rclcpp
-                          rclcpp_components
-                          ros2_kitti_core
-                          ros2_kitti_interface
+                          sensor_msgs
                           std_msgs
                           std_srvs
-                          tf2)
-rclcpp_components_register_nodes(${PROJECT_NAME}
-                                 "r2k_replay::KITTIReplayerNode")
-set(node_plugins
-    "${node_plugins}r2k_replay::KITTIReplayerNode;\
-    $<TARGET_FILE:ros2_kitti_replay>\n")
+                          tf2
+                          tf2_geometry_msgs)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-
-  file(GENERATE
-       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/test_ament_index/\
-       $<CONFIG>/share/ament_index/resource_index/node_plugin/${PROJECT_NAME}"
-       CONTENT "${node_plugins}")
 
   # Bypass copyright and uncrustify checks
   set(ament_cmake_copyright_FOUND TRUE)
@@ -69,12 +52,19 @@ if(BUILD_TESTING)
 
 endif()
 
-install(TARGETS ros2_kitti_replay
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(nav_msgs
+                          rclcpp
+                          sensor_msgs
+                          tf2
+                          tf2_geometry_msgs)
+
+install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
-install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME}/)
+install(DIRECTORY include/ DESTINATION include/)
 
 ament_package()

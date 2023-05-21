@@ -81,7 +81,7 @@ endif()
 add_subdirectory(apps)
 
 ament_export_include_directories(include)
-ament_export_libraries(ros2_kitti_core)
+ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(rclcpp
                           geometry_msgs
                           PCL
