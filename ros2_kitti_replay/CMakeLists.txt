@@ -60,10 +60,11 @@ if(BUILD_TESTING)
        $<CONFIG>/share/ament_index/resource_index/node_plugin/${PROJECT_NAME}"
        CONTENT "${node_plugins}")
 
-  # Bypass copyright and uncrustify checks
+  # Bypass copyright, lint_cmake  and uncrustify checks
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   set(ament_cmake_uncrustify_FOUND TRUE)
+  set(ament_cmake_lint_cmake_FOUND TRUE)
 
   ament_lint_auto_find_test_dependencies()
 
