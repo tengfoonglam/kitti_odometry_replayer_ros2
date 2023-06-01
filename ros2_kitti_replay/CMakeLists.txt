@@ -28,7 +28,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 set(HEADER_LIST "include/${PROJECT_NAME}/kitti_replayer_node.hpp")
-
 set(SOURCE_LIST "src/kitti_replayer_node.cpp")
 
 # create ament index resource which references the libraries in the binary dir

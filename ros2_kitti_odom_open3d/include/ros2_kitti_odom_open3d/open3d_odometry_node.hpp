@@ -8,6 +8,7 @@ namespace r2k_odom_o3d
 
 class Open3DOdometryNode final : public r2k_odom::OdometryNodeBase
 {
+public:
   explicit Open3DOdometryNode(const rclcpp::NodeOptions & options);
 };
 

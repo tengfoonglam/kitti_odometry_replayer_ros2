@@ -30,6 +30,8 @@ public:
 
   explicit OdometryNodeBase(const rclcpp::NodeOptions & options);
 
+  virtual ~OdometryNodeBase() = default;
+
 protected:
   void reset(
     [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,

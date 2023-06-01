@@ -29,7 +29,7 @@ set(HEADER_LIST "include/${PROJECT_NAME}/odometry_node_base.hpp")
 set(SOURCE_LIST "src/odometry_node_base.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
-
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
                           nav_msgs
