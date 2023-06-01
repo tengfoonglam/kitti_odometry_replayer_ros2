@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(ros2_kitti_odom LANGUAGES CXX)
+project(ros2_kitti_odom_open3d LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
-find_package(nav_msgs REQUIRED)
+find_package(Open3D REQUIRED)
+find_package(open3d_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(std_srvs REQUIRED)
+find_package(ros2_kitti_odom REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
@@ -24,19 +23,20 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                       -pedantic)
 endif()
 
-set(HEADER_LIST "include/${PROJECT_NAME}/odometry_node_base.hpp")
+set(HEADER_LIST "include/${PROJECT_NAME}/open3d_odometry_node.hpp")
 
-set(SOURCE_LIST "src/odometry_node_base.cpp")
+set(SOURCE_LIST "src/open3d_odometry_node.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME}
+                           PUBLIC include ${Open3D_INCLUDE_DIRS})
+
 ament_target_dependencies(${PROJECT_NAME}
-                          nav_msgs
+                          Open3D
+                          open3d_conversions
                           rclcpp
-                          sensor_msgs
-                          std_msgs
-                          std_srvs
+                          ros2_kitti_odom
                           tf2
                           tf2_geometry_msgs)
 
@@ -54,11 +54,10 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(nav_msgs
+ament_export_dependencies(Open3D
+                          open3d_conversions
                           rclcpp
-                          sensor_msgs
-                          std_msgs
-                          std_srvs
+                          ros2_kitti_odom
                           tf2
                           tf2_geometry_msgs)
 
