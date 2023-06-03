@@ -29,8 +29,9 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
     open3d::geometry::KDTreeSearchParamHybrid(radius, max_nn), fast_normal_computation);
 
   geometry_msgs::msg::TransformStamped transform_stamped;
-  transform_stamped.header = pc_ptr->header;
-  transform_stamped.child_frame_id = odom_child_id_;
+  transform_stamped.header.frame_id = global_frame_id_;
+  transform_stamped.header.stamp = pc_ptr->header.stamp;
+  transform_stamped.child_frame_id = pc_ptr->header.frame_id;
 
   if (buffer_pc_ptr_) {
     const auto result = perform_registration(*current_pc_ptr, *buffer_pc_ptr_);

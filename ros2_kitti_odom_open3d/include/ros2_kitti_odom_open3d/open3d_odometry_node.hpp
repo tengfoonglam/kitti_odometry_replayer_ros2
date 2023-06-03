@@ -17,7 +17,7 @@ class Open3DOdometryNode final : public r2k_odom::OdometryNodeBase
 public:
   using O3DPointCloud = open3d::geometry::PointCloud;
 
-  struct ICPSettings
+  struct ICPIterSettings
   {
     double max_corresponence_distance = 1.0;
     open3d::pipelines::registration::ICPConvergenceCriteria convergence_criteria;
@@ -31,7 +31,7 @@ private:
   std::mutex mutex_;
   std::unique_ptr<O3DPointCloud> buffer_pc_ptr_;
   tf2::Transform current_transform_;
-  std::vector<ICPSettings> icp_iteration_settings_;
+  std::vector<ICPIterSettings> icp_iteration_settings_;
 
   void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
   bool reset_internal() final;

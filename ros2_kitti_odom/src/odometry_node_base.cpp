@@ -9,8 +9,8 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   // Declare Node params
-  declare_parameter("pointcloud_topic", "");
-  declare_parameter("odom_child_id", kDefaultOdomChildId);
+  declare_parameter("global_frame_id", kDefaultGlobalFrameId);
+  declare_parameter("pointcloud_topic", kDefaultPointCloudTopicName);
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -21,9 +21,14 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     }
     RCLCPP_INFO(get_logger(), "Parameters service not available, waiting again...");
   }
-  const auto pointcloud_topic = parameters_client.get_parameter("pointcloud_topic", std::string{});
-  odom_child_id_ =
-    parameters_client.get_parameter("odom_child_id", std::string{kDefaultOdomChildId});
+
+  global_frame_id_ =
+    parameters_client.get_parameter("global_frame_id", std::string{kDefaultGlobalFrameId});
+  const auto pointcloud_topic =
+    parameters_client.get_parameter("pointcloud_topic", std::string{kDefaultPointCloudTopicName});
+
+  shutdown_if_empty(global_frame_id_, "global_frame_id");
+  shutdown_if_empty(pointcloud_topic, "pointcloud_topic");
 
   // Setup services, subcribers and publishers
   reset_service_ptr_ = create_service<TriggerSrv>(
@@ -31,11 +36,17 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     std::bind(&OdometryNodeBase::reset, this, std::placeholders::_1, std::placeholders::_2));
   tf_broadcaster_ptr_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
   odometry_pub_ptr_ = create_publisher<nav_msgs::msg::Odometry>("~/odometry", 10);
+  point_cloud_sub_ptr_ = create_subscription<sensor_msgs::msg::PointCloud2>(
+    pointcloud_topic, 10,
+    std::bind(&OdometryNodeBase::point_cloud_cb, this, std::placeholders::_1));
+}
 
-  if (!pointcloud_topic.empty()) {
-    point_cloud_sub_ptr_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-      pointcloud_topic, 10,
-      std::bind(&OdometryNodeBase::point_cloud_cb, this, std::placeholders::_1));
+void OdometryNodeBase::shutdown_if_empty(
+  const std::string & string_to_check, const std::string & param_name)
+{
+  if (string_to_check.empty()) {
+    RCLCPP_ERROR(get_logger(), "Empty %s param provided. Exiting.", param_name.c_str());
+    rclcpp::shutdown();
   }
 }
 

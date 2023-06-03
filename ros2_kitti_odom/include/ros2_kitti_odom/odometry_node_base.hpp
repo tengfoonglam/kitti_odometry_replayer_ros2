@@ -17,7 +17,8 @@ namespace r2k_odom
 class OdometryNodeBase : public rclcpp::Node
 {
 public:
-  constexpr static const char * const kDefaultOdomChildId{"p0"};
+  constexpr static const char * const kDefaultGlobalFrameId{"map"};
+  constexpr static const char * const kDefaultPointCloudTopicName{"odom_pointcloud"};
 
   using TriggerSrv = std_srvs::srv::Trigger;
 
@@ -45,11 +46,13 @@ protected:
   {
   }
 
+  void shutdown_if_empty(const std::string & string_to_check, const std::string & param_name);
+
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ptr_;
   Service<TriggerSrv>::SharedPtr reset_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Odometry>> odometry_pub_ptr_;
   std::shared_ptr<Subscription<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
-  std::string odom_child_id_;
+  std::string global_frame_id_;
 };
 
 }  // namespace r2k_odom
