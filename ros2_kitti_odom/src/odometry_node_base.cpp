@@ -46,7 +46,7 @@ void OdometryNodeBase::reset(
   response_ptr->success = reset_internal();
 }
 
-void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::ConstSharedPtr pc_ptr)
+void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
 {
   point_cloud_cb_internal(pc_ptr);
 }
