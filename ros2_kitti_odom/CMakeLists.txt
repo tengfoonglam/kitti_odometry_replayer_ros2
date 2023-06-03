@@ -4,6 +4,7 @@ project(ros2_kitti_odom LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(ros2_kitti_interface REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -34,6 +35,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
                           nav_msgs
                           rclcpp
+                          ros2_kitti_interface
                           sensor_msgs
                           std_msgs
                           std_srvs
@@ -57,6 +59,7 @@ ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(nav_msgs
                           rclcpp
+                          ros2_kitti_interface
                           sensor_msgs
                           std_msgs
                           std_srvs

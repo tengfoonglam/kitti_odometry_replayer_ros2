@@ -34,6 +34,7 @@ private:
   std::vector<ICPIterSettings> icp_iteration_settings_;
 
   void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
+  bool set_current_transform_internal(const geometry_msgs::msg::Transform & transform_msg) final;
   bool reset_internal() final;
 
   tf2::Transform perform_registration(const O3DPointCloud & source, const O3DPointCloud & target);
