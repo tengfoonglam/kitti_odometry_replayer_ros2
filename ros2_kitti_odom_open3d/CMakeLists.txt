@@ -2,12 +2,15 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ros2_kitti_odom_open3d LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3)
 find_package(Open3D REQUIRED)
 find_package(open3d_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(ros2_kitti_odom REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
 # Default to C++17
@@ -35,12 +38,14 @@ target_include_directories(${PROJECT_NAME}
                            PUBLIC include ${Open3D_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE "COMPOSITION_BUILDING_DLL")
 ament_target_dependencies(${PROJECT_NAME}
+                          Eigen3
                           Open3D
                           open3d_conversions
                           rclcpp
                           rclcpp_components
                           ros2_kitti_odom
                           tf2
+                          tf2_eigen
                           tf2_geometry_msgs)
 rclcpp_components_register_nodes(${PROJECT_NAME}
                                  "r2k_odom_o3d::Open3DOdometryNode")

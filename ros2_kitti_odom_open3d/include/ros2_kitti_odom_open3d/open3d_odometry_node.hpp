@@ -25,6 +25,8 @@ public:
 
   explicit Open3DOdometryNode(const rclcpp::NodeOptions & options);
 
+  [[nodiscard]] static tf2::Transform eigen_to_transform(const Eigen::Matrix4d & tf_eigen);
+
 private:
   std::mutex mutex_;
   std::unique_ptr<O3DPointCloud> buffer_pc_ptr_;

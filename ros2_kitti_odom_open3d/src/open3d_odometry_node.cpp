@@ -1,6 +1,8 @@
 #include "ros2_kitti_odom_open3d/open3d_odometry_node.hpp"
 
+#include <Eigen/Core>
 #include <open3d_conversions/open3d_conversions.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace r2k_odom_o3d
@@ -31,7 +33,7 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
   transform_stamped.child_frame_id = odom_child_id_;
 
   if (buffer_pc_ptr_) {
-    const auto result = perform_registration(*buffer_pc_ptr_, *current_pc_ptr);
+    const auto result = perform_registration(*current_pc_ptr, *buffer_pc_ptr_);
     current_transform_ *= result;
     transform_stamped.transform = tf2::toMsg(current_transform_);
   }
@@ -51,12 +53,30 @@ bool Open3DOdometryNode::reset_internal()
   return true;
 }
 
+tf2::Transform Open3DOdometryNode::eigen_to_transform(const Eigen::Matrix4d & tf_eigen)
+{
+  Eigen::Affine3d tf_eigen_affine;
+  tf_eigen_affine.matrix() = tf_eigen;
+  const auto tf_msg = tf2::eigenToTransform(tf_eigen_affine).transform;
+  tf2::Transform tf_tf2;
+  tf2::fromMsg(tf_msg, tf_tf2);
+  return tf_tf2;
+}
+
 tf2::Transform Open3DOdometryNode::perform_registration(
   const O3DPointCloud & source, const O3DPointCloud & target)
 {
-  O3DPointCloud target_cp{target};
+  Eigen::Matrix4d result_eigen = Eigen::Matrix4d::Identity();
 
-  return tf2::Transform{};
+  for (const auto & icp_setting : icp_iteration_settings_) {
+    const auto registration_result = open3d::pipelines::registration::RegistrationICP(
+      source, target, icp_setting.max_corresponence_distance, result_eigen,
+      open3d::pipelines::registration::TransformationEstimationPointToPlane(),
+      icp_setting.convergence_criteria);
+    result_eigen = registration_result.transformation_;
+  }
+
+  return eigen_to_transform(result_eigen);
 }
 
 }  // namespace r2k_odom_o3d
