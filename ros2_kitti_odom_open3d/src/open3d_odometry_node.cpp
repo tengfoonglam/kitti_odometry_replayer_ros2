@@ -21,12 +21,11 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
   static constexpr bool kSkipColour = true;
   open3d_conversions::rosToOpen3d(pc_ptr, *current_pc_ptr, kSkipColour);
 
-  // Compute normal
-  const int max_nn = 30;
-  const int radius = 1.0;
-  const bool fast_normal_computation = true;
+  // Compute normals
+  const auto & norm_settings = settings_.normal_computation;
   current_pc_ptr->EstimateNormals(
-    open3d::geometry::KDTreeSearchParamHybrid(radius, max_nn), fast_normal_computation);
+    open3d::geometry::KDTreeSearchParamHybrid(norm_settings.radius, norm_settings.max_nn),
+    norm_settings.fast_normal_computation);
 
   geometry_msgs::msg::TransformStamped transform_stamped;
   transform_stamped.header.frame_id = global_frame_id_;
@@ -69,9 +68,9 @@ tf2::Transform Open3DOdometryNode::perform_registration(
 {
   Eigen::Matrix4d result_eigen = Eigen::Matrix4d::Identity();
 
-  for (const auto & icp_setting : icp_iteration_settings_) {
+  for (const auto & icp_setting : settings_.iterations) {
     const auto registration_result = open3d::pipelines::registration::RegistrationICP(
-      source, target, icp_setting.max_corresponence_distance, result_eigen,
+      source, target, icp_setting.max_correspondence_distance, result_eigen,
       open3d::pipelines::registration::TransformationEstimationPointToPlane(),
       icp_setting.convergence_criteria);
     result_eigen = registration_result.transformation_;
