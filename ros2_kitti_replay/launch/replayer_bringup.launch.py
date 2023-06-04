@@ -50,6 +50,11 @@ def generate_launch_description() -> LaunchDescription:
     )
     urdf_filename = PythonExpression(['f"{', dataset_number, ':02}.urdf.xml"'])
 
+    ground_truth_namespace = LaunchConfiguration(
+        "ground_truth_namespace", default="ground_truth"
+    )
+    data_namespace = LaunchConfiguration("data_namespace", default="ground_truth")
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -66,6 +71,16 @@ def generate_launch_description() -> LaunchDescription:
                 "dataset_path",
                 default_value="/media/ltf/LTFUbuntuSSD/kitti_dataset",
                 description="Path where all dataset folders are located",
+            ),
+            DeclareLaunchArgument(
+                "ground_truth_namespace",
+                default_value="ground_truth",
+                description="Namespace used for the ground truth pose topic",
+            ),
+            DeclareLaunchArgument(
+                "data_namespace",
+                default_value="ground_truth",
+                description="Namespace used for the data topics (point clouds, images, etc)",
             ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
@@ -97,6 +112,8 @@ def generate_launch_description() -> LaunchDescription:
                                 "timestamp_path": timestamp_path,
                                 "poses_path": poses_path,
                                 "point_cloud_folder_path": point_cloud_folder_path,
+                                "ground_truth_namespace": ground_truth_namespace,
+                                "data_namespace": data_namespace,
                             }
                         ],
                     ),

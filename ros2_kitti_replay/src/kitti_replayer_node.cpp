@@ -38,6 +38,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("timestamp_path", "");
   declare_parameter("poses_path", "");
   declare_parameter("point_cloud_folder_path", "");
+  declare_parameter("ground_truth_namespace", kDefaultGroundTruthNamespace);
+  declare_parameter("data_namespace", kDefaultDataNamespace);
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -56,6 +58,10 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     std::filesystem::path(parameters_client.get_parameter("poses_path", std::string{""}));
   const auto point_cloud_folder_path = std::filesystem::path(
     parameters_client.get_parameter("point_cloud_folder_path", std::string{""}));
+  const auto ground_truth_namespace = parameters_client.get_parameter(
+    "ground_truth_namespace", std::string{kDefaultGroundTruthNamespace});
+  const auto data_namespace =
+    parameters_client.get_parameter("data_namespace", std::string{kDefaultDataNamespace});
 
   // Load ground truth pose for visualization (if available)
   ground_truth_path_opt_ = extract_poses_from_file(poses_path);
@@ -99,7 +105,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   if (ground_truth_path_opt_.has_value()) {
     PoseDataLoader::Header pose_header;
     pose_header.frame_id = "map";
-    const std::string child_id{"p0"};
+    const std::string child_id = ground_truth_namespace + "/p0";
     auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
       "pose_loader", get_logger().get_child("pose_loader"), pose_header, child_id);
     pose_loader_ptr->setup(timestamps, poses_path);
@@ -116,7 +122,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Point Cloud
   PointCloudDataLoader::Header pc_header;
-  pc_header.frame_id = "lidar";
+  pc_header.frame_id = data_namespace + "/lidar";
   auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
     "pc_loader", get_logger().get_child("pc_loader"), pc_header);
   pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
