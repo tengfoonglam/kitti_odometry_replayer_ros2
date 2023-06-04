@@ -120,7 +120,7 @@ Visualization Manager:
         Inertia: false
         Mass: false
       Name: RobotModel
-      TF Prefix: ""
+      TF Prefix: ground_truth
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -129,27 +129,27 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        lidar:
+        ground_truth/lidar:
+          Value: true
+        ground_truth/p0:
+          Value: true
+        ground_truth/p1:
+          Value: true
+        ground_truth/p2:
+          Value: true
+        ground_truth/p3:
+          Value: true
+        ground_truth/vehicle:
+          Value: true
+        ground_truth/wbl:
+          Value: true
+        ground_truth/wbr:
+          Value: true
+        ground_truth/wfl:
+          Value: true
+        ground_truth/wfr:
           Value: true
         map:
-          Value: true
-        p0:
-          Value: true
-        p1:
-          Value: true
-        p2:
-          Value: true
-        p3:
-          Value: true
-        vehicle:
-          Value: true
-        wbl:
-          Value: true
-        wbr:
-          Value: true
-        wfl:
-          Value: true
-        wfr:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -158,24 +158,24 @@ Visualization Manager:
       Show Names: false
       Tree:
         map:
-          p0:
-            lidar:
+          ground_truth/p0:
+            ground_truth/lidar:
               {}
-            p1:
+            ground_truth/p1:
               {}
-            p2:
+            ground_truth/p2:
               {}
-            p3:
+            ground_truth/p3:
               {}
-            vehicle:
+            ground_truth/vehicle:
               {}
-            wbl:
+            ground_truth/wbl:
               {}
-            wbr:
+            ground_truth/wbr:
               {}
-            wfl:
+            ground_truth/wfl:
               {}
-            wfr:
+            ground_truth/wfr:
               {}
       Update Interval: 0
       Value: true
@@ -303,7 +303,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: -0.8397964239120483
-      Target Frame: p0
+      Target Frame: ground_truth/p0
       Value: XYOrbit (rviz_default_plugins)
       Yaw: 4.738580226898193
     Saved: ~

@@ -78,6 +78,7 @@ def generate_launch_description() -> LaunchDescription:
                     "use_sim_time": use_sim_time,
                     "urdf_filename": urdf_filename,
                     "launch_rviz": "False",
+                    "frame_prefix": "ground_truth",
                 }.items(),
             ),
             ComposableNodeContainer(

@@ -17,8 +17,11 @@ def generate_launch_description() -> LaunchDescription:
     urdf_filename = LaunchConfiguration("urdf_filename", default="default.urdf.xml")
     launch_rviz = LaunchConfiguration("launch_rviz", default="true")
     frame_prefix = LaunchConfiguration("frame_prefix", default="")
-    p0_frame_id = PythonExpression(['f"', frame_prefix, 'p0"'])
-
+    # frame_prefix_with_slash = PythonExpression(
+    #     ['f"', frame_prefix, '/" if len(', frame_prefix, ')>0 else ""']
+    # )
+    frame_prefix_with_slash = PythonExpression(['f"', frame_prefix, '/"'])
+    p0_frame_id = PythonExpression(['f"', frame_prefix_with_slash, 'p0"'])
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -34,7 +37,8 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "launch_rviz",
                 default_value="true",
-                description="Launch RVIZ Visualization",
+                description="Launch RVIZ Visualization. Note: Only for basic visualization when "
+                "frame_prefix is empty",
             ),
             DeclareLaunchArgument(
                 "frame_prefix",
@@ -72,7 +76,10 @@ def generate_launch_description() -> LaunchDescription:
                 name="robot_state_publisher",
                 output="screen",
                 parameters=[
-                    {"use_sim_time": use_sim_time, "frame_prefix": frame_prefix}
+                    {
+                        "use_sim_time": use_sim_time,
+                        "frame_prefix": frame_prefix_with_slash,
+                    }
                 ],
                 arguments=[
                     PathJoinSubstitution(
