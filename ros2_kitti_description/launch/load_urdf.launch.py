@@ -17,11 +17,10 @@ def generate_launch_description() -> LaunchDescription:
     urdf_filename = LaunchConfiguration("urdf_filename", default="default.urdf.xml")
     launch_rviz = LaunchConfiguration("launch_rviz", default="true")
     frame_prefix = LaunchConfiguration("frame_prefix", default="")
-    # frame_prefix_with_slash = PythonExpression(
-    #     ['f"', frame_prefix, '/" if len(', frame_prefix, ')>0 else ""']
-    # )
-    frame_prefix_with_slash = PythonExpression(['f"', frame_prefix, '/"'])
-    p0_frame_id = PythonExpression(['f"', frame_prefix_with_slash, 'p0"'])
+    frame_prefix_with_slash = PythonExpression(
+        ['"', frame_prefix, '/" if len("', frame_prefix, '")>0 else ""']
+    )
+    p0_frame_id = PythonExpression(['"', frame_prefix_with_slash, 'p0"'])
     return LaunchDescription(
         [
             DeclareLaunchArgument(
