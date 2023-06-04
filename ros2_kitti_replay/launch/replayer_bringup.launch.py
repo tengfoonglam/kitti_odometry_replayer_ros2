@@ -5,6 +5,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.substitutions import (
     LaunchConfiguration,
     PathJoinSubstitution,
@@ -55,6 +56,39 @@ def generate_launch_description() -> LaunchDescription:
     )
     data_namespace = LaunchConfiguration("data_namespace", default="ground_truth")
 
+    replayer_component = ComposableNode(
+        package="ros2_kitti_replay",
+        plugin="r2k_replay::KITTIReplayerNode",
+        name="kitti_replayer",
+        parameters=[
+            {
+                "use_sim_time": use_sim_time,
+                "timestamp_path": timestamp_path,
+                "poses_path": poses_path,
+                "point_cloud_folder_path": point_cloud_folder_path,
+                "ground_truth_namespace": ground_truth_namespace,
+                "data_namespace": data_namespace,
+            }
+        ],
+    )
+
+    odometry_package = LaunchConfiguration("odometry_package", default="")
+    odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
+    global_frame_id = LaunchConfiguration("global_frame_id", default="map")
+
+    odometry_component = ComposableNode(
+        package=odometry_package,
+        plugin=odometry_plugin,
+        name="odometry",
+        parameters=[
+            {
+                "use_sim_time": use_sim_time,
+                "global_frame_id": global_frame_id,
+                "pointcloud_topic": "lidar_pc",
+            }
+        ],
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -101,24 +135,22 @@ def generate_launch_description() -> LaunchDescription:
                 namespace="",
                 package="rclcpp_components",
                 executable="component_container_mt",
-                composable_node_descriptions=[
-                    ComposableNode(
-                        package="ros2_kitti_replay",
-                        plugin="r2k_replay::KITTIReplayerNode",
-                        name="kitti_replayer",
-                        parameters=[
-                            {
-                                "use_sim_time": use_sim_time,
-                                "timestamp_path": timestamp_path,
-                                "poses_path": poses_path,
-                                "point_cloud_folder_path": point_cloud_folder_path,
-                                "ground_truth_namespace": ground_truth_namespace,
-                                "data_namespace": data_namespace,
-                            }
-                        ],
-                    ),
-                ],
+                composable_node_descriptions=[replayer_component],
                 output="screen",
+                condition=IfCondition(
+                    PythonExpression(['len("', odometry_plugin, '") == 0'])
+                ),
+            ),
+            ComposableNodeContainer(
+                name="replayer_with_odometry_container",
+                namespace="",
+                package="rclcpp_components",
+                executable="component_container_mt",
+                composable_node_descriptions=[replayer_component, odometry_component],
+                output="screen",
+                condition=IfCondition(
+                    PythonExpression(['len("', odometry_plugin, '") > 0'])
+                ),
             ),
             Node(
                 package="rviz2",
