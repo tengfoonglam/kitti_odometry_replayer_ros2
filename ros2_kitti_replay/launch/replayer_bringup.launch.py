@@ -89,6 +89,10 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
+    launch_odometry = PythonExpression(
+        ['len("', odometry_package, '") > 0 and len("', odometry_plugin, '") > 0']
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -137,9 +141,7 @@ def generate_launch_description() -> LaunchDescription:
                 executable="component_container_mt",
                 composable_node_descriptions=[replayer_component],
                 output="screen",
-                condition=IfCondition(
-                    PythonExpression(['len("', odometry_plugin, '") == 0'])
-                ),
+                condition=IfCondition(PythonExpression(["not ", launch_odometry])),
             ),
             ComposableNodeContainer(
                 name="replayer_with_odometry_container",
@@ -148,9 +150,7 @@ def generate_launch_description() -> LaunchDescription:
                 executable="component_container_mt",
                 composable_node_descriptions=[replayer_component, odometry_component],
                 output="screen",
-                condition=IfCondition(
-                    PythonExpression(['len("', odometry_plugin, '") > 0'])
-                ),
+                condition=IfCondition(launch_odometry),
             ),
             Node(
                 package="rviz2",
