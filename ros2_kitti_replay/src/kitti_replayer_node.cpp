@@ -40,6 +40,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("point_cloud_folder_path", "");
   declare_parameter("ground_truth_namespace", kDefaultGroundTruthNamespace);
   declare_parameter("odometry_namespace", kDefaultOdometryNamespace);
+  declare_parameter("odometry_frame_id", "");
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -62,6 +63,35 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     "ground_truth_namespace", std::string{kDefaultGroundTruthNamespace});
   const auto odometry_namespace =
     parameters_client.get_parameter("odometry_namespace", std::string{kDefaultOdometryNamespace});
+  odometry_frame_id_ = parameters_client.get_parameter("odometry_frame_id", std::string{""});
+
+  // Create TF listener and wait until odometry frame is available and publish it
+  tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ptr_ = std::make_unique<tf2_ros::TransformListener>(*tf_listener_buffer_ptr_);
+  static_tf_broadcaster_ptr_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
+
+  if (!odometry_frame_id_.empty()) {
+    const auto from_frame = odometry_frame_id_;
+    const auto to_frame = std::string{kDefaultGlobalFrame};
+
+    RCLCPP_INFO(
+      get_logger(), "Looking up odometry frame (TF from %s to %s)", from_frame.c_str(),
+      to_frame.c_str());
+    try {
+      auto odom_tf = tf_listener_buffer_ptr_->lookupTransform(
+        to_frame, from_frame, tf2::TimePointZero,
+        tf2::durationFromSec(kOdometryFrameLookupTimeout));
+      odom_tf.child_frame_id = kDefaultOdomFrame;
+      static_tf_broadcaster_ptr_->sendTransform(odom_tf);
+      RCLCPP_INFO(get_logger(), "Sucessfully established odometry frame");
+    } catch (const tf2::TransformException & ex) {
+      RCLCPP_ERROR(
+        get_logger(),
+        "Could not find odometry frame (TF from %s to %s): %s. Exiting replayer node.",
+        from_frame.c_str(), to_frame.c_str(), ex.what());
+      rclcpp::shutdown();
+    }
+  }
 
   // Load ground truth pose for visualization (if available)
   ground_truth_path_opt_ = extract_poses_from_file(poses_path);
@@ -104,7 +134,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   // Ground Truth Pose (if available)
   if (ground_truth_path_opt_.has_value()) {
     PoseDataLoader::Header pose_header;
-    pose_header.frame_id = "map";
+    pose_header.frame_id = kDefaultGlobalFrame;
     const std::string child_id = ground_truth_namespace + "/p0";
     auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
       "pose_loader", get_logger().get_child("pose_loader"), pose_header, child_id);
