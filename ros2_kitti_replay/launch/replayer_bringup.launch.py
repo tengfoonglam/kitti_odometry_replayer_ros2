@@ -50,11 +50,17 @@ def generate_launch_description() -> LaunchDescription:
         ]
     )
     urdf_filename = PythonExpression(['f"{', dataset_number, ':02}.urdf.xml"'])
-
     ground_truth_namespace = LaunchConfiguration(
         "ground_truth_namespace", default="ground_truth"
     )
-    data_namespace = LaunchConfiguration("data_namespace", default="ground_truth")
+    odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
+    odometry_package = LaunchConfiguration("odometry_package", default="")
+    odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
+    odometry_vehicle_frame = LaunchConfiguration("odometry_vehicle_frame", default="")
+    odometry_frame_id = PythonExpression(
+        ['f"{', odometry_namespace, "}/{", odometry_vehicle_frame, '}"']
+    )
+    global_frame_id = LaunchConfiguration("global_frame_id", default="map")
 
     replayer_component = ComposableNode(
         package="ros2_kitti_replay",
@@ -67,14 +73,11 @@ def generate_launch_description() -> LaunchDescription:
                 "poses_path": poses_path,
                 "point_cloud_folder_path": point_cloud_folder_path,
                 "ground_truth_namespace": ground_truth_namespace,
-                "data_namespace": data_namespace,
+                "odometry_namespace": odometry_namespace,
+                "odometry_frame_id": odometry_frame_id,
             }
         ],
     )
-
-    odometry_package = LaunchConfiguration("odometry_package", default="")
-    odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
-    global_frame_id = LaunchConfiguration("global_frame_id", default="map")
 
     odometry_component = ComposableNode(
         package=odometry_package,
@@ -90,16 +93,19 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     launch_odometry = PythonExpression(
-        ['len("', odometry_package, '") > 0 and len("', odometry_plugin, '") > 0']
+        [
+            'len("',
+            odometry_package,
+            '") > 0 and len("',
+            odometry_plugin,
+            '") > 0 and len("',
+            odometry_vehicle_frame,
+            '") > 0',
+        ]
     )
 
     return LaunchDescription(
         [
-            DeclareLaunchArgument(
-                name="log_level",
-                default_value="info",
-                description="Log level for replayer",
-            ),
             DeclareLaunchArgument(
                 "dataset_number",
                 default_value="00",
@@ -116,9 +122,27 @@ def generate_launch_description() -> LaunchDescription:
                 description="Namespace used for the ground truth pose topic",
             ),
             DeclareLaunchArgument(
-                "data_namespace",
-                default_value="ground_truth",
+                "odometry_namespace",
+                default_value="odometry",
                 description="Namespace used for the data topics (point clouds, images, etc)",
+            ),
+            DeclareLaunchArgument(
+                "odometry_package",
+                default_value="",
+                description="Package in which odometry component is located. "
+                "Leave empty if launching odometry component is not required",
+            ),
+            DeclareLaunchArgument(
+                "odometry_plugin",
+                default_value="",
+                description="Name of odometry component to launch. "
+                "Leave empty if launching odometry component is not required",
+            ),
+            DeclareLaunchArgument(
+                "odometry_vehicle_frame",
+                default_value="",
+                description="Frame on the vehicle that is the odometry frame. "
+                "Leave empty if launching odometry component is not required",
             ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
@@ -131,8 +155,23 @@ def generate_launch_description() -> LaunchDescription:
                     "use_sim_time": use_sim_time,
                     "urdf_filename": urdf_filename,
                     "launch_rviz": "False",
-                    "frame_prefix": "ground_truth",
+                    "frame_prefix": ground_truth_namespace,
                 }.items(),
+            ),
+            IncludeLaunchDescription(
+                launch_description_source=PythonLaunchDescriptionSource(
+                    [
+                        get_package_share_directory("ros2_kitti_description"),
+                        "/load_urdf.launch.py",
+                    ]
+                ),
+                launch_arguments={
+                    "use_sim_time": use_sim_time,
+                    "urdf_filename": urdf_filename,
+                    "launch_rviz": "False",
+                    "frame_prefix": odometry_namespace,
+                }.items(),
+                condition=IfCondition(launch_odometry),
             ),
             ComposableNodeContainer(
                 name="replayer_container",
@@ -162,7 +201,7 @@ def generate_launch_description() -> LaunchDescription:
                     + os.path.join(
                         get_package_share_directory("ros2_kitti_replay"),
                         "rviz",
-                        "visualize_ground_truth.rviz",
+                        "visualize_run.rviz",
                     )
                 ],
             ),

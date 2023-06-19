@@ -39,7 +39,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("poses_path", "");
   declare_parameter("point_cloud_folder_path", "");
   declare_parameter("ground_truth_namespace", kDefaultGroundTruthNamespace);
-  declare_parameter("data_namespace", kDefaultDataNamespace);
+  declare_parameter("odometry_namespace", kDefaultOdometryNamespace);
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -60,8 +60,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     parameters_client.get_parameter("point_cloud_folder_path", std::string{""}));
   const auto ground_truth_namespace = parameters_client.get_parameter(
     "ground_truth_namespace", std::string{kDefaultGroundTruthNamespace});
-  const auto data_namespace =
-    parameters_client.get_parameter("data_namespace", std::string{kDefaultDataNamespace});
+  const auto odometry_namespace =
+    parameters_client.get_parameter("odometry_namespace", std::string{kDefaultOdometryNamespace});
 
   // Load ground truth pose for visualization (if available)
   ground_truth_path_opt_ = extract_poses_from_file(poses_path);
@@ -122,7 +122,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Point Cloud
   PointCloudDataLoader::Header pc_header;
-  pc_header.frame_id = data_namespace + "/lidar";
+  pc_header.frame_id = odometry_namespace + "/lidar";
   auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
     "pc_loader", get_logger().get_child("pc_loader"), pc_header);
   pc_loader_ptr->setup(timestamps, point_cloud_folder_path);

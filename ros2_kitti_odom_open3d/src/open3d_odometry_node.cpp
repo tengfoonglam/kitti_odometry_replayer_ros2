@@ -9,7 +9,7 @@ namespace r2k_odom_o3d
 {
 
 Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
-: r2k_odom::OdometryNodeBase(options)
+: r2k_odom::OdometryNodeBase(options), current_transform_(tf2::Quaternion{0., 0., 0., 1.})
 {
 }
 
@@ -48,7 +48,7 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
 bool Open3DOdometryNode::reset_internal()
 {
   std::scoped_lock lock(mutex_);
-  current_transform_ = tf2::Transform();
+  current_transform_ = tf2::Transform(tf2::Quaternion{0., 0., 0., 1.});
   buffer_pc_ptr_.reset();
   return true;
 }
@@ -75,7 +75,6 @@ tf2::Transform Open3DOdometryNode::perform_registration(
       icp_setting.convergence_criteria);
     result_eigen = registration_result.transformation_;
   }
-
   return eigen_to_transform(result_eigen);
 }
 

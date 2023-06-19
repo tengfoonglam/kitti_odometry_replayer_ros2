@@ -53,7 +53,7 @@ public:
     O3DICPSettings(
       const NormalComputationSettings & normal_computation_in = NormalComputationSettings(),
       const std::vector<ICPIterationSettings> & iterations_in =
-        {{1.5, 1e-4, 1e-4, 30}, {0.5, 1e-5, 1e-5, 30}, {0.05, 1e-6, 1e-6, 30}})
+        {{1.0, 1e-4, 1e-4, 30}, {0.5, 1e-5, 1e-5, 30}, {0.05, 1e-6, 1e-6, 30}})
     : normal_computation(normal_computation_in), iterations(iterations_in)
     {
     }

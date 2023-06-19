@@ -22,7 +22,7 @@ class KITTIReplayerNode final : public rclcpp::Node
 {
 public:
   static constexpr const char * const kDefaultGroundTruthNamespace = "p0";
-  static constexpr const char * const kDefaultDataNamespace = "lidar";
+  static constexpr const char * const kDefaultOdometryNamespace = "lidar";
 
   using DataReplayer = r2k_core::DataReplayer;
   using Transforms = r2k_core::Transforms;
