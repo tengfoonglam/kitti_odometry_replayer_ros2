@@ -40,7 +40,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("point_cloud_folder_path", "");
   declare_parameter("ground_truth_namespace", kDefaultGroundTruthNamespace);
   declare_parameter("odometry_namespace", kDefaultOdometryNamespace);
-  declare_parameter("odometry_frame_id", "");
+  declare_parameter("odometry_vehicle_frame_id", "");
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -63,15 +63,16 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     "ground_truth_namespace", std::string{kDefaultGroundTruthNamespace});
   const auto odometry_namespace =
     parameters_client.get_parameter("odometry_namespace", std::string{kDefaultOdometryNamespace});
-  odometry_frame_id_ = parameters_client.get_parameter("odometry_frame_id", std::string{""});
+  odometry_vehicle_frame_id_ =
+    parameters_client.get_parameter("odometry_vehicle_frame_id", std::string{""});
 
   // Create TF listener and wait until odometry frame is available and publish it
   tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
   tf_listener_ptr_ = std::make_unique<tf2_ros::TransformListener>(*tf_listener_buffer_ptr_);
   static_tf_broadcaster_ptr_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
 
-  if (!odometry_frame_id_.empty()) {
-    const auto from_frame = odometry_frame_id_;
+  if (!odometry_vehicle_frame_id_.empty()) {
+    const auto from_frame = odometry_vehicle_frame_id_;
     const auto to_frame = std::string{kDefaultGlobalFrame};
 
     RCLCPP_INFO(

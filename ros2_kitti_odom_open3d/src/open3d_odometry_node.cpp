@@ -28,7 +28,7 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
     norm_settings.fast_normal_computation);
 
   geometry_msgs::msg::TransformStamped transform_stamped;
-  transform_stamped.header.frame_id = global_frame_id_;
+  transform_stamped.header.frame_id = odometry_frame_id_;
   transform_stamped.header.stamp = pc_ptr->header.stamp;
   transform_stamped.child_frame_id = pc_ptr->header.frame_id;
 

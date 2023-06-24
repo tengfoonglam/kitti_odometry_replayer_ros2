@@ -73,6 +73,7 @@ def generate_launch_description() -> LaunchDescription:
                 package="robot_state_publisher",
                 executable="robot_state_publisher",
                 name="robot_state_publisher",
+                namespace=frame_prefix,
                 output="screen",
                 parameters=[
                     {

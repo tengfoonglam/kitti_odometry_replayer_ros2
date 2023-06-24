@@ -18,7 +18,7 @@ namespace r2k_odom
 class OdometryNodeBase : public rclcpp::Node
 {
 public:
-  constexpr static const char * const kDefaultGlobalFrameId{"map"};
+  constexpr static const char * const kDefaultOdometryFrameId{"odom"};
   constexpr static const char * const kDefaultPointCloudTopicName{"odom_pointcloud"};
 
   using TriggerSrv = std_srvs::srv::Trigger;
@@ -51,7 +51,7 @@ protected:
   {
     return true;
   }
-  virtual void notify_new_transform(geometry_msgs::msg::TransformStamped transform_stamped);
+  virtual void notify_new_transform(const geometry_msgs::msg::TransformStamped & transform_stamped);
   virtual void point_cloud_cb_internal(
     [[maybe_unused]] sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
   {
@@ -64,7 +64,7 @@ protected:
   Service<SetCurrentTransformSrv>::SharedPtr set_transform_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Odometry>> odometry_pub_ptr_;
   std::shared_ptr<Subscription<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
-  std::string global_frame_id_;
+  std::string odometry_frame_id_;
 };
 
 }  // namespace r2k_odom

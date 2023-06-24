@@ -4,7 +4,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.conditions import IfCondition
 from launch.substitutions import (
     LaunchConfiguration,
@@ -56,11 +56,14 @@ def generate_launch_description() -> LaunchDescription:
     odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
     odometry_package = LaunchConfiguration("odometry_package", default="")
     odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
-    odometry_vehicle_frame = LaunchConfiguration("odometry_vehicle_frame", default="")
-    odometry_frame_id = PythonExpression(
-        ['f"{', odometry_namespace, "}/{", odometry_vehicle_frame, '}"']
+    odometry_vehicle_frame = LaunchConfiguration(
+        "odometry_vehicle_frame", default="lidar"
     )
-    global_frame_id = LaunchConfiguration("global_frame_id", default="map")
+    odometry_vehicle_frame_id = PathJoinSubstitution(
+        [ground_truth_namespace, odometry_vehicle_frame]
+    )
+    # global_frame_id = LaunchConfiguration("global_frame_id", default="map")
+    odometry_frame_id = LaunchConfiguration("odometry_frame_id", default="odom")
 
     replayer_component = ComposableNode(
         package="ros2_kitti_replay",
@@ -74,7 +77,7 @@ def generate_launch_description() -> LaunchDescription:
                 "point_cloud_folder_path": point_cloud_folder_path,
                 "ground_truth_namespace": ground_truth_namespace,
                 "odometry_namespace": odometry_namespace,
-                "odometry_frame_id": odometry_frame_id,
+                "odometry_vehicle_frame_id": odometry_vehicle_frame_id,
             }
         ],
     )
@@ -86,7 +89,7 @@ def generate_launch_description() -> LaunchDescription:
         parameters=[
             {
                 "use_sim_time": use_sim_time,
-                "global_frame_id": global_frame_id,
+                "odometry_frame_id": odometry_frame_id,
                 "pointcloud_topic": "lidar_pc",
             }
         ],
@@ -140,7 +143,7 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument(
                 "odometry_vehicle_frame",
-                default_value="",
+                default_value="lidar",
                 description="Frame on the vehicle that is the odometry frame. "
                 "Leave empty if launching odometry component is not required",
             ),
@@ -170,6 +173,8 @@ def generate_launch_description() -> LaunchDescription:
                     "urdf_filename": urdf_filename,
                     "launch_rviz": "False",
                     "frame_prefix": odometry_namespace,
+                    "static_frame_base_frame_id": "odom",
+                    "vehicle_frame_id": "lidar",
                 }.items(),
                 condition=IfCondition(launch_odometry),
             ),
@@ -191,17 +196,22 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 condition=IfCondition(launch_odometry),
             ),
-            Node(
-                package="rviz2",
-                namespace="",
-                executable="rviz2",
-                name="rviz2",
-                arguments=[
-                    "-d"
-                    + os.path.join(
-                        get_package_share_directory("ros2_kitti_replay"),
-                        "rviz",
-                        "visualize_run.rviz",
+            TimerAction(
+                period=5.0,
+                actions=[
+                    Node(
+                        package="rviz2",
+                        namespace="",
+                        executable="rviz2",
+                        name="rviz2",
+                        arguments=[
+                            "-d"
+                            + os.path.join(
+                                get_package_share_directory("ros2_kitti_replay"),
+                                "rviz",
+                                "visualize_run.rviz",
+                            )
+                        ],
                     )
                 ],
             ),

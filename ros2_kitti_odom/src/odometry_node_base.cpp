@@ -9,7 +9,7 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   // Declare Node params
-  declare_parameter("global_frame_id", kDefaultGlobalFrameId);
+  declare_parameter("odometry_frame_id", kDefaultOdometryFrameId);
   declare_parameter("pointcloud_topic", kDefaultPointCloudTopicName);
 
   // Wait for parameters to be loaded
@@ -22,12 +22,12 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     RCLCPP_INFO(get_logger(), "Parameters service not available, waiting again...");
   }
 
-  global_frame_id_ =
-    parameters_client.get_parameter("global_frame_id", std::string{kDefaultGlobalFrameId});
+  odometry_frame_id_ =
+    parameters_client.get_parameter("odometry_frame_id", std::string{kDefaultOdometryFrameId});
   const auto pointcloud_topic =
     parameters_client.get_parameter("pointcloud_topic", std::string{kDefaultPointCloudTopicName});
 
-  shutdown_if_empty(global_frame_id_, "global_frame_id");
+  shutdown_if_empty(odometry_frame_id_, "odometry_frame_id");
   shutdown_if_empty(pointcloud_topic, "pointcloud_topic");
 
   // Setup services, subcribers and publishers
@@ -66,7 +66,8 @@ void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr p
   point_cloud_cb_internal(pc_ptr);
 }
 
-void OdometryNodeBase::notify_new_transform(geometry_msgs::msg::TransformStamped transform_stamped)
+void OdometryNodeBase::notify_new_transform(
+  const geometry_msgs::msg::TransformStamped & transform_stamped)
 {
   tf_broadcaster_ptr_->sendTransform(transform_stamped);
 
