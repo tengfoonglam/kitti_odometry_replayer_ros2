@@ -17,6 +17,9 @@ def generate_launch_description() -> LaunchDescription:
     urdf_filename = LaunchConfiguration("urdf_filename", default="default.urdf.xml")
     launch_rviz = LaunchConfiguration("launch_rviz", default="true")
     frame_prefix = LaunchConfiguration("frame_prefix", default="")
+    static_frame_base_frame_id = LaunchConfiguration(
+        "static_frame_base_frame_id", default="map"
+    )
     frame_prefix_with_slash = PythonExpression(
         ['"', frame_prefix, '/" if len("', frame_prefix, '")>0 else ""']
     )
@@ -44,6 +47,11 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="",
                 description="Prefix to the tf frame names of the launched URDF",
             ),
+            DeclareLaunchArgument(
+                "static_frame_base_frame_id",
+                default_value="map",
+                description="Base frame id for the urdf",
+            ),
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
@@ -64,7 +72,7 @@ def generate_launch_description() -> LaunchDescription:
                     "--qw",
                     "1.0",
                     "--frame-id",
-                    "map",
+                    static_frame_base_frame_id,
                     "--child-frame-id",
                     p0_frame_id,
                 ],
