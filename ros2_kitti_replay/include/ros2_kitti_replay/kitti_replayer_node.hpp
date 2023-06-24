@@ -25,8 +25,8 @@ namespace r2k_replay
 class KITTIReplayerNode final : public rclcpp::Node
 {
 public:
-  static constexpr const char * const kDefaultGroundTruthNamespace = "p0";
-  static constexpr const char * const kDefaultOdometryNamespace = "lidar";
+  static constexpr const char * const kDefaultGroundTruthNamespace = "ground_truth";
+  static constexpr const char * const kDefaultOdometryNamespace = "odometry";
   static constexpr const char * const kDefaultGlobalFrame = "map";
   static constexpr const char * const kDefaultOdomFrame = "odom";
   static constexpr float kOdometryFrameLookupTimeout = 5.0;
