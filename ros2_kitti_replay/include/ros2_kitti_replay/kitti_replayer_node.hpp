@@ -55,7 +55,7 @@ public:
     const DataReplayer::ReplayerState & replayer_state);
 
 private:
-  std::string odometry_vehicle_frame_id_;
+  std::string odometry_reference_frame_id_;
   std::optional<Transforms> ground_truth_path_opt_;
 
   std::unique_ptr<DataReplayer> replayer_ptr_;

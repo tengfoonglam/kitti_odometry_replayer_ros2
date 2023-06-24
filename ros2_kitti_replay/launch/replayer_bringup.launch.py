@@ -56,10 +56,8 @@ def generate_launch_description() -> LaunchDescription:
     odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
     odometry_package = LaunchConfiguration("odometry_package", default="")
     odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
-    odometry_vehicle_frame = LaunchConfiguration(
-        "odometry_vehicle_frame", default="lidar"
-    )
-    odometry_vehicle_frame_id = PathJoinSubstitution(
+    odometry_vehicle_frame = LaunchConfiguration("odometry_vehicle_frame", default="p0")
+    odometry_reference_frame_id = PathJoinSubstitution(
         [ground_truth_namespace, odometry_vehicle_frame]
     )
     # global_frame_id = LaunchConfiguration("global_frame_id", default="map")
@@ -77,7 +75,7 @@ def generate_launch_description() -> LaunchDescription:
                 "point_cloud_folder_path": point_cloud_folder_path,
                 "ground_truth_namespace": ground_truth_namespace,
                 "odometry_namespace": odometry_namespace,
-                "odometry_vehicle_frame_id": odometry_vehicle_frame_id,
+                "odometry_reference_frame_id": odometry_reference_frame_id,
             }
         ],
     )
