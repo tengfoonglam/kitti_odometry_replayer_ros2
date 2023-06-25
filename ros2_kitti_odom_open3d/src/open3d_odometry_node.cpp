@@ -3,6 +3,7 @@
 #include <Eigen/Core>
 #include <builtin_interfaces/msg/time.hpp>
 #include <open3d_conversions/open3d_conversions.hpp>
+#include <rclcpp/clock.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
@@ -18,18 +19,35 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
 {
   std::scoped_lock lock(mutex_);
 
-  auto current_pc_ptr = std::make_unique<O3DPointCloud>();
+  auto current_pc_ptr = std::make_shared<O3DPointCloud>();
   static constexpr bool kSkipColour = true;
   open3d_conversions::rosToOpen3d(pc_ptr, *current_pc_ptr, kSkipColour);
 
   // Compute normals
+  const auto normal_computation_start_time = steady_clock_.now();
   const auto & norm_settings = settings_.normal_computation;
+  current_pc_ptr = current_pc_ptr->RandomDownSample(0.1);
   current_pc_ptr->EstimateNormals(
     open3d::geometry::KDTreeSearchParamHybrid(norm_settings.radius, norm_settings.max_nn),
     norm_settings.fast_normal_computation);
+  const auto normal_computation_end_time = steady_clock_.now();
+  const auto normal_computation_duration =
+    normal_computation_end_time - normal_computation_start_time;
+  RCLCPP_INFO_THROTTLE(
+    get_logger(), steady_clock_, 1000, "Current normal compuation time [ms]: %f",
+    normal_computation_duration.seconds() * 1e3);
 
   if (buffer_pc_ptr_) {
+    const auto registration_start_time = steady_clock_.now();
+
     const auto result = perform_registration(*current_pc_ptr, *buffer_pc_ptr_);
+
+    const auto resgistration_end_time = steady_clock_.now();
+    const auto registration_duration = resgistration_end_time - registration_start_time;
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), steady_clock_, 1000, "Current registration time [ms]: %f",
+      registration_duration.seconds() * 1e3);
+
     sensor_start_tf_sensor_current_ *= result;
   }
 

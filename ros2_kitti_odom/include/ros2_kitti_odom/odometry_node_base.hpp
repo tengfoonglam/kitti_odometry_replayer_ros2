@@ -6,7 +6,9 @@
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <memory>
+#include <mutex>
 #include <nav_msgs/msg/path.hpp>
+#include <rclcpp/clock.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_kitti_interface/srv/set_current_transform.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -53,6 +55,7 @@ protected:
 
   virtual bool reset_internal()
   {
+    std::scoped_lock lock(path_mutex_);
     path_ = nav_msgs::msg::Path();
     return true;
   }
@@ -81,6 +84,8 @@ protected:
   tf2::Transform odom_tf_sensor_;
   tf2::Transform sensor_tf_base_link_;
   nav_msgs::msg::Path path_;
+  std::mutex path_mutex_;
+  rclcpp::Clock steady_clock_{RCL_SYSTEM_TIME};
 };
 
 }  // namespace r2k_odom

@@ -185,6 +185,8 @@ bool DataReplayer::step(const StepRequest & step_request)
 bool DataReplayer::play(const float replay_speed)
 {
   const auto state = get_replayer_state();
+  // TODO(tf) If not playing and target index is not end of the replay and current index is at
+  // target index
   const bool resumable = state.next_idx < state.data_size && state.next_idx <= state.target_idx;
   if (resumable) {
     return play_index_range(std::make_tuple(state.next_idx, state.target_idx), replay_speed);

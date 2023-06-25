@@ -114,6 +114,8 @@ void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr p
 void OdometryNodeBase::notify_new_transform(
   const Time & timestamp, const tf2::Transform & sensor_start_tf_sensor_current)
 {
+  std::scoped_lock lock(path_mutex_);
+
   const auto odom_tf_base_link_current =
     odom_tf_sensor_ * sensor_start_tf_sensor_current * sensor_tf_base_link_;
 
