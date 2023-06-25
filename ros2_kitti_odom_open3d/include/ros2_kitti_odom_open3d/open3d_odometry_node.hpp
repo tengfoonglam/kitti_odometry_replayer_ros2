@@ -66,7 +66,7 @@ public:
 private:
   std::mutex mutex_;
   std::unique_ptr<O3DPointCloud> buffer_pc_ptr_;
-  tf2::Transform current_transform_;
+  tf2::Transform sensor_start_tf_sensor_current_;
   O3DICPSettings settings_;
 
   void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;

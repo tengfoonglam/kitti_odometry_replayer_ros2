@@ -1,16 +1,25 @@
 #include "ros2_kitti_odom/odometry_node_base.hpp"
 
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
 namespace r2k_odom
 {
 
+const tf2::Transform OdometryNodeBase::kIdentityTransform{tf2::Quaternion{0., 0., 0., 1.}};
+
 OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
-: Node("kitti_odometry", options)
+: Node("kitti_odometry", options),
+  odom_tf_sensor_(kIdentityTransform),
+  sensor_tf_base_link_(kIdentityTransform)
 {
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   // Declare Node params
   declare_parameter("odometry_frame_id", kDefaultOdometryFrameId);
   declare_parameter("pointcloud_topic", kDefaultPointCloudTopicName);
+  declare_parameter("base_link_frame_id", "");
+  declare_parameter("sensor_frame_id", "");
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -26,9 +35,45 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     parameters_client.get_parameter("odometry_frame_id", std::string{kDefaultOdometryFrameId});
   const auto pointcloud_topic =
     parameters_client.get_parameter("pointcloud_topic", std::string{kDefaultPointCloudTopicName});
+  base_link_frame_id_ = parameters_client.get_parameter("base_link_frame_id", std::string{""});
+  sensor_frame_id_ = parameters_client.get_parameter("sensor_frame_id", std::string{""});
 
   shutdown_if_empty(odometry_frame_id_, "odometry_frame_id");
   shutdown_if_empty(pointcloud_topic, "pointcloud_topic");
+  shutdown_if_empty(base_link_frame_id_, "base_link_frame_id");
+  shutdown_if_empty(sensor_frame_id_, "pointclosensor_frame_idud_topic");
+
+  // Look up base-link -> sensor frame transform
+  if (base_link_frame_id_ != sensor_frame_id_) {
+    const auto tf_listener_buffer_ptr = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+    const auto tf_listener_ptr_ =
+      std::make_unique<tf2_ros::TransformListener>(*tf_listener_buffer_ptr);
+
+    const auto from_frame = sensor_frame_id_;
+    const auto to_frame = base_link_frame_id_;
+
+    RCLCPP_INFO(
+      get_logger(), "Looking up TF from %s (sensor) to %s (base link)", from_frame.c_str(),
+      to_frame.c_str());
+    try {
+      auto base_link_tf_sensor_stamped = tf_listener_buffer_ptr->lookupTransform(
+        to_frame, from_frame, tf2::TimePointZero,
+        tf2::durationFromSec(kBaseLinkTFScannerLookupTimeout));
+      tf2::Transform base_link_tf_sensor;
+      tf2::fromMsg(base_link_tf_sensor_stamped.transform, base_link_tf_sensor);
+      // At initialization, base link should be aligned with the odom frame
+      odom_tf_sensor_ = base_link_tf_sensor;
+      sensor_tf_base_link_ = base_link_tf_sensor.inverse();
+      RCLCPP_INFO(
+        get_logger(), "Sucessfully established TF from %s (sensor) to %s (base link)",
+        from_frame.c_str(), to_frame.c_str());
+    } catch (const tf2::TransformException & ex) {
+      RCLCPP_ERROR(
+        get_logger(), "Could not find TF from %s to %s: %s. Exiting odometry node.",
+        from_frame.c_str(), to_frame.c_str(), ex.what());
+      rclcpp::shutdown();
+    }
+  }
 
   // Setup services, subcribers and publishers
   reset_service_ptr_ = create_service<TriggerSrv>(
@@ -67,8 +112,16 @@ void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr p
 }
 
 void OdometryNodeBase::notify_new_transform(
-  const geometry_msgs::msg::TransformStamped & transform_stamped)
+  const Time & timestamp, const tf2::Transform & sensor_start_tf_sensor_current)
 {
+  const auto odom_tf_base_link_current =
+    odom_tf_sensor_ * sensor_start_tf_sensor_current * sensor_tf_base_link_;
+
+  geometry_msgs::msg::TransformStamped transform_stamped;
+  transform_stamped.header.frame_id = odometry_frame_id_;
+  transform_stamped.header.stamp = timestamp;
+  transform_stamped.child_frame_id = base_link_frame_id_;
+  tf2::toMsg(odom_tf_base_link_current, transform_stamped.transform);
   tf_broadcaster_ptr_->sendTransform(transform_stamped);
 
   auto odom_msg_ptr = std::make_unique<nav_msgs::msg::Odometry>();

@@ -1,8 +1,10 @@
 #ifndef ROS2_KITTI_ODOM__ODOMETRY_NODE_BASE_HPP_
 #define ROS2_KITTI_ODOM__ODOMETRY_NODE_BASE_HPP_
 
+#include <tf2/LinearMath/Transform.h>
 #include <tf2_ros/transform_broadcaster.h>
 
+#include <builtin_interfaces/msg/time.hpp>
 #include <memory>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -18,9 +20,12 @@ namespace r2k_odom
 class OdometryNodeBase : public rclcpp::Node
 {
 public:
-  constexpr static const char * const kDefaultOdometryFrameId{"odom"};
-  constexpr static const char * const kDefaultPointCloudTopicName{"odom_pointcloud"};
+  static constexpr const char * const kDefaultOdometryFrameId{"odom"};
+  static constexpr const char * const kDefaultPointCloudTopicName{"odom_pointcloud"};
+  static constexpr float kBaseLinkTFScannerLookupTimeout = 5.0;
+  static const tf2::Transform kIdentityTransform;
 
+  using Time = builtin_interfaces::msg::Time;
   using TriggerSrv = std_srvs::srv::Trigger;
   using SetCurrentTransformSrv = ros2_kitti_interface::srv::SetCurrentTransform;
 
@@ -51,7 +56,8 @@ protected:
   {
     return true;
   }
-  virtual void notify_new_transform(const geometry_msgs::msg::TransformStamped & transform_stamped);
+  virtual void notify_new_transform(
+    const Time & timestamp, const tf2::Transform & sensor_start_tf_sensor_current);
   virtual void point_cloud_cb_internal(
     [[maybe_unused]] sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
   {
@@ -65,6 +71,10 @@ protected:
   std::shared_ptr<Publisher<nav_msgs::msg::Odometry>> odometry_pub_ptr_;
   std::shared_ptr<Subscription<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
   std::string odometry_frame_id_;
+  std::string base_link_frame_id_;
+  std::string sensor_frame_id_;
+  tf2::Transform odom_tf_sensor_;
+  tf2::Transform sensor_tf_base_link_;
 };
 
 }  // namespace r2k_odom
