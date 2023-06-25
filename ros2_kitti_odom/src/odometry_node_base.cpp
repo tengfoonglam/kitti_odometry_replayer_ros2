@@ -41,7 +41,7 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   shutdown_if_empty(odometry_frame_id_, "odometry_frame_id");
   shutdown_if_empty(pointcloud_topic, "pointcloud_topic");
   shutdown_if_empty(base_link_frame_id_, "base_link_frame_id");
-  shutdown_if_empty(sensor_frame_id_, "pointclosensor_frame_idud_topic");
+  shutdown_if_empty(sensor_frame_id_, "sensor_frame_id");
 
   // Look up base-link -> sensor frame transform
   if (base_link_frame_id_ != sensor_frame_id_) {
@@ -84,7 +84,7 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
                                  &OdometryNodeBase::set_current_transform, this,
                                  std::placeholders::_1, std::placeholders::_2));
   tf_broadcaster_ptr_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-  odometry_pub_ptr_ = create_publisher<nav_msgs::msg::Odometry>("~/odometry", 10);
+  path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
   point_cloud_sub_ptr_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     pointcloud_topic, 10,
     std::bind(&OdometryNodeBase::point_cloud_cb, this, std::placeholders::_1));
@@ -124,16 +124,20 @@ void OdometryNodeBase::notify_new_transform(
   tf2::toMsg(odom_tf_base_link_current, transform_stamped.transform);
   tf_broadcaster_ptr_->sendTransform(transform_stamped);
 
-  auto odom_msg_ptr = std::make_unique<nav_msgs::msg::Odometry>();
-  odom_msg_ptr->header = transform_stamped.header;
-  odom_msg_ptr->pose.pose.position.x = transform_stamped.transform.translation.x;
-  odom_msg_ptr->pose.pose.position.y = transform_stamped.transform.translation.y;
-  odom_msg_ptr->pose.pose.position.z = transform_stamped.transform.translation.z;
-  odom_msg_ptr->pose.pose.orientation.w = transform_stamped.transform.rotation.w;
-  odom_msg_ptr->pose.pose.orientation.x = transform_stamped.transform.rotation.x;
-  odom_msg_ptr->pose.pose.orientation.y = transform_stamped.transform.rotation.y;
-  odom_msg_ptr->pose.pose.orientation.z = transform_stamped.transform.rotation.z;
-  odometry_pub_ptr_->publish(std::move(odom_msg_ptr));
+  path_.header = transform_stamped.header;
+  path_.poses.emplace_back();
+  auto & new_pose_stamped = path_.poses.back();
+  geometry_msgs::msg::PoseStamped pose_stamped;
+  new_pose_stamped.header = transform_stamped.header;
+  new_pose_stamped.pose.position.x = transform_stamped.transform.translation.x;
+  new_pose_stamped.pose.position.y = transform_stamped.transform.translation.y;
+  new_pose_stamped.pose.position.z = transform_stamped.transform.translation.z;
+  new_pose_stamped.pose.orientation.w = transform_stamped.transform.rotation.w;
+  new_pose_stamped.pose.orientation.x = transform_stamped.transform.rotation.x;
+  new_pose_stamped.pose.orientation.y = transform_stamped.transform.rotation.y;
+  new_pose_stamped.pose.orientation.z = transform_stamped.transform.rotation.z;
+
+  path_pub_ptr_->publish(path_);
 }
 
 void OdometryNodeBase::set_current_transform(

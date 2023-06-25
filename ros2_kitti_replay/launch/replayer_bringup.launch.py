@@ -56,12 +56,21 @@ def generate_launch_description() -> LaunchDescription:
     odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
     odometry_package = LaunchConfiguration("odometry_package", default="")
     odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
-    odometry_vehicle_frame = LaunchConfiguration("odometry_vehicle_frame", default="p0")
+    VEHICLE_BASE_LINK = "p0"  # Fixed by URDF
+    vehicle_sensor_link = LaunchConfiguration("vehicle_sensor_link", default="lidar")
     odometry_reference_frame_id = PathJoinSubstitution(
-        [ground_truth_namespace, odometry_vehicle_frame]
+        [ground_truth_namespace, VEHICLE_BASE_LINK]
     )
     # global_frame_id = LaunchConfiguration("global_frame_id", default="map")
-    odometry_frame_id = LaunchConfiguration("odometry_frame_id", default="odom")
+    ODOMETRY_FRAME_ID = "odom"
+
+    odometry_base_link_frame_id = PathJoinSubstitution(
+        [odometry_namespace, VEHICLE_BASE_LINK]
+    )
+
+    odometry_sensor_link_frame_id = PathJoinSubstitution(
+        [odometry_namespace, vehicle_sensor_link]
+    )
 
     replayer_component = ComposableNode(
         package="ros2_kitti_replay",
@@ -87,8 +96,10 @@ def generate_launch_description() -> LaunchDescription:
         parameters=[
             {
                 "use_sim_time": use_sim_time,
-                "odometry_frame_id": odometry_frame_id,
+                "odometry_frame_id": ODOMETRY_FRAME_ID,
                 "pointcloud_topic": "lidar_pc",
+                "base_link_frame_id": odometry_base_link_frame_id,
+                "sensor_frame_id": odometry_sensor_link_frame_id,
             }
         ],
     )
@@ -100,7 +111,7 @@ def generate_launch_description() -> LaunchDescription:
             '") > 0 and len("',
             odometry_plugin,
             '") > 0 and len("',
-            odometry_vehicle_frame,
+            vehicle_sensor_link,
             '") > 0',
         ]
     )
@@ -140,10 +151,10 @@ def generate_launch_description() -> LaunchDescription:
                 "Leave empty if launching odometry component is not required",
             ),
             DeclareLaunchArgument(
-                "odometry_vehicle_frame",
+                "vehicle_sensor_link",
                 default_value="lidar",
-                description="Frame on the vehicle that is the odometry frame. "
-                "Leave empty if launching odometry component is not required",
+                description="Name of the link which the odometry sensor is "
+                "located (e.g. lidar, p0)",
             ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
