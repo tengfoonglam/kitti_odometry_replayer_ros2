@@ -185,11 +185,11 @@ bool DataReplayer::step(const StepRequest & step_request)
 bool DataReplayer::play(const float replay_speed)
 {
   const auto state = get_replayer_state();
-  // TODO(tf) If not playing and target index is not end of the replay and current index is at
-  // target index
-  const bool resumable = state.next_idx < state.data_size && state.next_idx <= state.target_idx;
+  const bool resumable = state.next_idx < state.data_size;
   if (resumable) {
-    return play_index_range(std::make_tuple(state.next_idx, state.target_idx), replay_speed);
+    const auto target_idx =
+      state.next_idx <= state.target_idx ? state.target_idx : state.data_size - 1;
+    return play_index_range({state.next_idx, target_idx}, replay_speed);
   } else {
     with_lock(logger_mutex_, [this]() {
       RCLCPP_WARN(
