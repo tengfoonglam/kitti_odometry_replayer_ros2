@@ -48,7 +48,6 @@ std::optional<O3DICPConfig> load_config(const std::string & file_path_str)
   }
 
   O3DICPConfig config;
-  config.iterations.clear();
 
   try {
     const YAML::Node yaml_config = YAML::LoadFile(file_path_str);
@@ -67,6 +66,7 @@ std::optional<O3DICPConfig> load_config(const std::string & file_path_str)
       return {};
     }
 
+    config.iterations.clear();
     for (const auto & iter_node : iter_nodes) {
       ICPIterationSettings setting;
       load_field(normal_node["max_correspondence_distance"], setting.max_correspondence_distance);
