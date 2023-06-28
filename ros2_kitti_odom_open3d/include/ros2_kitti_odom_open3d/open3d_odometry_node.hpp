@@ -17,6 +17,8 @@ class Open3DOdometryNode final : public r2k_odom::OdometryNodeBase
 public:
   using O3DPointCloud = open3d::geometry::PointCloud;
 
+  static constexpr std::size_t kLoggingPeriodMs = 10000;
+
   struct ICPIterationSettings
   {
     double max_correspondence_distance;
@@ -47,14 +49,18 @@ public:
 
   struct O3DICPSettings
   {
+    float decimation_factor = 0.1;
     NormalComputationSettings normal_computation;
     std::vector<ICPIterationSettings> iterations;
 
     O3DICPSettings(
+      const float decimation_factor_in = 0.1,
       const NormalComputationSettings & normal_computation_in = NormalComputationSettings(),
       const std::vector<ICPIterationSettings> & iterations_in =
         {{1.0, 1e-4, 1e-4, 30}, {0.5, 1e-5, 1e-5, 20}, {0.05, 1e-6, 1e-6, 15}})
-    : normal_computation(normal_computation_in), iterations(iterations_in)
+    : decimation_factor(decimation_factor_in),
+      normal_computation(normal_computation_in),
+      iterations(iterations_in)
     {
     }
   };
