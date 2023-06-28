@@ -47,13 +47,13 @@ public:
     }
   };
 
-  struct O3DICPSettings
+  struct O3DICPConfig
   {
     float decimation_factor = 0.1;
     NormalComputationSettings normal_computation;
     std::vector<ICPIterationSettings> iterations;
 
-    O3DICPSettings(
+    O3DICPConfig(
       const float decimation_factor_in = 0.1,
       const NormalComputationSettings & normal_computation_in = NormalComputationSettings(),
       const std::vector<ICPIterationSettings> & iterations_in =
@@ -73,7 +73,7 @@ private:
   std::mutex mutex_;
   std::shared_ptr<O3DPointCloud> buffer_pc_ptr_;
   tf2::Transform sensor_start_tf_sensor_current_;
-  O3DICPSettings settings_;
+  O3DICPConfig config_;
 
   void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
   bool set_current_transform_internal(const geometry_msgs::msg::Transform & transform_msg) final;

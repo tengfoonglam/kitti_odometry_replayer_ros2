@@ -26,10 +26,10 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
 
   // Decimate point cloud and compute normals
   const auto normal_computation_start_time = steady_clock_.now();
-  const auto & norm_settings = settings_.normal_computation;
+  const auto & norm_settings = config_.normal_computation;
 
-  if (settings_.decimation_factor > 0.0 && settings_.decimation_factor < 1.0) {
-    current_pc_ptr = current_pc_ptr->RandomDownSample(settings_.decimation_factor);
+  if (config_.decimation_factor > 0.0 && config_.decimation_factor < 1.0) {
+    current_pc_ptr = current_pc_ptr->RandomDownSample(config_.decimation_factor);
   }
 
   current_pc_ptr->EstimateNormals(
@@ -70,7 +70,7 @@ bool Open3DOdometryNode::reset_internal()
   std::scoped_lock lock(mutex_);
   sensor_start_tf_sensor_current_ = kIdentityTransform;
   buffer_pc_ptr_.reset();
-  return true;
+  return r2k_odom::OdometryNodeBase::reset_internal();
 }
 
 tf2::Transform Open3DOdometryNode::eigen_to_transform(const Eigen::Matrix4d & tf_eigen)
@@ -87,8 +87,7 @@ tf2::Transform Open3DOdometryNode::perform_registration(
   const O3DPointCloud & source, const O3DPointCloud & target)
 {
   Eigen::Matrix4d result_eigen = Eigen::Matrix4d::Identity();
-
-  for (const auto & icp_setting : settings_.iterations) {
+  for (const auto & icp_setting : config_.iterations) {
     const auto registration_result = open3d::pipelines::registration::RegistrationICP(
       source, target, icp_setting.max_correspondence_distance, result_eigen,
       open3d::pipelines::registration::TransformationEstimationPointToPlane(),
