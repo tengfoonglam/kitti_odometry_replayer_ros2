@@ -27,7 +27,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                       -pedantic)
 endif()
 
-set(HEADER_LIST "include/${PROJECT_NAME}/open3d_odometry_node.hpp")
+set(HEADER_LIST
+    "include/${PROJECT_NAME}/open3d_odometry_node.hpp"
+    "include/${PROJECT_NAME}/open3d_odometry_config.hpp")
 set(SOURCE_LIST "src/open3d_odometry_node.cpp")
 
 # create ament index resource which references the libraries in the binary dir
