@@ -12,6 +12,7 @@ find_package(ros2_kitti_odom REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -48,7 +49,9 @@ ament_target_dependencies(${PROJECT_NAME}
                           ros2_kitti_odom
                           tf2
                           tf2_eigen
-                          tf2_geometry_msgs)
+                          tf2_geometry_msgs
+                          yaml-cpp)
+target_link_libraries(${PROJECT_NAME} ${YAML_CPP_LIBRARIES})
 rclcpp_components_register_nodes(${PROJECT_NAME}
                                  "r2k_odom_o3d::Open3DOdometryNode")
 set(node_plugins

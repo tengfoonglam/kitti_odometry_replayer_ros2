@@ -3,6 +3,8 @@
 
 #include <open3d/Open3D.h>
 
+#include <optional>
+#include <string>
 #include <vector>
 
 namespace r2k_odom_o3d
@@ -40,6 +42,9 @@ struct O3DICPConfig
     const std::vector<ICPIterationSettings> & iterations_in = {
       {1.0, 1e-4, 1e-4, 30}, {0.5, 1e-5, 1e-5, 20}, {0.05, 1e-6, 1e-6, 15}});
 };
+
+std::optional<O3DICPConfig> load_config(const std::string & file_path_str);
+
 }  // namespace r2k_odom_o3d
 
 #endif  // ROS2_KITTI_ODOM_OPEN3D__OPEN3D_ODOMETRY_CONFIG_HPP_
