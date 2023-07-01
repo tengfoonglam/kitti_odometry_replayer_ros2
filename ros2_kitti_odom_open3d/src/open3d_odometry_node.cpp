@@ -13,7 +13,20 @@ namespace r2k_odom_o3d
 Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
 : r2k_odom::OdometryNodeBase(options), sensor_start_tf_sensor_current_(kIdentityTransform)
 {
-  RCLCPP_INFO_STREAM(get_logger(), "Currently loaded settings: \n" << config_);
+  if (!config_path_.empty()) {
+    if (const auto settings_opt = load_config(config_path_); settings_opt.has_value()) {
+      config_ = settings_opt.value();
+      RCLCPP_INFO(get_logger(), "Successfully loaded config from: %s", config_path_.c_str());
+    } else {
+      RCLCPP_WARN(
+        get_logger(), "Failed to load config from: %s. Using defulat settings.",
+        config_path_.c_str());
+    }
+  } else {
+    RCLCPP_WARN(get_logger(), "No config path provided. Using default settings.");
+  }
+
+  RCLCPP_INFO_STREAM(get_logger(), "Loaded settings: \n" << config_);
 }
 
 void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)

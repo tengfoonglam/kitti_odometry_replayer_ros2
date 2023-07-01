@@ -81,6 +81,7 @@ protected:
   std::string odometry_frame_id_;
   std::string base_link_frame_id_;
   std::string sensor_frame_id_;
+  std::string config_path_;
   tf2::Transform odom_tf_sensor_;
   tf2::Transform sensor_tf_base_link_;
   nav_msgs::msg::Path path_;

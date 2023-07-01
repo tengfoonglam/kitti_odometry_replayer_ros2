@@ -20,6 +20,7 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   declare_parameter("pointcloud_topic", kDefaultPointCloudTopicName);
   declare_parameter("base_link_frame_id", "");
   declare_parameter("sensor_frame_id", "");
+  declare_parameter("config_path", "");
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -37,6 +38,7 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     parameters_client.get_parameter("pointcloud_topic", std::string{kDefaultPointCloudTopicName});
   base_link_frame_id_ = parameters_client.get_parameter("base_link_frame_id", std::string{""});
   sensor_frame_id_ = parameters_client.get_parameter("sensor_frame_id", std::string{""});
+  config_path_ = parameters_client.get_parameter("config_path", std::string{""});
 
   shutdown_if_empty(odometry_frame_id_, "odometry_frame_id");
   shutdown_if_empty(pointcloud_topic, "pointcloud_topic");
