@@ -19,7 +19,7 @@ Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
       RCLCPP_INFO(get_logger(), "Successfully loaded config from: %s", config_path_.c_str());
     } else {
       RCLCPP_WARN(
-        get_logger(), "Failed to load config from: %s. Using defulat settings.",
+        get_logger(), "Failed to load config from: %s. Using default settings.",
         config_path_.c_str());
     }
   } else {

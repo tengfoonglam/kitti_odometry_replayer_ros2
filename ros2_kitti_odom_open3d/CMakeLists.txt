@@ -82,4 +82,6 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
 
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME}/)
+
 ament_package()

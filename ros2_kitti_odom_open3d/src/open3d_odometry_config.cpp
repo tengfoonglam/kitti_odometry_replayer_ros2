@@ -100,10 +100,10 @@ std::optional<O3DICPConfig> load_config(const std::string & file_path_str)
     config.iterations.clear();
     for (const auto & iter_node : iter_nodes) {
       ICPIterationSettings setting;
-      load_field(normal_node["max_correspondence_distance"], setting.max_correspondence_distance);
-      load_field(normal_node["relative_fitness"], setting.convergence_criteria.relative_fitness_);
-      load_field(normal_node["relative_rmse"], setting.convergence_criteria.relative_rmse_);
-      load_field(normal_node["max_iteration"], setting.convergence_criteria.max_iteration_);
+      load_field(iter_node["max_correspondence_distance"], setting.max_correspondence_distance);
+      load_field(iter_node["relative_fitness"], setting.convergence_criteria.relative_fitness_);
+      load_field(iter_node["relative_rmse"], setting.convergence_criteria.relative_rmse_);
+      load_field(iter_node["max_iteration"], setting.convergence_criteria.max_iteration_);
       config.iterations.push_back(setting);
     }
   } catch (const YAML::BadFile & e) {

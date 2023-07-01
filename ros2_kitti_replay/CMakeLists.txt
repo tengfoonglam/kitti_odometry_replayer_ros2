@@ -49,7 +49,7 @@ rclcpp_components_register_nodes(${PROJECT_NAME}
                                  "r2k_replay::KITTIReplayerNode")
 set(node_plugins
     "${node_plugins}r2k_replay::KITTIReplayerNode;\
-    $<TARGET_FILE:ros2_kitti_replay>\n")
+    $<TARGET_FILE:${PROJECT_NAME}>\n")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -70,7 +70,7 @@ if(BUILD_TESTING)
 
 endif()
 
-install(TARGETS ros2_kitti_replay
+install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)

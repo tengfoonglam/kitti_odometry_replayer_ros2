@@ -56,6 +56,7 @@ def generate_launch_description() -> LaunchDescription:
     odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
     odometry_package = LaunchConfiguration("odometry_package", default="")
     odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
+    odometry_config_name = LaunchConfiguration("odometry_config_name", default="")
     VEHICLE_BASE_LINK = "p0"  # Fixed by URDF
     vehicle_sensor_link = LaunchConfiguration("vehicle_sensor_link", default="lidar")
     odometry_reference_frame_id = PathJoinSubstitution(
@@ -70,6 +71,23 @@ def generate_launch_description() -> LaunchDescription:
 
     odometry_sensor_link_frame_id = PathJoinSubstitution(
         [odometry_namespace, vehicle_sensor_link]
+    )
+
+    odometry_config_path = PathJoinSubstitution(
+        [
+            get_package_share_directory("ros2_kitti_odom_open3d"),
+            PythonExpression(
+                [
+                    '"" if len("',
+                    odometry_config_name,
+                    '") == 0 else "',
+                    get_package_share_directory("ros2_kitti_odom_open3d"),
+                    "/config/",
+                    odometry_config_name,
+                    '.yml"',
+                ]
+            ),
+        ]
     )
 
     replayer_component = ComposableNode(
@@ -100,6 +118,7 @@ def generate_launch_description() -> LaunchDescription:
                 "pointcloud_topic": "lidar_pc",
                 "base_link_frame_id": odometry_base_link_frame_id,
                 "sensor_frame_id": odometry_sensor_link_frame_id,
+                "config_path": odometry_config_path,
             }
         ],
     )
@@ -155,6 +174,12 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="lidar",
                 description="Name of the link which the odometry sensor is "
                 "located (e.g. lidar, p0)",
+            ),
+            DeclareLaunchArgument(
+                "odometry_config_name",
+                default_value="",
+                description="Name of the config file used for the odometry component "
+                "(exclude .yml). Leave empty if launching odometry component is not required",
             ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
