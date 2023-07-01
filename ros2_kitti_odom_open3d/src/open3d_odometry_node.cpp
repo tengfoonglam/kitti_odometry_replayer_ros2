@@ -13,6 +13,7 @@ namespace r2k_odom_o3d
 Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
 : r2k_odom::OdometryNodeBase(options), sensor_start_tf_sensor_current_(kIdentityTransform)
 {
+  RCLCPP_INFO_STREAM(get_logger(), "Currently loaded settings: \n" << config_);
 }
 
 void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)

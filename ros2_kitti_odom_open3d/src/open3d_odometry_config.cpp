@@ -16,10 +16,29 @@ ICPIterationSettings::ICPIterationSettings(
 {
 }
 
+std::ostream & operator<<(std::ostream & os, const ICPIterationSettings & setting)
+{
+  os << "ICP iteration settings: \n"
+     << "\t Max correspondence distance: " << setting.max_correspondence_distance << "\n"
+     << "\t Relative fitbess: " << setting.convergence_criteria.relative_fitness_ << "\n"
+     << "\t Relative RMSE: " << setting.convergence_criteria.relative_rmse_ << "\n"
+     << "\t Max iteration: " << setting.convergence_criteria.max_iteration_ << "\n";
+  return os;
+}
+
 NormalComputationSettings::NormalComputationSettings(
   const bool fast_normal_computation_in, const int max_nn_in, const double radius_in)
 : fast_normal_computation(fast_normal_computation_in), max_nn(max_nn_in), radius(radius_in)
 {
+}
+
+std::ostream & operator<<(std::ostream & os, const NormalComputationSettings & setting)
+{
+  os << "Normal computation settings: \n"
+     << "\t Fast normal computation: " << setting.fast_normal_computation << "\n"
+     << "\t Max nearest neighbours: " << setting.max_nn << "\n"
+     << "\t Radius: " << setting.radius << "\n";
+  return os;
 }
 
 O3DICPConfig::O3DICPConfig(
@@ -29,6 +48,18 @@ O3DICPConfig::O3DICPConfig(
   normal_computation(normal_computation_in),
   iterations(iterations_in)
 {
+}
+
+std::ostream & operator<<(std::ostream & os, const O3DICPConfig & config)
+{
+  os << "Open3D ICP Config: \n"
+     << "Decimation factor: " << config.decimation_factor << "\n"
+     << config.normal_computation << "ICP Iteration Settings:\n";
+
+  for (size_t i = 0; i < config.iterations.size(); i++) {
+    os << i + 1 << ") " << config.iterations.at(i);
+  }
+  return os;
 }
 
 template <typename T>
