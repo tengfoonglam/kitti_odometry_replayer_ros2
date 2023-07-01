@@ -20,7 +20,7 @@ std::ostream & operator<<(std::ostream & os, const ICPIterationSettings & settin
 {
   os << "ICP iteration settings: \n"
      << "\t Max correspondence distance: " << setting.max_correspondence_distance << "\n"
-     << "\t Relative fitbess: " << setting.convergence_criteria.relative_fitness_ << "\n"
+     << "\t Relative fitness: " << setting.convergence_criteria.relative_fitness_ << "\n"
      << "\t Relative RMSE: " << setting.convergence_criteria.relative_rmse_ << "\n"
      << "\t Max iteration: " << setting.convergence_criteria.max_iteration_ << "\n";
   return os;
