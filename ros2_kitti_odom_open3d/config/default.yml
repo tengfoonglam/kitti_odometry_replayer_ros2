@@ -1,0 +1,18 @@
+decimation_factor: 0.1
+normal_computation:
+  fast_normal_computation: true
+  max_nn: 30
+  radius: 1
+iterations:
+  - max_correspondence_distance: 2
+    relative_fitness: 0.0001
+    relative_rmse: 0.0001
+    max_iteration: 30
+  - max_correspondence_distance: 0.5
+    relative_fitness: 0.00001
+    relative_rmse: 0.00001
+    max_iteration: 20
+  - max_correspondence_distance: 0.05
+    relative_fitness: 0.000001
+    relative_rmse: 0.000001
+    max_iteration: 15
