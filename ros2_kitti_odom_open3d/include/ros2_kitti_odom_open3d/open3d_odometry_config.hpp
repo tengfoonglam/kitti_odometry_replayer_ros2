@@ -45,7 +45,7 @@ struct O3DICPConfig
     const float decimation_factor_in = 0.1,
     const NormalComputationSettings & normal_computation_in = NormalComputationSettings(),
     const std::vector<ICPIterationSettings> & iterations_in = {
-      {2.0, 1e-4, 1e-4, 30}, {0.5, 1e-5, 1e-5, 20}, {0.05, 1e-6, 1e-6, 15}});
+      {1.5, 1e-4, 1e-4, 30}, {0.5, 1e-5, 1e-5, 20}, {0.05, 1e-6, 1e-6, 15}});
 
   friend std::ostream & operator<<(std::ostream & os, const O3DICPConfig & config);
 };

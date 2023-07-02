@@ -56,7 +56,7 @@ def generate_launch_description() -> LaunchDescription:
     odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
     odometry_package = LaunchConfiguration("odometry_package", default="")
     odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
-    odometry_config_name = LaunchConfiguration("odometry_config_name", default="")
+    odometry_config_path = LaunchConfiguration("odometry_config_path", default="")
     VEHICLE_BASE_LINK = "p0"  # Fixed by URDF
     vehicle_sensor_link = LaunchConfiguration("vehicle_sensor_link", default="lidar")
     odometry_reference_frame_id = PathJoinSubstitution(
@@ -71,23 +71,6 @@ def generate_launch_description() -> LaunchDescription:
 
     odometry_sensor_link_frame_id = PathJoinSubstitution(
         [odometry_namespace, vehicle_sensor_link]
-    )
-
-    odometry_config_path = PathJoinSubstitution(
-        [
-            get_package_share_directory("ros2_kitti_odom_open3d"),
-            PythonExpression(
-                [
-                    '"" if len("',
-                    odometry_config_name,
-                    '") == 0 else "',
-                    get_package_share_directory("ros2_kitti_odom_open3d"),
-                    "/config/",
-                    odometry_config_name,
-                    '.yml"',
-                ]
-            ),
-        ]
     )
 
     replayer_component = ComposableNode(
@@ -176,10 +159,10 @@ def generate_launch_description() -> LaunchDescription:
                 "located (e.g. lidar, p0)",
             ),
             DeclareLaunchArgument(
-                "odometry_config_name",
+                "odometry_config_path",
                 default_value="",
-                description="Name of the config file used for the odometry component "
-                "(exclude .yml). Leave empty if launching odometry component is not required",
+                description="Path config file used for the odometry component. "
+                "Leave empty if launching odometry component is not required",
             ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
@@ -208,7 +191,6 @@ def generate_launch_description() -> LaunchDescription:
                     "launch_rviz": "False",
                     "frame_prefix": odometry_namespace,
                     "static_frame_base_frame_id": "odom",
-                    "vehicle_frame_id": "lidar",
                 }.items(),
                 condition=IfCondition(launch_odometry),
             ),

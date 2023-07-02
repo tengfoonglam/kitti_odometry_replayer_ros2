@@ -13,6 +13,7 @@
   <exec_depend>libopen3d-dev</exec_depend>
   <exec_depend>open3d_conversions</exec_depend>
   <exec_depend>ros2_kitti_odom</exec_depend>
+  <exec_depend>ros2_kitti_replay</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>tf2_eigen</exec_depend>
   <exec_depend>tf2_geometry_msgs</exec_depend>
