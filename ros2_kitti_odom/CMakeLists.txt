@@ -45,7 +45,7 @@ ament_target_dependencies(${PROJECT_NAME}
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
 
-  # Bypass copyright, lint_cmake  and uncrustify checks
+  # Bypass copyright and other flaky checks
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   set(ament_cmake_uncrustify_FOUND TRUE)

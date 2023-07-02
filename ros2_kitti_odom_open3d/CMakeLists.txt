@@ -66,7 +66,7 @@ if(BUILD_TESTING)
        $<CONFIG>/share/ament_index/resource_index/node_plugin/${PROJECT_NAME}"
        CONTENT "${node_plugins}")
 
-  # Bypass copyright, lint_cmake  and uncrustify checks
+  # Bypass copyright and other flaky checks
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   set(ament_cmake_uncrustify_FOUND TRUE)
