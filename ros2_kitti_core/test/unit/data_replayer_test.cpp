@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <functional>
 #include <mutex>
 #include <ros2_kitti_core/data_replayer.hpp>
 #include <ros2_kitti_core/play_data_interface_base.hpp>
@@ -24,7 +25,7 @@ using StepRequest = r2k_core::DataReplayer::StepRequest;
 class PlayDataTestInterface final : public PlayDataInterfaceBase
 {
 public:
-  using IndexRecord = std::vector<size_t>;
+  using IndexRecord = std::vector<std::size_t>;
 
   PlayDataTestInterface(const std::string & name = "Test Play Data Callback")
   : PlayDataInterfaceBase(name)
@@ -62,9 +63,10 @@ private:
 class TestDataReplayer : public ::testing::Test
 {
 public:
-  static constexpr size_t kNumberTimestamps = 10;
-  static constexpr size_t kStartTimeSeconds = 2;
+  static constexpr std::size_t kNumberTimestamps = 10;
+  static constexpr std::size_t kStartTimeSeconds = 2;
   static constexpr auto kTimestampIntervalNs = static_cast<size_t>(1e7);
+  static constexpr auto kCheckIntervalNs = kTimestampIntervalNs / 100;
   static const Timestamps kTimestamps;
 
   StateChangeCallback get_state_change_callback()
@@ -76,7 +78,7 @@ public:
   }
 
   void assert_timeline_played_exactly_once(
-    const size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
+    const std::size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
   {
     const auto & play_data_callback = *play_interface_ptr;
     const auto num_stamps = timestamps.size();
@@ -94,7 +96,7 @@ public:
   }
 
   void assert_timeline_played_partially(
-    const size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
+    const std::size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
   {
     const auto & play_data_callback = *play_interface_ptr;
     const auto num_stamps = timestamps.size();
@@ -111,14 +113,14 @@ public:
 
   void wait_until(
     const std::function<bool(void)> & condition,
-    const size_t check_interval_ns = kTimestampIntervalNs)
+    const std::size_t check_interval_ns = kCheckIntervalNs)
   {
     while (condition()) {
       std::this_thread::sleep_for(std::chrono::nanoseconds(check_interval_ns));
     }
   }
 
-  void wait_till_replayer_no_longer_playing(const size_t check_interval_ns = kTimestampIntervalNs)
+  void wait_till_replayer_no_longer_playing(const std::size_t check_interval_ns = kCheckIntervalNs)
   {
     wait_until([this]() { return replayer.is_playing(); }, check_interval_ns);
   }
@@ -146,7 +148,7 @@ public:
     ASSERT_TRUE(replayer.play());
     ASSERT_TRUE(replayer.is_playing());
     std::this_thread::sleep_for(
-      std::chrono::nanoseconds(kNumberTimestamps / size_t{2} * kTimestampIntervalNs));
+      std::chrono::nanoseconds(kNumberTimestamps / std::size_t{2} * kTimestampIntervalNs));
     ASSERT_TRUE(replayer.is_playing());
     interrupt_play_cb();
     ASSERT_FALSE(replayer.is_playing());
@@ -157,13 +159,13 @@ public:
   {
     const auto paused_state = get_last_replayer_state();
     ASSERT_GT(paused_state.current_time, kTimestamps.front());
-    ASSERT_GT(paused_state.next_idx, size_t{0});
+    ASSERT_GT(paused_state.next_idx, std::size_t{0});
 
     reset_cb();
 
     const auto stopped_state = get_last_replayer_state();
     ASSERT_EQ(stopped_state.current_time, kTimestamps.front());
-    ASSERT_EQ(stopped_state.next_idx, size_t{0});
+    ASSERT_EQ(stopped_state.next_idx, std::size_t{0});
   }
 
 protected:
@@ -233,8 +235,8 @@ TEST_F(TestDataReplayer, DestructorTest)
 
 TEST_F(TestDataReplayer, SetTimeRangeSegmentTest)
 {
-  constexpr size_t start_index = 3;
-  constexpr size_t segment_length = 3;
+  constexpr std::size_t start_index = 3;
+  constexpr std::size_t segment_length = 3;
   ASSERT_LT(start_index + segment_length, kTimestamps.size());
   const Timestamps truncated_timestamp{
     &kTimestamps[start_index], &kTimestamps[start_index + segment_length]};
@@ -275,7 +277,7 @@ TEST_F(TestDataReplayer, StopWhilePlayingTest)
 
   const auto stopped_state = get_last_replayer_state();
   ASSERT_EQ(stopped_state.current_time, kTimestamps.front());
-  ASSERT_EQ(stopped_state.next_idx, size_t{0});
+  ASSERT_EQ(stopped_state.next_idx, std::size_t{0});
 }
 
 TEST_F(TestDataReplayer, StopWhileNotPlayingTest)
@@ -302,32 +304,56 @@ TEST_F(TestDataReplayer, ResetTest)
   assert_replayer_has_been_reset_after_cb([&]() { ASSERT_TRUE(replayer.reset()); });
 }
 
+TEST_F(TestDataReplayer, StepThenPlayTest)
+{
+  constexpr std::size_t numberSteps = 3;
+  ASSERT_LT(numberSteps, kNumberTimestamps);
+  ASSERT_TRUE(replayer.step(StepRequest{numberSteps}));
+  wait_till_replayer_no_longer_playing();
+  ASSERT_TRUE(replayer.play());
+  wait_till_replayer_no_longer_playing();
+  assert_timeline_played_exactly_once();
+}
+
 class TestDataReplayerSpeedFactor : public TestDataReplayer,
-                                    public ::testing::WithParamInterface<float>
+                                    public ::testing::WithParamInterface<std::tuple<float, bool>>
 {
 public:
   static constexpr auto kExpectedNormalPlayDurationNs = kNumberTimestamps * kTimestampIntervalNs;
+  static constexpr std::size_t kNumberSteps = 8;
+  static constexpr auto kExpectedNormalStepDurationNs = kNumberSteps * kTimestampIntervalNs;
   static constexpr float kTol = 0.2;
+
+  static_assert(
+    kNumberSteps < kNumberTimestamps, "Step size must be smaller the total number of messages");
 };
 
 TEST_P(TestDataReplayerSpeedFactor, SpeedFactorTests)
 {
-  const auto speed_factor = GetParam();
+  const auto [speed_factor, run_play] = GetParam();
+  const auto expected_normal_duration =
+    run_play ? kExpectedNormalPlayDurationNs : kExpectedNormalStepDurationNs;
 
-  auto start_time = std::chrono::high_resolution_clock::now();
-  ASSERT_TRUE(replayer.play(speed_factor));
+  const auto start_time = std::chrono::high_resolution_clock::now();
+
+  if (run_play) {
+    ASSERT_TRUE(replayer.play(speed_factor));
+  } else {
+    ASSERT_TRUE(replayer.step(StepRequest{kNumberSteps, speed_factor}));
+  }
+
   wait_till_replayer_no_longer_playing();
-  auto end_time = std::chrono::high_resolution_clock::now();
+  const auto end_time = std::chrono::high_resolution_clock::now();
   const auto time_taken =
     std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
   using DurationType = std::decay_t<decltype(time_taken)>;
 
   const bool play_as_fast_as_possible = speed_factor <= 0.0;
   if (play_as_fast_as_possible) {
-    ASSERT_LT(time_taken, static_cast<DurationType>(kExpectedNormalPlayDurationNs));
+    ASSERT_LT(time_taken, static_cast<DurationType>(expected_normal_duration));
   } else {
     const auto expected_duration_ns =
-      static_cast<DurationType>(kExpectedNormalPlayDurationNs * (1.0 / speed_factor));
+      static_cast<DurationType>(expected_normal_duration * (1.0 / speed_factor));
     EXPECT_TRUE(
       (time_taken > static_cast<DurationType>(expected_duration_ns * (1.0 - kTol))) &&
       (time_taken < static_cast<DurationType>(expected_duration_ns * (1.0 + kTol))));
@@ -336,4 +362,7 @@ TEST_P(TestDataReplayerSpeedFactor, SpeedFactorTests)
 
 INSTANTIATE_TEST_SUITE_P(
   DataReplayerSpeedFactorTimingTests, TestDataReplayerSpeedFactor,
-  ::testing::Values(-100.0, -1.0, -0.001, 0.0, 0.1, 0.5, 1.0, 1.1, 2.0, 5.0));
+  ::testing::Combine(
+    ::testing::ValuesIn(std::vector<float>{
+      -100.0, -1.0, -0.001, 0.0, 0.1, 0.5, 1.0, 1.1, 2.0, 5.0}),
+    ::testing::ValuesIn(std::vector<bool>{false, true})));

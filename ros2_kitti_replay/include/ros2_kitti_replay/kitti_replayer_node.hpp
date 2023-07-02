@@ -1,6 +1,10 @@
 #ifndef ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
 #define ROS2_KITTI_REPLAY__KITTI_REPLAYER_NODE_HPP_
 
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+
 #include <memory>
 #include <nav_msgs/msg/path.hpp>
 #include <optional>
@@ -21,6 +25,12 @@ namespace r2k_replay
 class KITTIReplayerNode final : public rclcpp::Node
 {
 public:
+  static constexpr const char * const kDefaultGroundTruthNamespace = "ground_truth";
+  static constexpr const char * const kDefaultOdometryNamespace = "odometry";
+  static constexpr const char * const kDefaultGlobalFrame = "map";
+  static constexpr const char * const kDefaultOdomFrame = "odom";
+  static constexpr float kOdometryFrameLookupTimeout = 5.0;
+
   using DataReplayer = r2k_core::DataReplayer;
   using Transforms = r2k_core::Transforms;
 
@@ -45,6 +55,7 @@ public:
     const DataReplayer::ReplayerState & replayer_state);
 
 private:
+  std::string odometry_reference_frame_id_;
   std::optional<Transforms> ground_truth_path_opt_;
 
   std::unique_ptr<DataReplayer> replayer_ptr_;
@@ -54,6 +65,9 @@ private:
   Service<TriggerSrv>::SharedPtr pause_service_ptr_;
   Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Path>> gt_path_pub_ptr_;
+  std::unique_ptr<tf2_ros::Buffer> tf_listener_buffer_ptr_;
+  std::unique_ptr<tf2_ros::TransformListener> tf_listener_ptr_;
+  std::unique_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_ptr_;
 
   template <typename T>
   [[nodiscard]] static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
