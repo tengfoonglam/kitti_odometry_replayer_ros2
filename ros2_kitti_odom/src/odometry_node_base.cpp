@@ -81,10 +81,6 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   reset_service_ptr_ = create_service<TriggerSrv>(
     "~/reset",
     std::bind(&OdometryNodeBase::reset, this, std::placeholders::_1, std::placeholders::_2));
-  set_transform_service_ptr_ = create_service<SetCurrentTransformSrv>(
-    "~/set_current_transform", std::bind(
-                                 &OdometryNodeBase::set_current_transform, this,
-                                 std::placeholders::_1, std::placeholders::_2));
   tf_broadcaster_ptr_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
   path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
   point_cloud_sub_ptr_ = create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -142,13 +138,6 @@ void OdometryNodeBase::notify_new_transform(
   new_pose_stamped.pose.orientation.z = transform_stamped.transform.rotation.z;
 
   path_pub_ptr_->publish(path_);
-}
-
-void OdometryNodeBase::set_current_transform(
-  [[maybe_unused]] const std::shared_ptr<SetCurrentTransformSrv::Request> request_ptr,
-  std::shared_ptr<SetCurrentTransformSrv::Response> response_ptr)
-{
-  response_ptr->response.success = set_current_transform_internal(request_ptr->request);
 }
 
 }  // namespace r2k_odom

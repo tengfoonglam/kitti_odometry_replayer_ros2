@@ -111,17 +111,6 @@ tf2::Transform Open3DOdometryNode::perform_registration(
   return eigen_to_transform(result_eigen);
 }
 
-bool Open3DOdometryNode::set_current_transform_internal(
-  const geometry_msgs::msg::Transform & transform_msg)
-{
-  reset_internal();
-  {
-    std::scoped_lock lock(mutex_);
-    tf2::fromMsg(transform_msg, sensor_start_tf_sensor_current_);
-  }
-  return true;
-}
-
 }  // namespace r2k_odom_o3d
 
 #include <rclcpp_components/register_node_macro.hpp>

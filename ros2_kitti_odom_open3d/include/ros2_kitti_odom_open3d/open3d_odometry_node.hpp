@@ -31,7 +31,6 @@ private:
   O3DICPConfig config_;
 
   void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
-  bool set_current_transform_internal(const geometry_msgs::msg::Transform & transform_msg) final;
   bool reset_internal() final;
 
   [[nodiscard]] tf2::Transform perform_registration(
