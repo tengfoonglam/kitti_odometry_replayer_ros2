@@ -13,6 +13,8 @@ namespace r2k_odom_o3d
 Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
 : r2k_odom::OdometryNodeBase(options), sensor_start_tf_sensor_current_(kIdentityTransform)
 {
+  std::scoped_lock lock(mutex_);
+
   if (!config_path_.empty()) {
     if (const auto settings_opt = load_config(config_path_); settings_opt.has_value()) {
       config_ = settings_opt.value();
