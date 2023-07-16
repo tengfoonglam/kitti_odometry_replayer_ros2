@@ -1,9 +1,6 @@
 #ifndef ROS2_KITTI_ODOM_KISS_ICP__KISS_ICP_ODOMETRY_NODE_HPP_
 #define ROS2_KITTI_ODOM_KISS_ICP__KISS_ICP_ODOMETRY_NODE_HPP_
 
-#include <open3d/Open3D.h>
-#include <tf2/LinearMath/Transform.h>
-
 #include <kiss_icp/pipeline/KissICP.hpp>
 #include <memory>
 #include <mutex>
