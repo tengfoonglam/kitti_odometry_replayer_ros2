@@ -11,7 +11,11 @@ namespace r2k_odom_o3d
 {
 
 Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
-: r2k_odom::OdometryNodeBase(options), sensor_start_tf_sensor_current_(kIdentityTransform)
+: r2k_odom::OdometryNodeBase(options),
+  sensor_start_tf_sensor_current_(kIdentityTransform),
+  normal_computation_timer_(
+    get_logger(), "Current decimation + normal computation time [ms]", kLoggingPeriodMs, 1e3),
+  icp_timer_(get_logger(), "Current registration time [ms]", kLoggingPeriodMs, 1e3)
 {
   std::scoped_lock lock(mutex_);
 
@@ -41,36 +45,23 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
   open3d_conversions::rosToOpen3d(pc_ptr, *current_pc_ptr, kSkipColour);
 
   // Decimate point cloud and compute normals
-  const auto normal_computation_start_time = steady_clock_.now();
-  const auto & norm_settings = config_.normal_computation;
+  normal_computation_timer_.start();
 
+  const auto & norm_settings = config_.normal_computation;
   if (config_.decimation_factor > 0.0 && config_.decimation_factor < 1.0) {
     current_pc_ptr = current_pc_ptr->RandomDownSample(config_.decimation_factor);
   }
-
   current_pc_ptr->EstimateNormals(
     open3d::geometry::KDTreeSearchParamHybrid(norm_settings.radius, norm_settings.max_nn),
     norm_settings.fast_normal_computation);
-  const auto normal_computation_end_time = steady_clock_.now();
-  const auto normal_computation_duration =
-    normal_computation_end_time - normal_computation_start_time;
-  RCLCPP_INFO_THROTTLE(
-    get_logger(), steady_clock_, kLoggingPeriodMs,
-    "Current decimation + normal computation time [ms]: %f",
-    normal_computation_duration.seconds() * 1e3);
+
+  normal_computation_timer_.stop_and_log();
 
   // Perform registration in the event that there is a previous point cloud
   if (buffer_pc_ptr_) {
-    const auto registration_start_time = steady_clock_.now();
-
+    icp_timer_.start();
     const auto result = perform_registration(*current_pc_ptr, *buffer_pc_ptr_);
-
-    const auto resgistration_end_time = steady_clock_.now();
-    const auto registration_duration = resgistration_end_time - registration_start_time;
-    RCLCPP_INFO_THROTTLE(
-      get_logger(), steady_clock_, kLoggingPeriodMs, "Current registration time [ms]: %f",
-      registration_duration.seconds() * 1e3);
-
+    icp_timer_.stop_and_log();
     sensor_start_tf_sensor_current_ *= result;
   }
 

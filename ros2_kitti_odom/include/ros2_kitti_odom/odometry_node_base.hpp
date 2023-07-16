@@ -75,7 +75,6 @@ protected:
   tf2::Transform sensor_tf_base_link_;
   nav_msgs::msg::Path path_;
   std::mutex path_mutex_;
-  rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
 };
 
 }  // namespace r2k_odom

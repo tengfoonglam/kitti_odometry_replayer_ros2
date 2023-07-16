@@ -8,6 +8,7 @@ find_package(Open3D REQUIRED)
 find_package(open3d_conversions REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(ros2_kitti_core REQUIRED)
 find_package(ros2_kitti_odom REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
@@ -46,6 +47,7 @@ ament_target_dependencies(${PROJECT_NAME}
                           open3d_conversions
                           rclcpp
                           rclcpp_components
+                          ros2_kitti_core
                           ros2_kitti_odom
                           tf2
                           tf2_eigen

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <mutex>
+#include <ros2_kitti_core/timer.hpp>
 #include <ros2_kitti_odom/odometry_node_base.hpp>
 #include <vector>
 
@@ -29,6 +30,8 @@ private:
   std::shared_ptr<O3DPointCloud> buffer_pc_ptr_;
   tf2::Transform sensor_start_tf_sensor_current_;
   O3DICPConfig config_;
+  r2k_core::Timer normal_computation_timer_;
+  r2k_core::Timer icp_timer_;
 
   void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
   bool reset_internal() final;
