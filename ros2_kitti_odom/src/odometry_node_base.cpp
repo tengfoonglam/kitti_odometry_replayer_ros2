@@ -11,7 +11,8 @@ const tf2::Transform OdometryNodeBase::kIdentityTransform{tf2::Quaternion{0., 0.
 OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
 : Node("kitti_odometry", options),
   odom_tf_sensor_(kIdentityTransform),
-  sensor_tf_base_link_(kIdentityTransform)
+  sensor_tf_base_link_(kIdentityTransform),
+  steady_clock_(RCL_STEADY_TIME)
 {
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 

@@ -10,20 +10,14 @@ namespace r2k_core
 class Timer
 {
 public:
-  Timer(
-    const rclcpp::Logger & logger, const std::string & log_message, const std::size_t log_period_ms,
-    const double display_time_scale_factor);
+  Timer();
 
   void start();
 
-  rclcpp::Duration stop_and_log();
+  rclcpp::Duration stop();
 
 private:
-  rclcpp::Clock clock_;
-  rclcpp::Logger logger_;
-  std::string log_message_;
-  std::size_t log_period_ms_;
-  double display_time_scale_factor_;
+  rclcpp::Clock clock_{RCL_STEADY_TIME};
   rclcpp::Time start_time_;
 };
 

@@ -11,11 +11,7 @@ namespace r2k_odom_o3d
 {
 
 Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
-: r2k_odom::OdometryNodeBase(options),
-  sensor_start_tf_sensor_current_(kIdentityTransform),
-  normal_computation_timer_(
-    get_logger(), "Current decimation + normal computation time [ms]", kLoggingPeriodMs, 1e3),
-  icp_timer_(get_logger(), "Current registration time [ms]", kLoggingPeriodMs, 1e3)
+: r2k_odom::OdometryNodeBase(options), sensor_start_tf_sensor_current_(kIdentityTransform)
 {
   std::scoped_lock lock(mutex_);
 
@@ -55,13 +51,21 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
     open3d::geometry::KDTreeSearchParamHybrid(norm_settings.radius, norm_settings.max_nn),
     norm_settings.fast_normal_computation);
 
-  normal_computation_timer_.stop_and_log();
+  const auto normal_computation_duration = normal_computation_timer_.stop();
+  RCLCPP_INFO_THROTTLE(
+    get_logger(), steady_clock_, kLoggingPeriodMs,
+    "Current decimation + normal computation time [ms]: %f",
+    normal_computation_duration.seconds() * kSecondsToMsScalingFactor);
 
   // Perform registration in the event that there is a previous point cloud
   if (buffer_pc_ptr_) {
     icp_timer_.start();
     const auto result = perform_registration(*current_pc_ptr, *buffer_pc_ptr_);
-    icp_timer_.stop_and_log();
+    const auto icp_duration = icp_timer_.stop();
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), steady_clock_, kLoggingPeriodMs, "Current registration time [ms]: %f",
+      icp_duration.seconds() * kSecondsToMsScalingFactor);
+
     sensor_start_tf_sensor_current_ *= result;
   }
 

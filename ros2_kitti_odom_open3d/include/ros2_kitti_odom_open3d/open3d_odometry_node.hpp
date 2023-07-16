@@ -20,6 +20,7 @@ class Open3DOdometryNode final : public r2k_odom::OdometryNodeBase
 public:
   using O3DPointCloud = open3d::geometry::PointCloud;
   static constexpr std::size_t kLoggingPeriodMs = 10000;
+  static constexpr double kSecondsToMsScalingFactor = 1e3;
 
   explicit Open3DOdometryNode(const rclcpp::NodeOptions & options);
 
