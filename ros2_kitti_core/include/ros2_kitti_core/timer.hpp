@@ -11,7 +11,7 @@ class Timer
 {
 public:
   Timer(
-    rclcpp::Logger & logger, const std::string & log_message, const std::size_t period_ms,
+    const rclcpp::Logger & logger, const std::string & log_message, const std::size_t log_period_ms,
     const double time_scale_factor);
 
   void start();
@@ -22,7 +22,7 @@ private:
   rclcpp::Clock clock_;
   rclcpp::Logger logger_;
   std::string log_message_;
-  std::size_t period_ms_;
+  std::size_t log_period_ms_;
   double display_time_scale_factor_;
   rclcpp::Time start_time_;
 };

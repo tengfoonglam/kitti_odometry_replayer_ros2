@@ -44,3 +44,6 @@ ament_add_gtest(load_and_play_data_interface_test
 target_link_libraries(load_and_play_data_interface_test
                       ros2_kitti_core_test
                       ${PROJECT_NAME})
+
+ament_add_gtest(timer_test timer_test.cpp)
+target_link_libraries(timer_test ${PROJECT_NAME})
