@@ -39,7 +39,12 @@ void KissICPOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2:
   const auto points = point_cloud_2_to_eigen(*pc_ptr);
   const auto timestamps = !config_.deskew ? std::vector<double>{} : get_timestamps(*pc_ptr);
 
+  timer_.start();
   odometry_ptr_->RegisterFrame(points, timestamps);
+  const auto duration = timer_.stop();
+  RCLCPP_INFO_THROTTLE(
+    get_logger(), steady_clock_, kLoggingPeriodMs, "Current Kiss ICP Registration Time [ms]: %f",
+    duration.seconds() * kSecondsToMsScalingFactor);
 
   const auto pose = odometry_ptr_->poses().back();
   const Eigen::Vector3d trans = pose.translation();

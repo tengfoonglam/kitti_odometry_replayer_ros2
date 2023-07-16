@@ -4,6 +4,7 @@
 #include <kiss_icp/pipeline/KissICP.hpp>
 #include <memory>
 #include <mutex>
+#include <ros2_kitti_core/timer.hpp>
 #include <ros2_kitti_odom/odometry_node_base.hpp>
 #include <string>
 
@@ -14,6 +15,7 @@ class KissICPOdometryNode final : public r2k_odom::OdometryNodeBase
 {
 public:
   static constexpr std::size_t kLoggingPeriodMs = 10000;
+  static constexpr double kSecondsToMsScalingFactor = 1e3;
 
   explicit KissICPOdometryNode(const rclcpp::NodeOptions & options);
 
@@ -22,6 +24,7 @@ private:
   std::string config_path;
   std::unique_ptr<kiss_icp::pipeline::KissICP> odometry_ptr_;
   kiss_icp::pipeline::KISSConfig config_;
+  r2k_core::Timer timer_;
 
   void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
   bool reset_internal() final;
