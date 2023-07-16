@@ -6,7 +6,7 @@
 
 #include "ros2_kitti_odom_kiss_icp/utils.hpp"
 
-namespace rk2_odom_kiss_icp
+namespace r2k_odom_kiss_icp
 {
 
 KissICPOdometryNode::KissICPOdometryNode(const rclcpp::NodeOptions & options)
@@ -57,7 +57,7 @@ bool KissICPOdometryNode::reset_internal()
   return r2k_odom::OdometryNodeBase::reset_internal();
 }
 
-}  // namespace rk2_odom_kiss_icp
+}  // namespace r2k_odom_kiss_icp
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(rk2_odom_kiss_icp::KissICPOdometryNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(r2k_odom_kiss_icp::KissICPOdometryNode)

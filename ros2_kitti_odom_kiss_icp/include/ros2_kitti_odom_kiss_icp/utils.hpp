@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 
-namespace rk2_odom_kiss_icp
+namespace r2k_odom_kiss_icp
 {
 
 using PointCloud2 = sensor_msgs::msg::PointCloud2;
@@ -235,6 +235,6 @@ inline std::ostream & operator<<(std::ostream & os, const kiss_icp::pipeline::KI
   return os;
 }
 
-}  // namespace rk2_odom_kiss_icp
+}  // namespace r2k_odom_kiss_icp
 
 #endif  // ROS2_KITTI_ODOM_KISS_ICP__UTILS_HPP_

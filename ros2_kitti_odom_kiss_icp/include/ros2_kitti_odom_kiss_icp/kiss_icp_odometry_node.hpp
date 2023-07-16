@@ -10,7 +10,7 @@
 #include <ros2_kitti_odom/odometry_node_base.hpp>
 #include <string>
 
-namespace rk2_odom_kiss_icp
+namespace r2k_odom_kiss_icp
 {
 
 class KissICPOdometryNode final : public r2k_odom::OdometryNodeBase
@@ -30,6 +30,6 @@ private:
   bool reset_internal() final;
 };
 
-}  // namespace rk2_odom_kiss_icp
+}  // namespace r2k_odom_kiss_icp
 
 #endif  // ROS2_KITTI_ODOM_KISS_ICP__KISS_ICP_ODOMETRY_NODE_HPP_
