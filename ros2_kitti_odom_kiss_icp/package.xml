@@ -10,6 +10,7 @@
   <exec_depend>eigen3_cmake_module</exec_depend>
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>rclcpp_components</exec_depend>
+  <exec_depend>ros2_kitti_core</exec_depend>
   <exec_depend>ros2_kitti_odom</exec_depend>
   <exec_depend>ros2_kitti_replay</exec_depend>
   <exec_depend>tf2</exec_depend>

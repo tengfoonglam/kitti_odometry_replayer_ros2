@@ -79,6 +79,20 @@ if(BUILD_TESTING)
 
 endif()
 
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(Eigen3
+                          Open3D
+                          open3d_conversions
+                          rclcpp
+                          rclcpp_components
+                          ros2_kitti_core
+                          ros2_kitti_odom
+                          tf2
+                          tf2_eigen
+                          tf2_geometry_msgs
+                          yaml-cpp)
+
 install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib

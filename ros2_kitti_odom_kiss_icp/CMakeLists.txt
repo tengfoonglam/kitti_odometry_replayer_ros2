@@ -6,6 +6,7 @@ find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(ros2_kitti_core REQUIRED)
 find_package(ros2_kitti_odom REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
@@ -41,6 +42,7 @@ ament_target_dependencies(${PROJECT_NAME}
                           Eigen3
                           rclcpp
                           rclcpp_components
+                          ros2_kitti_core
                           ros2_kitti_odom
                           tf2
                           yaml-cpp)
@@ -69,6 +71,17 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
 endif()
+
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(Eigen3
+                          kiss_icp::pipeline
+                          rclcpp
+                          rclcpp_components
+                          ros2_kitti_core
+                          ros2_kitti_odom
+                          tf2
+                          yaml-cpp)
 
 install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
