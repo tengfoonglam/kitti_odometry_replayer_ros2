@@ -13,6 +13,8 @@ namespace r2k_odom_o3d
 Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
 : r2k_odom::OdometryNodeBase(options), sensor_start_tf_sensor_current_(kIdentityTransform)
 {
+  std::scoped_lock lock(mutex_);
+
   if (!config_path_.empty()) {
     if (const auto settings_opt = load_config(config_path_); settings_opt.has_value()) {
       config_ = settings_opt.value();
@@ -39,35 +41,30 @@ void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::
   open3d_conversions::rosToOpen3d(pc_ptr, *current_pc_ptr, kSkipColour);
 
   // Decimate point cloud and compute normals
-  const auto normal_computation_start_time = steady_clock_.now();
-  const auto & norm_settings = config_.normal_computation;
+  normal_computation_timer_.start();
 
+  const auto & norm_settings = config_.normal_computation;
   if (config_.decimation_factor > 0.0 && config_.decimation_factor < 1.0) {
     current_pc_ptr = current_pc_ptr->RandomDownSample(config_.decimation_factor);
   }
-
   current_pc_ptr->EstimateNormals(
     open3d::geometry::KDTreeSearchParamHybrid(norm_settings.radius, norm_settings.max_nn),
     norm_settings.fast_normal_computation);
-  const auto normal_computation_end_time = steady_clock_.now();
-  const auto normal_computation_duration =
-    normal_computation_end_time - normal_computation_start_time;
+
+  const auto normal_computation_duration = normal_computation_timer_.stop();
   RCLCPP_INFO_THROTTLE(
     get_logger(), steady_clock_, kLoggingPeriodMs,
     "Current decimation + normal computation time [ms]: %f",
-    normal_computation_duration.seconds() * 1e3);
+    normal_computation_duration.seconds() * kSecondsToMsScalingFactor);
 
   // Perform registration in the event that there is a previous point cloud
   if (buffer_pc_ptr_) {
-    const auto registration_start_time = steady_clock_.now();
-
+    icp_timer_.start();
     const auto result = perform_registration(*current_pc_ptr, *buffer_pc_ptr_);
-
-    const auto resgistration_end_time = steady_clock_.now();
-    const auto registration_duration = resgistration_end_time - registration_start_time;
+    const auto icp_duration = icp_timer_.stop();
     RCLCPP_INFO_THROTTLE(
       get_logger(), steady_clock_, kLoggingPeriodMs, "Current registration time [ms]: %f",
-      registration_duration.seconds() * 1e3);
+      icp_duration.seconds() * kSecondsToMsScalingFactor);
 
     sensor_start_tf_sensor_current_ *= result;
   }
@@ -109,17 +106,6 @@ tf2::Transform Open3DOdometryNode::perform_registration(
     result_eigen = registration_result.transformation_;
   }
   return eigen_to_transform(result_eigen);
-}
-
-bool Open3DOdometryNode::set_current_transform_internal(
-  const geometry_msgs::msg::Transform & transform_msg)
-{
-  reset_internal();
-  {
-    std::scoped_lock lock(mutex_);
-    tf2::fromMsg(transform_msg, sensor_start_tf_sensor_current_);
-  }
-  return true;
 }
 
 }  // namespace r2k_odom_o3d

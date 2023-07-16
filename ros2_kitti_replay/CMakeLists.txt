@@ -70,6 +70,17 @@ if(BUILD_TESTING)
 
 endif()
 
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(nav_msgs
+                          rclcpp
+                          rclcpp_components
+                          ros2_kitti_core
+                          ros2_kitti_interface
+                          std_msgs
+                          std_srvs
+                          tf2)
+
 install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib

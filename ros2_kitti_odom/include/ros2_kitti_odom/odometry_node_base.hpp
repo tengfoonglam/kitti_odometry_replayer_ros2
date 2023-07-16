@@ -10,7 +10,6 @@
 #include <nav_msgs/msg/path.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <ros2_kitti_interface/srv/set_current_transform.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
@@ -30,7 +29,6 @@ public:
 
   using Time = builtin_interfaces::msg::Time;
   using TriggerSrv = std_srvs::srv::Trigger;
-  using SetCurrentTransformSrv = ros2_kitti_interface::srv::SetCurrentTransform;
 
   template <typename T>
   using Publisher = rclcpp::Publisher<T>;
@@ -47,9 +45,6 @@ protected:
   void reset(
     [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,
     std::shared_ptr<TriggerSrv::Response> response_ptr);
-  void set_current_transform(
-    const std::shared_ptr<SetCurrentTransformSrv::Request> request_ptr,
-    std::shared_ptr<SetCurrentTransformSrv::Response> response_ptr);
 
   void point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr);
 
@@ -57,11 +52,6 @@ protected:
   {
     std::scoped_lock lock(path_mutex_);
     path_ = nav_msgs::msg::Path();
-    return true;
-  }
-  virtual bool set_current_transform_internal(
-    [[maybe_unused]] const geometry_msgs::msg::Transform & transform_msg)
-  {
     return true;
   }
   virtual void notify_new_transform(
@@ -75,7 +65,6 @@ protected:
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ptr_;
   Service<TriggerSrv>::SharedPtr reset_service_ptr_;
-  Service<SetCurrentTransformSrv>::SharedPtr set_transform_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Path>> path_pub_ptr_;
   std::shared_ptr<Subscription<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
   std::string odometry_frame_id_;
@@ -86,7 +75,7 @@ protected:
   tf2::Transform sensor_tf_base_link_;
   nav_msgs::msg::Path path_;
   std::mutex path_mutex_;
-  rclcpp::Clock steady_clock_{RCL_SYSTEM_TIME};
+  rclcpp::Clock steady_clock_;
 };
 
 }  // namespace r2k_odom
