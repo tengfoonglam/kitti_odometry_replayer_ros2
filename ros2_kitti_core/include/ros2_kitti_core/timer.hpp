@@ -17,6 +17,7 @@ public:
   rclcpp::Duration stop();
 
 private:
+  bool is_timing_;
   rclcpp::Clock clock_{RCL_STEADY_TIME};
   rclcpp::Time start_time_;
 };

@@ -4,6 +4,13 @@
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_kitti_core/timer.hpp>
 
+TEST(TestTimer, StopBeforeStart)
+{
+  r2k_core::Timer timer;
+  const auto duration_before_start = timer.stop();
+  ASSERT_EQ(duration_before_start.nanoseconds(), static_cast<int64_t>(0));
+}
+
 TEST(TestTimer, NormalOperation)
 {
   static constexpr std::size_t kSleepDurationNs = 1000000;
