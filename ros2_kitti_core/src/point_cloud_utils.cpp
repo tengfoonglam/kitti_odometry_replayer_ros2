@@ -12,7 +12,7 @@ namespace r2k_core
   // Check if text file is .bin file and exists
   if (
     !std::filesystem::exists(pc_bin_path) ||
-    pc_bin_path.extension().string() != std::string{kKittiPCExtention}) {
+    pc_bin_path.extension().string() != std::string{kKittiPCExtension}) {
     return PointCloudMsg::SharedPtr();
   }
 
@@ -54,7 +54,7 @@ namespace r2k_core
 
 [[nodiscard]] bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path)
 {
-  const bool extension_match = pc_path.extension().string() == std::string{kKittiPCExtention};
+  const bool extension_match = pc_path.extension().string() == std::string{kKittiPCExtension};
   const auto & stem = pc_path.stem().string();
   const bool number_char_match = stem.size() == kNumberDigitsPCFilename;
   const bool stem_all_digits = std::all_of(stem.cbegin(), stem.cend(), ::isdigit);
@@ -68,7 +68,7 @@ namespace r2k_core
   const auto number_digits_to_pad =
     kNumberDigitsPCFilename - std::min(kNumberDigitsPCFilename, idx_unpadded.length());
   auto idx_padded = std::string(number_digits_to_pad, '0') + idx_unpadded;
-  return folder_path / (idx_padded + std::string{kKittiPCExtention});
+  return folder_path / (idx_padded + std::string{kKittiPCExtension});
 }
 
 [[nodiscard]] std::optional<std::size_t> get_last_index_of_point_cloud_sequence(

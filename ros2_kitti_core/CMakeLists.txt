@@ -52,7 +52,8 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/load_and_play_data_interface.hpp"
     "include/${PROJECT_NAME}/pose_utils.hpp"
     "include/${PROJECT_NAME}/pose_data_loader.hpp"
-    "include/${PROJECT_NAME}/timer.hpp")
+    "include/${PROJECT_NAME}/timer.hpp"
+    "include/${PROJECT_NAME}/image_utils.hpp")
 
 set(SOURCE_LIST
     "src/timestamp_utils.cpp"
@@ -63,7 +64,8 @@ set(SOURCE_LIST
     "src/point_cloud_data_loader.cpp"
     "src/pose_utils.cpp"
     "src/pose_data_loader.cpp"
-    "src/timer.cpp")
+    "src/timer.cpp"
+    "src/image_utils.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
