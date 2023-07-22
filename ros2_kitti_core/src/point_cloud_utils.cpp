@@ -20,8 +20,6 @@ namespace r2k_core
   auto output_ptr = std::make_shared<PointCloudMsg>();
 
   // Read binary file and load it into data field
-  // Adapted from readme of KITTI Odometry devkit
-
   const size_t data_length = std::filesystem::file_size(pc_bin_path);
   output_ptr->data.resize(data_length);
   auto * stream_ptr = std::fopen(pc_bin_path.c_str(), "rb");

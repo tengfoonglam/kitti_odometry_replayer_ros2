@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ros2_kitti_core LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(PCL REQUIRED QUIET)
 find_package(pcl_ros REQUIRED)
@@ -11,6 +12,19 @@ find_package(rosgraph_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+
+find_package(OpenCV 4 QUIET
+             COMPONENTS opencv_core
+                        opencv_imgproc
+                        opencv_imgcodecs
+                        CONFIG)
+if(NOT OpenCV_FOUND)
+  find_package(OpenCV 3 REQUIRED
+               COMPONENTS opencv_core
+                          opencv_imgproc
+                          opencv_imgcodecs
+                          CONFIG)
+endif()
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -55,7 +69,9 @@ add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
+                          cv_bridge
                           geometry_msgs
+                          OpenCV
                           PCL
                           pcl_ros
                           pcl_conversions
@@ -86,11 +102,13 @@ add_subdirectory(apps)
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(rclcpp
+ament_export_dependencies(cv_bridge
                           geometry_msgs
+                          OpenCV
                           PCL
                           pcl_ros
                           pcl_conversions
+                          rclcpp
                           rosgraph_msgs
                           sensor_msgs
                           tf2
