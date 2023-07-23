@@ -26,8 +26,8 @@ namespace r2k_core
     return ImageMsg::SharedPtr();
   }
 
-  const bool is_gray_image = (img.channels() == 1);
-  const bool is_colour_image = (img.channels() == 3);
+  const bool is_gray_image = (img.type() == kGrayImageOpenCVType);
+  const bool is_colour_image = (img.type() == kColourImageOpenCVType);
   if (!(is_gray_image || is_colour_image)) {
     return ImageMsg::SharedPtr();
   }
@@ -36,6 +36,26 @@ namespace r2k_core
     is_gray_image ? std::string{kGrayImageEncoding} : std::string{kColourImageEncoding};
 
   return cv_bridge::CvImage(std_msgs::msg::Header(), encoding, img).toImageMsg();
+}
+
+[[nodiscard]] bool is_kitti_image_file(const std::filesystem::path & image_path)
+{
+  return is_numbered_file_with_correction_extension(
+    image_path, kNumberDigitsImageFilename, std::string{kKittiImageExtension});
+}
+
+[[nodiscard]] std::filesystem::path from_index_to_image_file_path(
+  const std::size_t idx, const std::filesystem::path & folder_path)
+{
+  return from_index_to_file_path(
+    idx, folder_path, kNumberDigitsImageFilename, std::string{kKittiImageExtension});
+}
+
+[[nodiscard]] std::optional<std::size_t> get_last_index_of_image_sequence(
+  const std::filesystem::path & image_path)
+{
+  return get_last_index_of_data_sequence(
+    image_path, kNumberDigitsImageFilename, std::string{kKittiImageExtension});
 }
 
 }  // namespace r2k_core

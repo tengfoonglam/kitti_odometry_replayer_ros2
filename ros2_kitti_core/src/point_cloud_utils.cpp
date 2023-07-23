@@ -61,13 +61,15 @@ namespace r2k_core
 [[nodiscard]] std::filesystem::path from_index_to_point_cloud_file_path(
   const std::size_t idx, const std::filesystem::path & folder_path)
 {
-  return from_index_to_file_path(idx, folder_path, kNumberDigitsPCFilename, kKittiPCExtension);
+  return from_index_to_file_path(
+    idx, folder_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});
 }
 
 [[nodiscard]] std::optional<std::size_t> get_last_index_of_point_cloud_sequence(
   const std::filesystem::path & pc_path)
 {
-  return get_last_index_of_data_sequence(pc_path, kNumberDigitsPCFilename, kKittiPCExtension);
+  return get_last_index_of_data_sequence(
+    pc_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});
 }
 
 }  // namespace r2k_core
