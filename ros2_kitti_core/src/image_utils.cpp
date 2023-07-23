@@ -7,15 +7,15 @@
 #include <std_msgs/msg/header.hpp>
 #include <string>
 
+#include "ros2_kitti_core/data_utils.hpp"
+
 namespace r2k_core
 {
 
 [[nodiscard]] ImageMsg::SharedPtr load_image_from_file(const std::filesystem::path & image_path)
 {
   // Check if text file is .png file and exists
-  if (
-    !std::filesystem::exists(image_path) ||
-    image_path.extension().string() != std::string{kKittiImageExtension}) {
+  if (!file_exists_and_correct_extension(image_path, std::string{kKittiImageExtension})) {
     return ImageMsg::SharedPtr();
   }
 

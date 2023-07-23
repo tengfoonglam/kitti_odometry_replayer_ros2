@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
+#include "ros2_kitti_core/data_utils.hpp"
+
 namespace r2k_core
 {
 
@@ -10,9 +12,7 @@ namespace r2k_core
   const std::filesystem::path & pc_bin_path)
 {
   // Check if text file is .bin file and exists
-  if (
-    !std::filesystem::exists(pc_bin_path) ||
-    pc_bin_path.extension().string() != std::string{kKittiPCExtension}) {
+  if (!file_exists_and_correct_extension(pc_bin_path, std::string{kKittiPCExtension})) {
     return PointCloudMsg::SharedPtr();
   }
 
