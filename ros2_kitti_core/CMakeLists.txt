@@ -75,7 +75,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
                           cv_bridge
                           geometry_msgs
-                          OpenCV
                           PCL
                           pcl_ros
                           pcl_conversions
@@ -84,7 +83,11 @@ ament_target_dependencies(${PROJECT_NAME}
                           sensor_msgs
                           tf2
                           tf2_geometry_msgs)
-target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+                      ${PCL_LIBRARIES}
+                      opencv_core
+                      opencv_imgproc
+                      opencv_imgcodecs)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
