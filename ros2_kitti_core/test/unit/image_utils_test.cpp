@@ -55,3 +55,22 @@ TEST_F(TestLoadImageFromFile, NormalOperation)
     ASSERT_TRUE(std::filesystem::remove(image_file_path));
   }
 }
+
+class IsKittiImageFileTest : public ::testing::TestWithParam<std::tuple<std::string, bool>>
+{
+};
+
+TEST_P(IsKittiImageFileTest, NormalOperation)
+{
+  const auto [input, expected_answer] = GetParam();
+  ASSERT_EQ(r2k_core::is_kitti_image_file(std::filesystem::path(input)), expected_answer);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  ImageUtilsTests, IsKittiImageFileTest,
+  ::testing::Values(
+    std::make_tuple("", false), std::make_tuple("000000.jpeg", false),
+    std::make_tuple("12345.png", false), std::make_tuple("1234567.png", false),
+    std::make_tuple("abc000000.png", false), std::make_tuple("000000", false),
+    std::make_tuple("abcdef.png", false), std::make_tuple("000000.png", true),
+    std::make_tuple("123456.png", true), std::make_tuple("999999.png", true)));

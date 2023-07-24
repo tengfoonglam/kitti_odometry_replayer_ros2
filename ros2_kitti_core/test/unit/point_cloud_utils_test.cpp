@@ -74,10 +74,10 @@ INSTANTIATE_TEST_SUITE_P(
   PointCloudUtilsTests, IsKittiPointCloudFileTest,
   ::testing::Values(
     std::make_tuple("", false), std::make_tuple("000000.pcd", false),
-    std::make_tuple("12345.bin", false), std::make_tuple("abc000000.bin", false),
-    std::make_tuple("000000", false), std::make_tuple("abcdef.bin", false),
-    std::make_tuple("000000.bin", true), std::make_tuple("123456.bin", true),
-    std::make_tuple("999999.bin", true)));
+    std::make_tuple("12345.bin", false), std::make_tuple("1234567.bin", false),
+    std::make_tuple("abc000000.bin", false), std::make_tuple("000000", false),
+    std::make_tuple("abcdef.bin", false), std::make_tuple("000000.bin", true),
+    std::make_tuple("123456.bin", true), std::make_tuple("999999.bin", true)));
 
 class TestFromIndexToPointCloudFilePath
 : public ::testing::TestWithParam<std::tuple<std::size_t, std::string, std::string>>
