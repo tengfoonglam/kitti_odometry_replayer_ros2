@@ -74,3 +74,50 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple("abc000000.png", false), std::make_tuple("000000", false),
     std::make_tuple("abcdef.png", false), std::make_tuple("000000.png", true),
     std::make_tuple("123456.png", true), std::make_tuple("999999.png", true)));
+
+class TestFromIndexToImageFilePath
+: public ::testing::TestWithParam<std::tuple<std::size_t, std::string, std::string>>
+{
+};
+
+TEST_P(TestFromIndexToImageFilePath, NormalOperation)
+{
+  const auto [idx, image_path, expected_answer] = GetParam();
+  ASSERT_EQ(
+    r2k_core::from_index_to_image_file_path(idx, image_path),
+    std::filesystem::path(expected_answer));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  ImageUtilsTests, TestFromIndexToImageFilePath,
+  ::testing::Values(
+    std::make_tuple(0, "", "000000.png"), std::make_tuple(0, "/home/user", "/home/user/000000.png"),
+    std::make_tuple(123, "/home/user", "/home/user/000123.png"),
+    std::make_tuple(123456, "/home/user", "/home/user/123456.png"),
+    std::make_tuple(1234567, "/home/user", "/home/user/1234567.png")));
+
+class TestGetLastIndexOfImageSequence
+: public r2k_core_test::TestWithImageIO,
+  public ::testing::WithParamInterface<
+    std::tuple<std::vector<std::size_t>, std::optional<std::size_t>>>
+{
+};
+
+TEST_P(TestGetLastIndexOfImageSequence, NormalOperation)
+{
+  const auto [indices, expected_answer] = GetParam();
+  write_example_image_files(indices, kTestFolderPath, r2k_core::kGrayImageOpenCVType);
+  const auto output = r2k_core::get_last_index_of_image_sequence(kTestFolderPath);
+  ASSERT_EQ(output, expected_answer);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  ImageUtilsTests, TestGetLastIndexOfImageSequence,
+  ::testing::Values(
+    std::make_tuple(std::vector<std::size_t>{}, std::nullopt),
+    std::make_tuple(std::vector<std::size_t>{1, 2, 3}, std::nullopt),
+    std::make_tuple(std::vector<std::size_t>{0}, 0),
+    std::make_tuple(std::vector<std::size_t>{0, 1, 2, 3}, 3),
+    std::make_tuple(std::vector<std::size_t>{0, 2, 3, 4}, 0),
+    std::make_tuple(std::vector<std::size_t>{0, 1, 2, 3, 4}, 4),
+    std::make_tuple(std::vector<std::size_t>{4, 3, 2, 1, 0}, 4)));

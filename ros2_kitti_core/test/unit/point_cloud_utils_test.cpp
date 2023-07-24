@@ -100,14 +100,14 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(123456, "/home/user", "/home/user/123456.bin"),
     std::make_tuple(1234567, "/home/user", "/home/user/1234567.bin")));
 
-class TestGetLastIndexOfPointCLoudSequence
+class TestGetLastIndexOfPointCloudSequence
 : public r2k_core_test::TestWithPointCloudIO,
   public ::testing::WithParamInterface<
     std::tuple<std::vector<std::size_t>, std::optional<std::size_t>>>
 {
 };
 
-TEST_P(TestGetLastIndexOfPointCLoudSequence, NormalOperation)
+TEST_P(TestGetLastIndexOfPointCloudSequence, NormalOperation)
 {
   const auto [indices, expected_answer] = GetParam();
   write_kitti_bin_files(
@@ -117,7 +117,7 @@ TEST_P(TestGetLastIndexOfPointCLoudSequence, NormalOperation)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-  PointCloudUtilsTests, TestGetLastIndexOfPointCLoudSequence,
+  PointCloudUtilsTests, TestGetLastIndexOfPointCloudSequence,
   ::testing::Values(
     std::make_tuple(std::vector<std::size_t>{}, std::nullopt),
     std::make_tuple(std::vector<std::size_t>{1, 2, 3}, std::nullopt),
