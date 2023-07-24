@@ -29,7 +29,7 @@ TEST_F(TestLoadImageFromFile, IncorrectExtensionFileTest)
 
 TEST_F(TestLoadImageFromFile, IncorrectFormatFileTest)
 {
-  static constexpr auto kIncorrectFormat{CV_16UC1};
+  static constexpr auto kIncorrectFormat{CV_16UC4};
   const auto incorrect_extension_file_path =
     kTestFolderPath / (std::string{"incorrect_format"} + r2k_core::kKittiImageExtension);
   write_sample_image(incorrect_extension_file_path, kIncorrectFormat);

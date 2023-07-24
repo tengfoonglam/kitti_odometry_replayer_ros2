@@ -31,7 +31,7 @@ public:
 
   static void write_sample_image(const std::filesystem::path & file_path, const int image_type)
   {
-    const cv::Mat img{kSampleImageHeight, kSampleImageWidth, image_type};
+    const cv::Mat img(cv::Size(kSampleImageWidth, kSampleImageHeight), image_type);
     cv::imwrite(file_path.string(), img);
     ASSERT_TRUE(std::filesystem::exists(file_path));
   }
