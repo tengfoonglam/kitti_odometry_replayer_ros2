@@ -5,32 +5,27 @@
 #include <std_msgs/msg/header.hpp>
 #include <string>
 
-#include "ros2_kitti_core/data_loader.hpp"
+#include "ros2_kitti_core/folder_data_loader.hpp"
 #include "ros2_kitti_core/point_cloud_utils.hpp"
 #include "ros2_kitti_core/timestamp_utils.hpp"
 
 namespace r2k_core
 {
 
-class PointCloudDataLoader final : public DataLoader<r2k_core::PointCloudMsg::SharedPtr>
+class PointCloudDataLoader final : public FolderDataLoader<PointCloudMsg::SharedPtr>
 {
 public:
   using Header = std_msgs::msg::Header;
 
-  explicit PointCloudDataLoader(const std::string & name, const Header & header);
+  PointCloudDataLoader(const std::string & name, const Header & header);
   PointCloudDataLoader(const std::string & name, rclcpp::Logger logger, const Header & header);
-  [[nodiscard]] std::size_t data_size() const final;
 
 private:
-  Header header_;
-  std::size_t max_idx_{};
-  PointCloudDataLoader::ReturnType point_cloud_ptr_;
-  std::optional<size_t> current_idx_opt_;
-  std::filesystem::path load_path_;
+  [[nodiscard]] std::optional<size_t> get_last_index_of_sequence(
+    const std::filesystem::path & load_path) final;
 
-  bool setup_internal(const Timestamps & timestamps, const std::filesystem::path & load_path) final;
-  bool prepare_data_internal(const std::size_t idx) final;
-  [[nodiscard]] OptionalReturnType get_data_internal(const std::size_t idx) final;
+  [[nodiscard]] PointCloudDataLoader::ReturnType load_data(
+    const std::size_t idx, const std::filesystem::path & load_path) final;
 };
 
 }  // namespace r2k_core
