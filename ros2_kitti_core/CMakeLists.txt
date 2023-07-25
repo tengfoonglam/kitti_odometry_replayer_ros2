@@ -54,7 +54,8 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/pose_data_loader.hpp"
     "include/${PROJECT_NAME}/timer.hpp"
     "include/${PROJECT_NAME}/image_utils.hpp"
-    "include/${PROJECT_NAME}/data_utils.hpp")
+    "include/${PROJECT_NAME}/data_utils.hpp"
+    "include/${PROJECT_NAME}/type_checks.hpp")
 
 set(SOURCE_LIST
     "src/timestamp_utils.cpp"

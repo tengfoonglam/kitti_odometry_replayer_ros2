@@ -3,51 +3,16 @@
 
 #include <cstdint>
 #include <filesystem>
-#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 #include "ros2_kitti_core/data_loader_base.hpp"
 #include "ros2_kitti_core/timestamp_utils.hpp"
+#include "ros2_kitti_core/type_checks.hpp"
 
 namespace r2k_core
 {
-
-template <class T>
-struct return_underlying_type_if_smart_pointer_else_itself
-{
-  using type = T;
-};
-
-template <class T>
-struct return_underlying_type_if_smart_pointer_else_itself<std::shared_ptr<T>>
-{
-  using type = T;
-};
-
-template <class T>
-struct return_underlying_type_if_smart_pointer_else_itself<std::weak_ptr<T>>
-{
-  using type = T;
-};
-
-template <class T>
-struct return_underlying_type_if_smart_pointer_else_itself<std::unique_ptr<T>>
-{
-  using type = T;
-};
-
-template <class T>
-struct is_weak_ptr : std::false_type
-{
-};
-
-template <class T>
-struct is_weak_ptr<std::weak_ptr<T>> : std::true_type
-{
-};
 
 template <typename RT>
 class DataLoader : public DataLoaderBase
