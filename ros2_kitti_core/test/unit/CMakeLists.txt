@@ -57,3 +57,8 @@ target_link_libraries(image_utils_test
                       ros2_kitti_core_test
                       opencv_core
                       ${PROJECT_NAME})
+
+ament_add_gtest(image_data_loader_test image_data_loader_test.cpp)
+target_link_libraries(image_data_loader_test
+                      ros2_kitti_core_test
+                      ${PROJECT_NAME})
