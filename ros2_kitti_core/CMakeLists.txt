@@ -56,7 +56,8 @@ set(HEADER_LIST
     "include/${PROJECT_NAME}/image_utils.hpp"
     "include/${PROJECT_NAME}/data_utils.hpp"
     "include/${PROJECT_NAME}/type_checks.hpp"
-    "include/${PROJECT_NAME}/folder_data_loader.hpp")
+    "include/${PROJECT_NAME}/folder_data_loader.hpp"
+    "include/${PROJECT_NAME}/image_data_loader.hpp")
 
 set(SOURCE_LIST
     "src/timestamp_utils.cpp"
@@ -69,7 +70,8 @@ set(SOURCE_LIST
     "src/pose_data_loader.cpp"
     "src/timer.cpp"
     "src/image_utils.cpp"
-    "src/data_utils.cpp")
+    "src/data_utils.cpp"
+    "src/image_data_loader.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
