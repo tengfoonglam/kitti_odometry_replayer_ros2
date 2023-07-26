@@ -9,6 +9,8 @@ jobs:
         env:
           - {ROS_DISTRO: humble, ROS_REPO: testing}
           - {ROS_DISTRO: humble, ROS_REPO: main}
+    env:
+      CODE_COVERAGE: codecov.io
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
