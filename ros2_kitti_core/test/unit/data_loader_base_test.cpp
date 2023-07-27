@@ -32,7 +32,7 @@ public:
       return true;
     }
 
-    bool prepare_data_internal([[maybe_unused]] const std::size_t idx) final { return true; }
+    bool prepare_data_internal([[maybe_unused]] std::size_t idx) final { return true; }
   };
 };
 const std::filesystem::path TestDataLoaderBase::kMockLoadPath{

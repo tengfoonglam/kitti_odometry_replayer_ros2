@@ -30,8 +30,8 @@ PointCloudMsg::SharedPtr load_point_cloud_from_file(const std::filesystem::path 
   std::fclose(stream_ptr);
 
   // Compute the number of points
-  constexpr std::size_t number_fields = 4;
-  constexpr auto size_float = sizeof(float);
+  constexpr std::size_t number_fields{4};
+  constexpr auto size_float{sizeof(float)};
   const auto num_points = std::size_t{output_ptr->data.size() / (number_fields * size_float)};
 
   // Set point cloud details
@@ -58,7 +58,7 @@ bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path)
 }
 
 std::filesystem::path from_index_to_point_cloud_file_path(
-  const std::size_t idx, const std::filesystem::path & folder_path)
+  std::size_t idx, const std::filesystem::path & folder_path)
 {
   return from_index_to_file_path(
     idx, folder_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});

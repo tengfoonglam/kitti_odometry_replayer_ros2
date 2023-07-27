@@ -45,9 +45,9 @@ bool PoseDataLoader::setup_internal(
   return ready();
 }
 
-bool PoseDataLoader::prepare_data_internal([[maybe_unused]] const std::size_t idx) { return true; }
+bool PoseDataLoader::prepare_data_internal([[maybe_unused]] std::size_t idx) { return true; }
 
-PoseDataLoader::OptionalReturnType PoseDataLoader::get_data_internal(const std::size_t idx)
+PoseDataLoader::OptionalReturnType PoseDataLoader::get_data_internal(std::size_t idx)
 {
   PoseDataLoader::ReturnType output;
   output.header = header_;

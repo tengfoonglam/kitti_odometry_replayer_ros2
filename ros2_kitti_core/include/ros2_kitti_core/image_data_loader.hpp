@@ -25,7 +25,7 @@ private:
     const std::filesystem::path & load_path) final;
 
   [[nodiscard]] ImageDataLoader::ReturnType load_data(
-    const std::size_t idx, const std::filesystem::path & load_path) final;
+    std::size_t idx, const std::filesystem::path & load_path) final;
 };
 
 }  // namespace r2k_core

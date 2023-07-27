@@ -22,7 +22,7 @@ public:
   [[nodiscard]] const std::string & name() const noexcept { return name_; };
   [[nodiscard]] virtual std::size_t data_size() const;
   bool setup(const Timestamps & timestamps, const std::filesystem::path & load_path);
-  bool prepare_data(const std::size_t idx);
+  bool prepare_data(std::size_t idx);
   virtual ~DataLoaderBase() = default;
 
 protected:
@@ -31,10 +31,10 @@ protected:
   rclcpp::Logger logger_;
   Timestamps timestamps_;
 
-  bool can_process_data(const std::size_t idx, const std::string & call_name);
+  bool can_process_data(std::size_t idx, const std::string & call_name);
   virtual bool setup_internal(
     const Timestamps & timestamps, const std::filesystem::path & load_path) = 0;
-  virtual bool prepare_data_internal(const std::size_t idx) = 0;
+  virtual bool prepare_data_internal(std::size_t idx) = 0;
 };
 
 }  // namespace r2k_core

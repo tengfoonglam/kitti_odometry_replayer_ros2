@@ -21,7 +21,7 @@ std::optional<size_t> ImageDataLoader::get_last_index_of_sequence(
 }
 
 ImageDataLoader::ReturnType ImageDataLoader::load_data(
-  const std::size_t idx, const std::filesystem::path & load_path)
+  std::size_t idx, const std::filesystem::path & load_path)
 {
   return load_image_from_file(from_index_to_image_file_path(idx, load_path));
 }

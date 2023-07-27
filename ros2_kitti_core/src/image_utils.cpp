@@ -45,7 +45,7 @@ bool is_kitti_image_file(const std::filesystem::path & image_path)
 }
 
 std::filesystem::path from_index_to_image_file_path(
-  const std::size_t idx, const std::filesystem::path & folder_path)
+  std::size_t idx, const std::filesystem::path & folder_path)
 {
   return from_index_to_file_path(
     idx, folder_path, kNumberDigitsImageFilename, std::string{kKittiImageExtension});

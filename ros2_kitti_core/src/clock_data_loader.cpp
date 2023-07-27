@@ -24,13 +24,13 @@ bool ClockDataLoader::setup_internal(
   return ready();
 }
 
-ClockDataLoader::OptionalReturnType ClockDataLoader::get_data_internal(const std::size_t idx)
+ClockDataLoader::OptionalReturnType ClockDataLoader::get_data_internal(std::size_t idx)
 {
   ClockDataLoader::ReturnType clock_msg;
   clock_msg.set__clock(timestamps_.at(idx));
   return clock_msg;
 }
 
-bool ClockDataLoader::prepare_data_internal([[maybe_unused]] const std::size_t idx) { return true; }
+bool ClockDataLoader::prepare_data_internal([[maybe_unused]] std::size_t idx) { return true; }
 
 }  // namespace r2k_core

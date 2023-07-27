@@ -76,7 +76,7 @@ private:
 
   template <typename T>
   void play_data_interface_check_shutdown_if_fail(
-    const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size);
+    const LoadAndPlayDataInterface<T> & interface, std::size_t expected_data_size);
 
   void play(
     const std::shared_ptr<PlaySrv::Request> request_ptr,

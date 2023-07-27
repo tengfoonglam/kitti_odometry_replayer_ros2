@@ -5,7 +5,7 @@
 
 namespace r2k_core_test
 {
-[[nodiscard]] inline auto generate_test_timestamps(const std::size_t start, const std::size_t end)
+[[nodiscard]] inline auto generate_test_timestamps(std::size_t start, std::size_t end)
 {
   r2k_core::Timestamps output;
   for (std::size_t i = start; i <= end; i++) {

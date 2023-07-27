@@ -56,7 +56,7 @@ bool FolderDataLoader<RT>::setup_internal(
 };
 
 template <typename RT>
-bool FolderDataLoader<RT>::prepare_data_internal(const std::size_t idx)
+bool FolderDataLoader<RT>::prepare_data_internal(std::size_t idx)
 {
   data_ptr_ = this->load_data(idx, load_path_);
 
@@ -70,7 +70,7 @@ bool FolderDataLoader<RT>::prepare_data_internal(const std::size_t idx)
 };
 
 template <typename RT>
-std::optional<RT> FolderDataLoader<RT>::get_data_internal(const std::size_t idx)
+std::optional<RT> FolderDataLoader<RT>::get_data_internal(std::size_t idx)
 {
   if (current_idx_opt_.has_value() && current_idx_opt_.value() == idx && data_ptr_) {
     return data_ptr_;

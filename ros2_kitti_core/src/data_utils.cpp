@@ -12,7 +12,7 @@ bool file_exists_and_correct_extension(
 }
 
 bool is_numbered_file_with_correction_extension(
-  const std::filesystem::path & path, const std::size_t stem_digits, const std::string & extension)
+  const std::filesystem::path & path, std::size_t stem_digits, const std::string & extension)
 {
   const bool extension_match = path.extension().string() == extension;
   const auto & stem = path.stem().string();
@@ -22,7 +22,7 @@ bool is_numbered_file_with_correction_extension(
 }
 
 std::filesystem::path from_index_to_file_path(
-  const std::size_t idx, const std::filesystem::path & folder_path, const std::size_t stem_digits,
+  std::size_t idx, const std::filesystem::path & folder_path, std::size_t stem_digits,
   const std::string & extension)
 {
   const auto idx_unpadded = std::to_string(idx);
@@ -32,7 +32,7 @@ std::filesystem::path from_index_to_file_path(
 }
 
 std::optional<std::size_t> get_last_index_of_data_sequence(
-  const std::filesystem::path & path, const std::size_t stem_digits, const std::string & extension)
+  const std::filesystem::path & path, std::size_t stem_digits, const std::string & extension)
 {
   const auto it = std::filesystem::directory_iterator(path);
   const auto number_pc_files = static_cast<std::size_t>(std::count_if(

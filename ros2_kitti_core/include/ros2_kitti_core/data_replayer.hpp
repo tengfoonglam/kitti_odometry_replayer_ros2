@@ -45,7 +45,7 @@ public:
   {
     std::size_t number_steps{};
     float replay_speed{1.0f};
-    explicit StepRequest(const std::size_t number_steps_in, const float replay_speed_in = 1.0f);
+    explicit StepRequest(std::size_t number_steps_in, const float replay_speed_in = 1.0f);
   };
 
   using StateChangeCallback = std::function<void(const ReplayerState &)>;
@@ -85,7 +85,7 @@ public:
     const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps);
 
   [[nodiscard]] static IndexRangeOpt process_step_request(
-    const StepRequest & step_request, const std::size_t next_idx, const std::size_t data_size);
+    const StepRequest & step_request, std::size_t next_idx, std::size_t data_size);
 
 private:
   const std::string name_;
@@ -128,9 +128,9 @@ private:
 
   [[nodiscard]] std::size_t get_next_index() const;
 
-  void prepare_data(const std::size_t index);
+  void prepare_data(std::size_t index);
 
-  void play_data(const std::size_t index);
+  void play_data(std::size_t index);
 
   bool play_index_range(const IndexRange & index_range, const float replay_speed);
 };

@@ -262,7 +262,7 @@ void KITTIReplayerNode::set_time_range(
 
 template <typename T>
 void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
-  const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size)
+  const LoadAndPlayDataInterface<T> & interface, std::size_t expected_data_size)
 {
   const auto interface_name = interface.name();
 

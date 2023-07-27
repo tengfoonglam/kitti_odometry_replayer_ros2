@@ -34,12 +34,12 @@ public:
 
   bool ready() const final { return true; }
   std::size_t data_size() const final { return 0; }
-  bool prepare(const std::size_t idx) final
+  bool prepare(std::size_t idx) final
   {
     prepare_record_.push_back(idx);
     return true;
   }
-  bool play(const std::size_t idx) final
+  bool play(std::size_t idx) final
   {
     play_record_.push_back(idx);
     return true;
@@ -78,7 +78,7 @@ public:
   }
 
   void assert_timeline_played_exactly_once(
-    const std::size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
+    std::size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
   {
     const auto & play_data_callback = *play_interface_ptr;
     const auto num_stamps = timestamps.size();
@@ -96,7 +96,7 @@ public:
   }
 
   void assert_timeline_played_partially(
-    const std::size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
+    std::size_t start_index = 0, const Timestamps & timestamps = kTimestamps) const
   {
     const auto & play_data_callback = *play_interface_ptr;
     const auto num_stamps = timestamps.size();
@@ -112,15 +112,14 @@ public:
   }
 
   void wait_until(
-    const std::function<bool(void)> & condition,
-    const std::size_t check_interval_ns = kCheckIntervalNs)
+    const std::function<bool(void)> & condition, std::size_t check_interval_ns = kCheckIntervalNs)
   {
     while (condition()) {
       std::this_thread::sleep_for(std::chrono::nanoseconds(check_interval_ns));
     }
   }
 
-  void wait_till_replayer_no_longer_playing(const std::size_t check_interval_ns = kCheckIntervalNs)
+  void wait_till_replayer_no_longer_playing(std::size_t check_interval_ns = kCheckIntervalNs)
   {
     wait_until([this]() { return replayer.is_playing(); }, check_interval_ns);
   }

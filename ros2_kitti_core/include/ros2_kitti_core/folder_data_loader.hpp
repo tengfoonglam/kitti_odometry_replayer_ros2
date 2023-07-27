@@ -39,14 +39,13 @@ protected:
   [[nodiscard]] virtual std::optional<size_t> get_last_index_of_sequence(
     const std::filesystem::path & load_path) = 0;
 
-  [[nodiscard]] virtual RT load_data(
-    const std::size_t idx, const std::filesystem::path & load_path) = 0;
+  [[nodiscard]] virtual RT load_data(std::size_t idx, const std::filesystem::path & load_path) = 0;
 
   bool setup_internal(const Timestamps & timestamps, const std::filesystem::path & load_path) final;
 
-  bool prepare_data_internal(const std::size_t idx) final;
+  bool prepare_data_internal(std::size_t idx) final;
 
-  std::optional<RT> get_data_internal(const std::size_t idx) final;
+  std::optional<RT> get_data_internal(std::size_t idx) final;
 };
 
 }  // namespace r2k_core
