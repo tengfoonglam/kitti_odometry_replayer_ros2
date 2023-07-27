@@ -13,6 +13,8 @@ jobs:
           - {ROS_DISTRO: humble, ROS_REPO: testing, CCOV: true}
           - {ROS_DISTRO: humble, ROS_REPO: main, CCOV: false}
     env:
+      CXXFLAGS: >-
+        -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls
       CODE_COVERAGE: codecov.io
       BASEDIR: ${{ github.workspace }}/.work
       TARGET_CMAKE_ARGS: >
