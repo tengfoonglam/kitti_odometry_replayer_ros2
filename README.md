@@ -1,6 +1,6 @@
 # ros2_kitti
 
-[![CI](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml)
+[![CI](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml/badge.svg)](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml)
 
 ## Setup
 
