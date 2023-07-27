@@ -14,7 +14,7 @@ jobs:
           - {ROS_DISTRO: humble, ROS_REPO: main}
     env:
       CXXFLAGS: >-
-        -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls
+        -Wall -Wextra
       CODE_COVERAGE: codecov.io
       BASEDIR: ${{ github.workspace }}/.work
       TARGET_CMAKE_ARGS: >
