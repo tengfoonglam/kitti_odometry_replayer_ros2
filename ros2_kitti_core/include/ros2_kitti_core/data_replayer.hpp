@@ -27,9 +27,9 @@ public:
     Timestamp current_time;
     Timestamp target_time;
     Timestamp final_time;
-    std::size_t next_idx{};
-    std::size_t target_idx{};
-    std::size_t data_size{};
+    std::size_t next_idx{0};
+    std::size_t target_idx{0};
+    std::size_t data_size{0};
 
     friend bool operator==(const ReplayerState & lhs, const ReplayerState & rhs);
   };
@@ -43,7 +43,7 @@ public:
 
   struct StepRequest
   {
-    std::size_t number_steps{};
+    std::size_t number_steps{0};
     float replay_speed{1.0f};
     explicit StepRequest(std::size_t number_steps_in, float replay_speed_in = 1.0f);
   };
