@@ -71,7 +71,8 @@ set(SOURCE_LIST
     "src/timer.cpp"
     "src/image_utils.cpp"
     "src/data_utils.cpp"
-    "src/image_data_loader.cpp")
+    "src/image_data_loader.cpp"
+    "src/folder_data_loader.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 
