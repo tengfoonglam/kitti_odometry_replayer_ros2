@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: ici
-      - uses: 'ros-industrial/industrial_ci@master'
+        uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
       - name: Generate codecov report
         uses: rhaschke/lcov-action@main
