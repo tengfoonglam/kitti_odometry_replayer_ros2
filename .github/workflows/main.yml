@@ -1,24 +1,43 @@
 name: CI
 
-on:
-  push:
-    branches:
-      - main
+on: [pull_request]
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   industrial_ci:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: humble, ROS_REPO: testing}
-          - {ROS_DISTRO: humble, ROS_REPO: main}
+          - {ROS_DISTRO: humble, ROS_REPO: testing, CCOV: true}
+          - {ROS_DISTRO: humble, ROS_REPO: main, CCOV: false}
     env:
       CODE_COVERAGE: codecov.io
+      BASEDIR: ${{ github.workspace }}/.work
+      TARGET_CMAKE_ARGS: >
+        -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
+        -DCMAKE_SHARED_LINKER_FLAGS=-fuse-ld=lld
+        -DCMAKE_MODULE_LINKER_FLAGS=-fuse-ld=lld
+        -DCMAKE_BUILD_TYPE=${{ matrix.env.CCOV && 'Debug' || 'Release'}}
+        -DCMAKE_CXX_FLAGS="-Werror $CXXFLAGS${{ matrix.env.CCOV && ' --coverage -O2 -fno-omit-frame-pointer'}}"
+      ADDITIONAL_DEBS: lld
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - id: ici
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
-      - uses: codecov/codecov-action@v3
+      - name: Generate codecov report
+        uses: rhaschke/lcov-action@main
+        if: always() && matrix.env.CCOV && steps.ici.outputs.target_test_results == '0'
+        with:
+          docker: $DOCKER_IMAGE
+          workdir: ${{ env.BASEDIR }}/target_ws
+          ignore: '"*/target_ws/build/*" "*/target_ws/install/*" "*/test/*"'
+      - name: Upload codecov report
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.BASEDIR }}/target_ws/coverage.info
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
