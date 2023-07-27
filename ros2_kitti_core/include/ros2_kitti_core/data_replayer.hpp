@@ -91,12 +91,10 @@ private:
   const std::string name_;
   const Timestamps timestamps_;  // Note: const member variable ok since this class cannot be
                                  // moved/copied due to mutex anyway
+  rclcpp::Logger logger_;
 
   mutable std::mutex state_mutex_;
   ReplayerState state_;
-
-  mutable std::mutex logger_mutex_;
-  rclcpp::Logger logger_;
 
   mutable std::mutex thread_mutex_;
   std::shared_ptr<std::thread> play_thread_ptr_;
