@@ -14,8 +14,8 @@ namespace r2k_core
 using PointCloudMsg = sensor_msgs::msg::PointCloud2;
 using PointCloudPCLType = pcl::PointCloud<pcl::PointXYZI>;
 
-constexpr size_t kNumberDigitsPCFilename{6};
-constexpr const char kKittiPCExtention[]{".bin"};
+static constexpr std::size_t kNumberDigitsPCFilename{6};
+static constexpr const char kKittiPCExtension[]{".bin"};
 
 [[nodiscard]] PointCloudMsg::SharedPtr load_point_cloud_from_file(
   const std::filesystem::path & pc_bin_path);

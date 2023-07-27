@@ -1,5 +1,7 @@
 # ros2_kitti
 
+[![CI](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml)
+
 ## Setup
 
 Clone this repository in the `src` folder of your ROS2 workspace (e.g. ros2_ws folder)

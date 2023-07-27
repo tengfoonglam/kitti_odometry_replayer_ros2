@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
+#include "ros2_kitti_core/data_utils.hpp"
+
 namespace r2k_core
 {
 
@@ -10,9 +12,7 @@ namespace r2k_core
   const std::filesystem::path & pc_bin_path)
 {
   // Check if text file is .bin file and exists
-  if (
-    !std::filesystem::exists(pc_bin_path) ||
-    pc_bin_path.extension().string() != std::string{kKittiPCExtention}) {
+  if (!file_exists_and_correct_extension(pc_bin_path, std::string{kKittiPCExtension})) {
     return PointCloudMsg::SharedPtr();
   }
 
@@ -20,8 +20,6 @@ namespace r2k_core
   auto output_ptr = std::make_shared<PointCloudMsg>();
 
   // Read binary file and load it into data field
-  // Adapted from readme of KITTI Odometry devkit
-
   const size_t data_length = std::filesystem::file_size(pc_bin_path);
   output_ptr->data.resize(data_length);
   auto * stream_ptr = std::fopen(pc_bin_path.c_str(), "rb");
@@ -56,48 +54,22 @@ namespace r2k_core
 
 [[nodiscard]] bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path)
 {
-  const bool extension_match = pc_path.extension().string() == std::string{kKittiPCExtention};
-  const auto & stem = pc_path.stem().string();
-  const bool number_char_match = stem.size() == kNumberDigitsPCFilename;
-  const bool stem_all_digits = std::all_of(stem.cbegin(), stem.cend(), ::isdigit);
-  return extension_match && number_char_match && stem_all_digits;
+  return is_numbered_file_with_correction_extension(
+    pc_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});
 }
 
 [[nodiscard]] std::filesystem::path from_index_to_point_cloud_file_path(
   const std::size_t idx, const std::filesystem::path & folder_path)
 {
-  const auto idx_unpadded = std::to_string(idx);
-  const auto number_digits_to_pad =
-    kNumberDigitsPCFilename - std::min(kNumberDigitsPCFilename, idx_unpadded.length());
-  auto idx_padded = std::string(number_digits_to_pad, '0') + idx_unpadded;
-  return folder_path / (idx_padded + std::string{kKittiPCExtention});
+  return from_index_to_file_path(
+    idx, folder_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});
 }
 
 [[nodiscard]] std::optional<std::size_t> get_last_index_of_point_cloud_sequence(
   const std::filesystem::path & pc_path)
 {
-  const auto it = std::filesystem::directory_iterator(pc_path);
-  const auto number_pc_files = static_cast<std::size_t>(
-    std::count_if(std::filesystem::begin(it), std::filesystem::end(it), [](const auto & dir_entry) {
-      return dir_entry.is_regular_file() && is_kitti_point_cloud_file(dir_entry.path());
-    }));
-
-  if (number_pc_files == 0) {
-    return std::nullopt;
-  }
-
-  std::optional<std::size_t> answer;
-  for (std::size_t idx = 0; idx < number_pc_files; idx++) {
-    const auto path_to_check = from_index_to_point_cloud_file_path(idx, pc_path);
-
-    if (std::filesystem::exists(path_to_check)) {
-      answer = idx;
-    } else {
-      break;
-    }
-  }
-
-  return answer;
+  return get_last_index_of_data_sequence(
+    pc_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});
 }
 
 }  // namespace r2k_core

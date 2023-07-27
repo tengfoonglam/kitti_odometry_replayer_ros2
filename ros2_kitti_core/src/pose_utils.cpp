@@ -10,6 +10,8 @@
 #include <sstream>
 #include <string>
 
+#include "ros2_kitti_core/data_utils.hpp"
+
 namespace r2k_core
 {
 
@@ -17,7 +19,7 @@ namespace r2k_core
   const std::filesystem::path & poses_path)
 {
   // Check if text file is .txt file and exists
-  if (!std::filesystem::exists(poses_path) || poses_path.extension().string() != ".txt") {
+  if (!file_exists_and_correct_extension(poses_path, ".txt")) {
     return std::nullopt;
   }
 

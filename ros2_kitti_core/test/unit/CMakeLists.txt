@@ -1,7 +1,11 @@
 ament_find_gtest()
 add_library(ros2_kitti_core_test INTERFACE)
 target_include_directories(ros2_kitti_core_test INTERFACE include)
-target_link_libraries(ros2_kitti_core_test INTERFACE ${GTEST_LIBRARIES})
+target_link_libraries(ros2_kitti_core_test
+                      INTERFACE ${GTEST_LIBRARIES}
+                                opencv_core
+                                opencv_imgproc
+                                opencv_imgcodecs)
 
 ament_add_gtest(timestamp_utils_test timestamp_utils_test.cpp)
 target_link_libraries(timestamp_utils_test ros2_kitti_core_test ${PROJECT_NAME})
@@ -47,3 +51,14 @@ target_link_libraries(load_and_play_data_interface_test
 
 ament_add_gtest(timer_test timer_test.cpp)
 target_link_libraries(timer_test ${PROJECT_NAME})
+
+ament_add_gtest(image_utils_test image_utils_test.cpp)
+target_link_libraries(image_utils_test
+                      ros2_kitti_core_test
+                      opencv_core
+                      ${PROJECT_NAME})
+
+ament_add_gtest(image_data_loader_test image_data_loader_test.cpp)
+target_link_libraries(image_data_loader_test
+                      ros2_kitti_core_test
+                      ${PROJECT_NAME})

@@ -18,7 +18,7 @@ class PoseDataLoader final : public DataLoader<TransformStamped>
 public:
   using Header = std_msgs::msg::Header;
 
-  explicit PoseDataLoader(
+  PoseDataLoader(
     const std::string & name, const Header & header, const std::string & child_frame_id);
   PoseDataLoader(
     const std::string & name, rclcpp::Logger logger, const Header & header,

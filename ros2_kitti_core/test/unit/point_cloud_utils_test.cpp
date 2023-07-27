@@ -13,7 +13,7 @@ class TestLoadPointCloudFromFile : public r2k_core_test::TestWithPointCloudIO
 TEST_F(TestLoadPointCloudFromFile, NonExistentTest)
 {
   const auto non_existent_file_path =
-    kTestFolderPath / (std::string{"non_existent_file"} + r2k_core::kKittiPCExtention);
+    kTestFolderPath / (std::string{"non_existent_file"} + r2k_core::kKittiPCExtension);
   ASSERT_FALSE(std::filesystem::exists(non_existent_file_path));
   const auto pc_ptr = r2k_core::load_point_cloud_from_file(non_existent_file_path);
   ASSERT_FALSE(pc_ptr);
@@ -31,7 +31,7 @@ TEST_F(TestLoadPointCloudFromFile, NotBinFileTest)
 TEST_F(TestLoadPointCloudFromFile, EmptyFile)
 {
   const auto empty_file_path =
-    kTestFolderPath / (std::string{"empty_file"} + r2k_core::kKittiPCExtention);
+    kTestFolderPath / (std::string{"empty_file"} + r2k_core::kKittiPCExtension);
   write_bin_file(empty_file_path, {});
   ASSERT_TRUE(std::filesystem::exists(empty_file_path));
   const auto pc_ptr = r2k_core::load_point_cloud_from_file(empty_file_path);
@@ -44,7 +44,7 @@ TEST_F(TestLoadPointCloudFromFile, EmptyFile)
 TEST_F(TestLoadPointCloudFromFile, NormalOperation)
 {
   const auto bin_file_path =
-    kTestFolderPath / (std::string{"000000"} + r2k_core::kKittiPCExtention);
+    kTestFolderPath / (std::string{"000000"} + r2k_core::kKittiPCExtension);
   write_bin_file(bin_file_path, kTestPoints);
   ASSERT_TRUE(std::filesystem::exists(bin_file_path));
   const auto pc_ptr = r2k_core::load_point_cloud_from_file(bin_file_path);
@@ -74,10 +74,10 @@ INSTANTIATE_TEST_SUITE_P(
   PointCloudUtilsTests, IsKittiPointCloudFileTest,
   ::testing::Values(
     std::make_tuple("", false), std::make_tuple("000000.pcd", false),
-    std::make_tuple("12345.bin", false), std::make_tuple("abc000000.bin", false),
-    std::make_tuple("000000", false), std::make_tuple("abcdef.bin", false),
-    std::make_tuple("000000.bin", true), std::make_tuple("123456.bin", true),
-    std::make_tuple("999999.bin", true)));
+    std::make_tuple("12345.bin", false), std::make_tuple("1234567.bin", false),
+    std::make_tuple("abc000000.bin", false), std::make_tuple("000000", false),
+    std::make_tuple("abcdef.bin", false), std::make_tuple("000000.bin", true),
+    std::make_tuple("123456.bin", true), std::make_tuple("999999.bin", true)));
 
 class TestFromIndexToPointCloudFilePath
 : public ::testing::TestWithParam<std::tuple<std::size_t, std::string, std::string>>
@@ -100,14 +100,14 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_tuple(123456, "/home/user", "/home/user/123456.bin"),
     std::make_tuple(1234567, "/home/user", "/home/user/1234567.bin")));
 
-class TestGetLastIndexOfPointCLoudSequence
+class TestGetLastIndexOfPointCloudSequence
 : public r2k_core_test::TestWithPointCloudIO,
   public ::testing::WithParamInterface<
     std::tuple<std::vector<std::size_t>, std::optional<std::size_t>>>
 {
 };
 
-TEST_P(TestGetLastIndexOfPointCLoudSequence, NormalOperation)
+TEST_P(TestGetLastIndexOfPointCloudSequence, NormalOperation)
 {
   const auto [indices, expected_answer] = GetParam();
   write_kitti_bin_files(
@@ -117,7 +117,7 @@ TEST_P(TestGetLastIndexOfPointCLoudSequence, NormalOperation)
 }
 
 INSTANTIATE_TEST_SUITE_P(
-  PointCloudUtilsTests, TestGetLastIndexOfPointCLoudSequence,
+  PointCloudUtilsTests, TestGetLastIndexOfPointCloudSequence,
   ::testing::Values(
     std::make_tuple(std::vector<std::size_t>{}, std::nullopt),
     std::make_tuple(std::vector<std::size_t>{1, 2, 3}, std::nullopt),
