@@ -24,8 +24,7 @@ bool ClockDataLoader::setup_internal(
   return ready();
 }
 
-[[nodiscard]] ClockDataLoader::OptionalReturnType ClockDataLoader::get_data_internal(
-  const std::size_t idx)
+ClockDataLoader::OptionalReturnType ClockDataLoader::get_data_internal(const std::size_t idx)
 {
   ClockDataLoader::ReturnType clock_msg;
   clock_msg.set__clock(timestamps_.at(idx));

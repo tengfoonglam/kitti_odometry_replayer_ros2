@@ -58,7 +58,7 @@ DataReplayer::DataReplayer(
   });
 }
 
-[[nodiscard]] bool DataReplayer::is_playing() const
+bool DataReplayer::is_playing() const
 {
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_.playing; });
 }
@@ -257,7 +257,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
   return true;
 }
 
-[[nodiscard]] std::size_t DataReplayer::get_next_index() const
+std::size_t DataReplayer::get_next_index() const
 {
   return with_lock(state_mutex_, [&state_ = std::as_const(state_)]() { return state_.next_idx; });
 }
@@ -458,7 +458,7 @@ void DataReplayer::stop_play_thread()
 
 DataReplayer::~DataReplayer() { stop_play_thread(); }
 
-[[nodiscard]] DataReplayer::ReplayerState DataReplayer::get_replayer_state() const
+DataReplayer::ReplayerState DataReplayer::get_replayer_state() const
 {
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_; });
 }
@@ -478,7 +478,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   modify_state_no_lock(modify_cb);
 };
 
-[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
+DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
   const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
@@ -520,7 +520,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
                                        : std::nullopt;
 }
 
-[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
+DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
   const StepRequest & step_request, const std::size_t next_idx, const std::size_t data_size)
 {
   // Invalid if step size is zero

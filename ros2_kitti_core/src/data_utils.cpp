@@ -5,13 +5,13 @@
 namespace r2k_core
 {
 
-[[nodiscard]] bool file_exists_and_correct_extension(
+bool file_exists_and_correct_extension(
   const std::filesystem::path & path, const std::string & extension)
 {
   return (std::filesystem::exists(path) && path.extension().string() == std::string{extension});
 }
 
-[[nodiscard]] bool is_numbered_file_with_correction_extension(
+bool is_numbered_file_with_correction_extension(
   const std::filesystem::path & path, const std::size_t stem_digits, const std::string & extension)
 {
   const bool extension_match = path.extension().string() == extension;
@@ -21,7 +21,7 @@ namespace r2k_core
   return extension_match && number_char_match && stem_all_digits;
 }
 
-[[nodiscard]] std::filesystem::path from_index_to_file_path(
+std::filesystem::path from_index_to_file_path(
   const std::size_t idx, const std::filesystem::path & folder_path, const std::size_t stem_digits,
   const std::string & extension)
 {
@@ -31,7 +31,7 @@ namespace r2k_core
   return folder_path / (idx_padded + extension);
 }
 
-[[nodiscard]] std::optional<std::size_t> get_last_index_of_data_sequence(
+std::optional<std::size_t> get_last_index_of_data_sequence(
   const std::filesystem::path & path, const std::size_t stem_digits, const std::string & extension)
 {
   const auto it = std::filesystem::directory_iterator(path);

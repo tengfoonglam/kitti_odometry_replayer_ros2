@@ -8,8 +8,7 @@
 namespace r2k_core
 {
 
-[[nodiscard]] PointCloudMsg::SharedPtr load_point_cloud_from_file(
-  const std::filesystem::path & pc_bin_path)
+PointCloudMsg::SharedPtr load_point_cloud_from_file(const std::filesystem::path & pc_bin_path)
 {
   // Check if text file is .bin file and exists
   if (!file_exists_and_correct_extension(pc_bin_path, std::string{kKittiPCExtension})) {
@@ -27,7 +26,7 @@ namespace r2k_core
     return PointCloudMsg::SharedPtr();
   }
   constexpr auto element_size = sizeof(decltype(output_ptr->data)::value_type);
-  std::fread(output_ptr->data.data(), element_size, data_length, stream_ptr);
+  (void)!std::fread(output_ptr->data.data(), element_size, data_length, stream_ptr);
   std::fclose(stream_ptr);
 
   // Compute the number of points
@@ -52,20 +51,20 @@ namespace r2k_core
   return output_ptr;
 }
 
-[[nodiscard]] bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path)
+bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path)
 {
   return is_numbered_file_with_correction_extension(
     pc_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});
 }
 
-[[nodiscard]] std::filesystem::path from_index_to_point_cloud_file_path(
+std::filesystem::path from_index_to_point_cloud_file_path(
   const std::size_t idx, const std::filesystem::path & folder_path)
 {
   return from_index_to_file_path(
     idx, folder_path, kNumberDigitsPCFilename, std::string{kKittiPCExtension});
 }
 
-[[nodiscard]] std::optional<std::size_t> get_last_index_of_point_cloud_sequence(
+std::optional<std::size_t> get_last_index_of_point_cloud_sequence(
   const std::filesystem::path & pc_path)
 {
   return get_last_index_of_data_sequence(

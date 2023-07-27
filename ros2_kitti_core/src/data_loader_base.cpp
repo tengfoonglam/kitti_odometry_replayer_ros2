@@ -13,7 +13,7 @@ DataLoaderBase::DataLoaderBase(const std::string & name)
 {
 }
 
-[[nodiscard]] std::size_t DataLoaderBase::data_size() const
+std::size_t DataLoaderBase::data_size() const
 {
   return ready() ? timestamps_.size() : std::size_t{0};
 };

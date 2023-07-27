@@ -15,8 +15,7 @@
 namespace r2k_core
 {
 
-[[nodiscard]] std::optional<Transforms> extract_poses_from_file(
-  const std::filesystem::path & poses_path)
+std::optional<Transforms> extract_poses_from_file(const std::filesystem::path & poses_path)
 {
   // Check if text file is .txt file and exists
   if (!file_exists_and_correct_extension(poses_path, ".txt")) {

@@ -16,7 +16,7 @@ public:
   static constexpr const char kFrameId[]{"test_base_frame"};
   static constexpr const char kChildFrameFrameId[]{"test_child_frame"};
 
-  [[nodiscard]] static auto get_test_header()
+  static auto get_test_header()
   {
     r2k_core::PoseDataLoader::Header header;
     header.frame_id = std::string{kFrameId};

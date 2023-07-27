@@ -206,7 +206,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 }
 
 template <typename T>
-[[nodiscard]] std::shared_ptr<KITTIReplayerNode::LoadAndPlayDataInterface<T>>
+std::shared_ptr<KITTIReplayerNode::LoadAndPlayDataInterface<T>>
 KITTIReplayerNode::make_shared_interface(
   const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
   std::unique_ptr<T> loader_ptr)
@@ -282,7 +282,7 @@ void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
   }
 }
 
-[[nodiscard]] KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
+KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
   const DataReplayer::ReplayerState & replayer_state)
 {
   ReplayerStateMsg output;

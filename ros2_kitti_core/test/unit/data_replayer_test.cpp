@@ -32,8 +32,8 @@ public:
   {
   }
 
-  [[nodiscard]] bool ready() const final { return true; }
-  [[nodiscard]] std::size_t data_size() const final { return 0; }
+  bool ready() const final { return true; }
+  std::size_t data_size() const final { return 0; }
   bool prepare(const std::size_t idx) final
   {
     prepare_record_.push_back(idx);
@@ -44,8 +44,8 @@ public:
     play_record_.push_back(idx);
     return true;
   }
-  [[nodiscard]] const IndexRecord & prepare_record() const noexcept { return prepare_record_; }
-  [[nodiscard]] const IndexRecord & play_record() const noexcept { return play_record_; }
+  const IndexRecord & prepare_record() const noexcept { return prepare_record_; }
+  const IndexRecord & play_record() const noexcept { return play_record_; }
 
   void reset()
   {
@@ -125,13 +125,13 @@ public:
     wait_until([this]() { return replayer.is_playing(); }, check_interval_ns);
   }
 
-  [[nodiscard]] std::vector<ReplayerState> get_replayer_states() const
+  std::vector<ReplayerState> get_replayer_states() const
   {
     std::scoped_lock lock(state_mutex_);
     return replayer_states_;
   }
 
-  [[nodiscard]] ReplayerState get_last_replayer_state() const
+  ReplayerState get_last_replayer_state() const
   {
     std::scoped_lock lock(state_mutex_);
     return replayer_states_.back();
@@ -178,7 +178,7 @@ protected:
     ASSERT_TRUE(replayer.set_state_change_cb(get_state_change_callback()));
   }
 
-  [[nodiscard]] static Timestamps generate_test_timestamps()
+  static Timestamps generate_test_timestamps()
   {
     Timestamps output;
     output.reserve(kNumberTimestamps);

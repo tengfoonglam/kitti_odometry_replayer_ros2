@@ -14,13 +14,13 @@ ImageDataLoader::ImageDataLoader(
 {
 }
 
-[[nodiscard]] std::optional<size_t> ImageDataLoader::get_last_index_of_sequence(
+std::optional<size_t> ImageDataLoader::get_last_index_of_sequence(
   const std::filesystem::path & load_path)
 {
   return get_last_index_of_image_sequence(load_path);
 }
 
-[[nodiscard]] ImageDataLoader::ReturnType ImageDataLoader::load_data(
+ImageDataLoader::ReturnType ImageDataLoader::load_data(
   const std::size_t idx, const std::filesystem::path & load_path)
 {
   return load_image_from_file(from_index_to_image_file_path(idx, load_path));
