@@ -16,8 +16,8 @@ struct ICPIterationSettings
   open3d::pipelines::registration::ICPConvergenceCriteria convergence_criteria;
 
   ICPIterationSettings(
-    const double max_correspondence_distance_in = 1.0, const double relative_fitness = 1e-6,
-    const double relative_rmse = 1e-6, const int max_iteration = 30);
+    double max_correspondence_distance_in = 1.0, double relative_fitness = 1e-6,
+    double relative_rmse = 1e-6, int max_iteration = 30);
 
   friend std::ostream & operator<<(std::ostream & os, const ICPIterationSettings & setting);
 };
@@ -29,8 +29,7 @@ struct NormalComputationSettings
   double radius;
 
   NormalComputationSettings(
-    const bool fast_normal_computation_in = true, const int max_nn_in = 30,
-    const double radius_in = 1.0);
+    bool fast_normal_computation_in = true, int max_nn_in = 30, double radius_in = 1.0);
 
   friend std::ostream & operator<<(std::ostream & os, const NormalComputationSettings & setting);
 };
@@ -42,7 +41,7 @@ struct O3DICPConfig
   std::vector<ICPIterationSettings> iterations;
 
   O3DICPConfig(
-    const float decimation_factor_in = 0.1,
+    float decimation_factor_in = 0.1,
     const NormalComputationSettings & normal_computation_in = NormalComputationSettings(),
     const std::vector<ICPIterationSettings> & iterations_in = {
       {1.5, 1e-4, 1e-4, 30}, {0.5, 1e-5, 1e-5, 20}, {0.05, 1e-6, 1e-6, 15}});

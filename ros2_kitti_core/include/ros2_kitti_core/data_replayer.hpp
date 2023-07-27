@@ -45,7 +45,7 @@ public:
   {
     std::size_t number_steps{};
     float replay_speed{1.0f};
-    explicit StepRequest(std::size_t number_steps_in, const float replay_speed_in = 1.0f);
+    explicit StepRequest(std::size_t number_steps_in, float replay_speed_in = 1.0f);
   };
 
   using StateChangeCallback = std::function<void(const ReplayerState &)>;
@@ -67,7 +67,7 @@ public:
 
   [[nodiscard]] ReplayerState get_replayer_state() const;
 
-  bool play(const float replay_speed = 1.0f);
+  bool play(float replay_speed = 1.0f);
 
   bool set_time_range(const SetTimeRangeRequest & set_time_range_request);
 
@@ -132,7 +132,7 @@ private:
 
   void play_data(std::size_t index);
 
-  bool play_index_range(const IndexRange & index_range, const float replay_speed);
+  bool play_index_range(const IndexRange & index_range, float replay_speed);
 };
 
 }  // namespace r2k_core

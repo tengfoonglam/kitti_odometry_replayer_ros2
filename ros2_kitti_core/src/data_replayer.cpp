@@ -13,7 +13,7 @@ DataReplayer::SetTimeRangeRequest::SetTimeRangeRequest(
 {
 }
 
-DataReplayer::StepRequest::StepRequest(std::size_t number_steps_in, const float replay_speed_in)
+DataReplayer::StepRequest::StepRequest(std::size_t number_steps_in, float replay_speed_in)
 : number_steps(number_steps_in), replay_speed(replay_speed_in)
 {
 }
@@ -181,7 +181,7 @@ bool DataReplayer::step(const StepRequest & step_request)
   return play_index_range(index_range_opt.value(), step_request.replay_speed);
 }
 
-bool DataReplayer::play(const float replay_speed)
+bool DataReplayer::play(float replay_speed)
 {
   const auto state = get_replayer_state();
   const bool resumable = state.next_idx < state.data_size;
@@ -201,7 +201,7 @@ bool DataReplayer::play(const float replay_speed)
   }
 }
 
-bool DataReplayer::play_index_range(const IndexRange & index_range, const float replay_speed)
+bool DataReplayer::play_index_range(const IndexRange & index_range, float replay_speed)
 {
   // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
   // bug
