@@ -16,6 +16,7 @@ jobs:
       CXXFLAGS: >-
         -Wall -Wextra
       CODE_COVERAGE: codecov.io
+      BASEDIR: ${{ github.workspace }}/.work
       TARGET_CMAKE_ARGS: >
         -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
         -DCMAKE_SHARED_LINKER_FLAGS=-fuse-ld=lld
@@ -32,7 +33,7 @@ jobs:
         uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
       - name: Generate codecov report for ros2_kitti_core
-        working-directory: ${{ github.workspace }}/target_ws
+        working-directory: ${{ env.BASEDIR }}/target_ws
         env: ${{matrix.env}}
         if: always() && matrix.env.CCOV && steps.ici.outputs.target_test_results == '0'
         run: |
@@ -44,6 +45,6 @@ jobs:
       - name: Upload codecov report
         uses: codecov/codecov-action@v3
         with:
-          files: ${{ github.workspace }}/target_ws/coverage.info
+          files: ${{ env.BASEDIR }}/target_ws/coverage.info
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
