@@ -39,10 +39,11 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get install -q -y --no-install-recommends lcov
-          lcov --initial --no-external --capture --directory ./target_ws --output-file ./target_ws/base.info --include "*/ros2_kitti_core/include/ros2_kitti_core/*" --include "*/ros2_kitti_core/src/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
-          lcov --no-external --capture --directory ./target_ws --output-file ./test.info --include "*/ros2_kitti_core/*" --exclude "*/build/*" --exclude "*/target_ws/install/*" --exclude "*/test/*"
+          lcov --initial --no-external --capture --directory . --output-file ./base.info --include "*/ros2_kitti_core/include/ros2_kitti_core/*" --include "*/ros2_kitti_core/src/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
+          lcov --no-external --capture --directory . --output-file ./test.info --include "*/ros2_kitti_core/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
           lcov --add-tracefile ./base.info --add-tracefile ./test.info --output-file ./coverage.info
-      - name: Upload codecov report
+          lcov --list ./coverage.info
+      - name: Upload codecov report for ros2_kitti_core
         uses: codecov/codecov-action@v3
         with:
           files: ${{ env.BASEDIR }}/target_ws/coverage.info
