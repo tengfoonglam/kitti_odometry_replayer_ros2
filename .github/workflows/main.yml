@@ -14,7 +14,7 @@ jobs:
           - {ROS_DISTRO: humble, ROS_REPO: main}
     env:
       CXXFLAGS: >-
-        -Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic
+        -Wall -Wextra
       CODE_COVERAGE: codecov.io
       TARGET_CMAKE_ARGS: >
         -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
@@ -33,6 +33,7 @@ jobs:
         env: ${{matrix.env}}
       - name: Generate codecov report for ros2_kitti_core
         working-directory: ${{ github.workspace }}/target_ws
+        env: ${{matrix.env}}
         if: always() && matrix.env.CCOV && steps.ici.outputs.target_test_results == '0'
         run: |
           apt-get -qq update
