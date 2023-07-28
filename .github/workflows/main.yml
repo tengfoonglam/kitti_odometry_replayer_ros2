@@ -14,9 +14,8 @@ jobs:
           - {ROS_DISTRO: humble, ROS_REPO: main}
     env:
       CXXFLAGS: >-
-        -Wall -Wextra
+        -Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic
       CODE_COVERAGE: codecov.io
-      BASEDIR: ${{ github.workspace }}/.work
       TARGET_CMAKE_ARGS: >
         -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
         -DCMAKE_SHARED_LINKER_FLAGS=-fuse-ld=lld
@@ -32,15 +31,18 @@ jobs:
       - id: ici
         uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
-      - name: Generate codecov report
-        uses: rhaschke/lcov-action@main
+      - name: Generate codecov report for ros2_kitti_core
+        working-directory: ${{ github.workspace }}/target_ws
         if: always() && matrix.env.CCOV && steps.ici.outputs.target_test_results == '0'
-        with:
-          workdir: ${{ env.BASEDIR }}/target_ws
-          ignore: '"*/target_ws/build/*" "*/target_ws/install/*" "*/test/*"'
+        run: |
+          apt-get -qq update
+          apt-get install -q -y lcov
+          lcov --initial --no-external --capture --directory ./target_ws --output-file ./target_ws/base.info --include "*/ros2_kitti_core/include/ros2_kitti_core/*" --include "*/ros2_kitti_core/src/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
+          lcov --no-external --capture --directory ./target_ws --output-file ./test.info --include "*/ros2_kitti_core/*" --exclude "*/build/*" --exclude "*/target_ws/install/*" --exclude "*/test/*"
+          lcov --add-tracefile ./base.info --add-tracefile ./test.info --output-file ./coverage.info
       - name: Upload codecov report
         uses: codecov/codecov-action@v3
         with:
-          files: ${{ env.BASEDIR }}/target_ws/coverage.info
+          files: ${{ github.workspace }}/target_ws/coverage.info
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
