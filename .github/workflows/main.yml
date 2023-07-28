@@ -39,9 +39,9 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get install -q -y --no-install-recommends lcov
-          lcov --initial --no-external --capture --directory . --output-file ./base.info --include "*/ros2_kitti_core/include/ros2_kitti_core/*" --include "*/ros2_kitti_core/src/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
-          lcov --no-external --capture --directory . --output-file ./test.info --include "*/ros2_kitti_core/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
-          lcov --add-tracefile ./base.info --add-tracefile ./test.info --output-file ./coverage.info
+          lcov --initial --no-external --capture --directory . --output-file base.info --include "*/ros2_kitti_core/include/ros2_kitti_core/*" --include "*/ros2_kitti_core/src/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
+          lcov --no-external --capture --directory . --output-file test.info --include "*/ros2_kitti_core/*" --exclude "*/build/*" --exclude "*/install/*" --exclude "*/test/*"
+          lcov --add-tracefile base.info --add-tracefile test.info --output-file ./coverage.info
           lcov --list ./coverage.info
       - name: Upload codecov report for ros2_kitti_core
         uses: codecov/codecov-action@v3
