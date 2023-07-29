@@ -49,6 +49,23 @@ def generate_launch_description() -> LaunchDescription:
             "velodyne",
         ]
     )
+
+    gray_image_folder_path = PathJoinSubstitution(
+        [
+            dataset_path,
+            "data_odometry_gray/dataset/sequences",
+            dataset_number_padded,
+        ]
+    )
+
+    colour_image_folder_path = PathJoinSubstitution(
+        [
+            dataset_path,
+            "data_odometry_color/dataset/sequences",
+            dataset_number_padded,
+        ]
+    )
+
     urdf_filename = PythonExpression(['f"{', dataset_number, ':02}.urdf.xml"'])
     ground_truth_namespace = LaunchConfiguration(
         "ground_truth_namespace", default="ground_truth"
@@ -83,6 +100,8 @@ def generate_launch_description() -> LaunchDescription:
                 "timestamp_path": timestamp_path,
                 "poses_path": poses_path,
                 "point_cloud_folder_path": point_cloud_folder_path,
+                "gray_image_folder_path": gray_image_folder_path,
+                "colour_image_folder_path": colour_image_folder_path,
                 "ground_truth_namespace": ground_truth_namespace,
                 "odometry_namespace": odometry_namespace,
                 "odometry_reference_frame_id": odometry_reference_frame_id,

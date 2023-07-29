@@ -10,8 +10,10 @@
 #include <optional>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_kitti_core/data_replayer.hpp>
+#include <ros2_kitti_core/image_data_loader.hpp>
 #include <ros2_kitti_core/load_and_play_data_interface.hpp>
 #include <ros2_kitti_core/pose_utils.hpp>
+#include <ros2_kitti_core/timestamp_utils.hpp>
 #include <ros2_kitti_interface/msg/replayer_state.hpp>
 #include <ros2_kitti_interface/srv/play.hpp>
 #include <ros2_kitti_interface/srv/set_time_range.hpp>
@@ -30,6 +32,7 @@ public:
   static constexpr const char * const kDefaultGlobalFrame = "map";
   static constexpr const char * const kDefaultOdomFrame = "odom";
   static constexpr float kOdometryFrameLookupTimeout = 5.0;
+  static constexpr std::size_t kPublisherHistoryDepth = 10;
 
   using DataReplayer = r2k_core::DataReplayer;
   using Transforms = r2k_core::Transforms;
@@ -41,6 +44,7 @@ public:
   using TriggerSrv = std_srvs::srv::Trigger;
   template <typename T>
   using LoadAndPlayDataInterface = r2k_core::LoadAndPlayDataInterface<T>;
+  using ImageLoadAndPlayInterface = LoadAndPlayDataInterface<r2k_core::ImageDataLoader>;
 
   template <typename T>
   using Publisher = rclcpp::Publisher<T>;
@@ -95,6 +99,10 @@ private:
     std::shared_ptr<SetTimeRangeSrv::Response> response_ptr);
 
   void publish_ground_truth_path(const Transforms & transforms);
+
+  std::shared_ptr<ImageLoadAndPlayInterface> create_image_play_data_interface(
+    const std::string & frame_id, const std::string & topic_name,
+    const std::filesystem::path & folder_path, const r2k_core::Timestamps & timestamps);
 };
 
 }  // namespace r2k_replay

@@ -5,9 +5,9 @@
 #include <chrono>
 #include <filesystem>
 #include <ros2_kitti_core/clock_data_loader.hpp>
+#include <ros2_kitti_core/image_data_loader.hpp>
 #include <ros2_kitti_core/point_cloud_data_loader.hpp>
 #include <ros2_kitti_core/pose_data_loader.hpp>
-#include <ros2_kitti_core/timestamp_utils.hpp>
 #include <ros2_kitti_interface/msg/trigger_response.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <vector>
@@ -28,6 +28,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   using r2k_core::ClockDataLoader;
   using r2k_core::extract_poses_from_file;
   using r2k_core::extract_timestamps_from_file;
+  using r2k_core::ImageDataLoader;
   using r2k_core::PlayDataInterfaceBase;
   using r2k_core::PointCloudDataLoader;
   using r2k_core::PoseDataLoader;
@@ -38,6 +39,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("timestamp_path", "");
   declare_parameter("poses_path", "");
   declare_parameter("point_cloud_folder_path", "");
+  declare_parameter("gray_image_folder_path", "");
+  declare_parameter("colour_image_folder_path", "");
   declare_parameter("ground_truth_namespace", kDefaultGroundTruthNamespace);
   declare_parameter("odometry_namespace", kDefaultOdometryNamespace);
   declare_parameter("odometry_reference_frame_id", "");
@@ -59,6 +62,10 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     std::filesystem::path(parameters_client.get_parameter("poses_path", std::string{""}));
   const auto point_cloud_folder_path = std::filesystem::path(
     parameters_client.get_parameter("point_cloud_folder_path", std::string{""}));
+  const auto gray_image_folder_path = std::filesystem::path(
+    parameters_client.get_parameter("gray_image_folder_path", std::string{""}));
+  const auto colour_image_folder_path = std::filesystem::path(
+    parameters_client.get_parameter("colour_image_folder_path", std::string{""}));
   const auto ground_truth_namespace = parameters_client.get_parameter(
     "ground_truth_namespace", std::string{kDefaultGroundTruthNamespace});
   const auto odometry_namespace =
@@ -124,7 +131,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   clock_loader_ptr->setup(timestamps, "");
   auto clock_interface_ptr = make_shared_interface(
     "clock_interface",
-    [pub_ptr = create_publisher<ClockDataLoader::DataType>("clock", 10)](const auto & msg) {
+    [pub_ptr = create_publisher<ClockDataLoader::DataType>("clock", kPublisherHistoryDepth)](
+      const auto & msg) {
       pub_ptr->publish(msg);
       return true;
     },
@@ -159,13 +167,27 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
   auto pc_interface_ptr = make_shared_interface(
     "pc_interface",
-    [pub_ptr = create_publisher<PointCloudDataLoader::DataType>("lidar_pc", 10)](const auto & msg) {
+    [pub_ptr = create_publisher<PointCloudDataLoader::DataType>(
+       "lidar_pc", kPublisherHistoryDepth)](const auto & msg) {
       pub_ptr->publish(msg);
       return true;
     },
     std::move(pc_loader_ptr));
   play_data_interface_check_shutdown_if_fail(*pc_interface_ptr, number_stamps);
   play_data_interface_ptrs.push_back(pc_interface_ptr);
+
+  // Gray Images
+  auto p0_img_ptr = create_image_play_data_interface(
+    odometry_namespace + "/p0", "p0_img", gray_image_folder_path / "image_0", timestamps);
+  play_data_interface_check_shutdown_if_fail(*p0_img_ptr, number_stamps);
+  play_data_interface_ptrs.push_back(p0_img_ptr);
+
+  auto p1_img_ptr = create_image_play_data_interface(
+    odometry_namespace + "/p1", "p1_img", gray_image_folder_path / "image_1", timestamps);
+  play_data_interface_check_shutdown_if_fail(*p1_img_ptr, number_stamps);
+  play_data_interface_ptrs.push_back(p1_img_ptr);
+
+  // Colour Images
 
   // Create replayer and add interfaces
   replayer_ptr_ = std::make_unique<DataReplayer>("kitti_replayer", timestamps);
@@ -330,6 +352,28 @@ void KITTIReplayerNode::publish_ground_truth_path(const Transforms & transforms)
     });
 
   gt_path_pub_ptr_->publish(std::move(msg_ptr));
+}
+
+std::shared_ptr<KITTIReplayerNode::ImageLoadAndPlayInterface>
+KITTIReplayerNode::create_image_play_data_interface(
+  const std::string & frame_id, const std::string & topic_name,
+  const std::filesystem::path & folder_path, const r2k_core::Timestamps & timestamps)
+{
+  using r2k_core::ImageDataLoader;
+  ImageDataLoader::Header header;
+  header.frame_id = frame_id;
+  auto img_loader_ptr = std::make_unique<ImageDataLoader>(
+    topic_name + "_loader", get_logger().get_child(topic_name), header);
+  img_loader_ptr->setup(timestamps, folder_path);
+  auto interface_ptr = make_shared_interface(
+    topic_name + "_interface",
+    [pub_ptr = create_publisher<ImageDataLoader::DataType>(topic_name, kPublisherHistoryDepth)](
+      const auto & msg) {
+      pub_ptr->publish(msg);
+      return true;
+    },
+    std::move(img_loader_ptr));
+  return interface_ptr;
 }
 
 }  // namespace r2k_replay
