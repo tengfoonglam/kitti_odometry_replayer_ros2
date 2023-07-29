@@ -13,8 +13,7 @@ DataReplayer::SetTimeRangeRequest::SetTimeRangeRequest(
 {
 }
 
-DataReplayer::StepRequest::StepRequest(
-  const std::size_t number_steps_in, const float replay_speed_in)
+DataReplayer::StepRequest::StepRequest(std::size_t number_steps_in, float replay_speed_in)
 : number_steps(number_steps_in), replay_speed(replay_speed_in)
 {
 }
@@ -38,12 +37,10 @@ DataReplayer::DataReplayer(
 : name_(name), timestamps_(timestamps), logger_(logger)
 {
   if (timestamps.empty()) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_ERROR(
-        logger_,
-        "Replayer %s initialized with an empty timeline, this will lead to unexpected behavior",
-        name_.c_str());
-    });
+    RCLCPP_ERROR(
+      logger_,
+      "Replayer %s initialized with an empty timeline, this will lead to unexpected behavior",
+      name_.c_str());
     return;
   }
 
@@ -58,7 +55,7 @@ DataReplayer::DataReplayer(
   });
 }
 
-[[nodiscard]] bool DataReplayer::is_playing() const
+bool DataReplayer::is_playing() const
 {
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_.playing; });
 }
@@ -68,46 +65,38 @@ bool DataReplayer::add_play_data_interface(
 {
   const auto interface_name = play_data_interface_ptr->name();
   if (is_playing()) {
-    with_lock(logger_mutex_, [this, &interface_name]() {
-      RCLCPP_WARN(
-        logger_,
-        "Replayer %s could not add play data interface %s because it is in the process of playing",
-        name_.c_str(), interface_name.c_str());
-    });
+    RCLCPP_WARN(
+      logger_,
+      "Replayer %s could not add play data interface %s because it is in the process of playing",
+      name_.c_str(), interface_name.c_str());
     return false;
   }
   {
     std::scoped_lock lock(interface_mutex_);
     play_data_interface_ptrs_.push_back(play_data_interface_ptr);
   }
-  with_lock(logger_mutex_, [this, &interface_name]() {
-    RCLCPP_INFO(
-      logger_, "Successfully added interface %s to replayer %s", interface_name.c_str(),
-      name_.c_str());
-  });
+  RCLCPP_INFO(
+    logger_, "Successfully added interface %s to replayer %s", interface_name.c_str(),
+    name_.c_str());
   return true;
 }
 
 bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
 {
   if (is_playing()) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(
-        logger_,
-        "Replayer %s could not set state change callback because it is in the process of "
-        "playing",
-        name_.c_str());
-    });
+    RCLCPP_WARN(
+      logger_,
+      "Replayer %s could not set state change callback because it is in the process of "
+      "playing",
+      name_.c_str());
     return false;
   }
 
   with_lock(cb_mutex_, [this, &state_change_cb = std::as_const(state_change_cb)]() {
     if (state_change_cb_) {
-      with_lock(logger_mutex_, [this]() {
-        RCLCPP_WARN(
-          logger_, "Replayer %s replacing existing state change callback with new one",
-          name_.c_str());
-      });
+      RCLCPP_WARN(
+        logger_, "Replayer %s replacing existing state change callback with new one",
+        name_.c_str());
     }
     state_change_cb_ = std::move(state_change_cb);
   });
@@ -123,22 +112,16 @@ bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_req
 
   // Return if already playing
   if (state_.playing) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(logger_, "Cannot set time range when replayer %s is playing", name_.c_str());
-    });
+    RCLCPP_WARN(logger_, "Cannot set time range when replayer %s is playing", name_.c_str());
     return false;
   }
 
   // Return if invalid play request
   const auto index_range_opt = process_set_time_range_request(set_time_range_request, timestamps_);
   if (!index_range_opt.has_value()) {
-    with_lock(
-      logger_mutex_, [this, &set_time_range_request = std::as_const(set_time_range_request)]() {
-        RCLCPP_WARN(
-          logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
-          set_time_range_request.start_time.seconds(),
-          set_time_range_request.target_time.seconds());
-      });
+    RCLCPP_WARN(
+      logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
+      set_time_range_request.start_time.seconds(), set_time_range_request.target_time.seconds());
     return false;
   }
 
@@ -150,11 +133,9 @@ bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_req
     replayer_state.target_time = timestamps_.at(target_index);
     replayer_state.target_idx = target_index;
 
-    with_lock(logger_mutex_, [this, &replayer_state = std::as_const(replayer_state)]() {
-      RCLCPP_INFO(
-        logger_, "Replayer set to play time range between from %fs to %fs",
-        replayer_state.current_time.seconds(), replayer_state.target_time.seconds());
-    });
+    RCLCPP_INFO(
+      logger_, "Replayer set to play time range between from %fs to %fs",
+      replayer_state.current_time.seconds(), replayer_state.target_time.seconds());
   });
 
   return true;
@@ -167,22 +148,18 @@ bool DataReplayer::step(const StepRequest & step_request)
   const auto index_range_opt = process_step_request(step_request, state.next_idx, state.data_size);
 
   if (!index_range_opt.has_value()) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(logger_, "Replayer %s cannot process invalid step request", name_.c_str());
-    });
+    RCLCPP_WARN(logger_, "Replayer %s cannot process invalid step request", name_.c_str());
     return false;
   }
 
-  with_lock(logger_mutex_, [this, &step_request = std::as_const(step_request)]() {
-    RCLCPP_INFO(
-      logger_, "Replayer %s playing %zu steps at x%f speed", name_.c_str(),
-      step_request.number_steps, step_request.replay_speed);
-  });
+  RCLCPP_INFO(
+    logger_, "Replayer %s playing %zu steps at x%f speed", name_.c_str(), step_request.number_steps,
+    step_request.replay_speed);
 
   return play_index_range(index_range_opt.value(), step_request.replay_speed);
 }
 
-bool DataReplayer::play(const float replay_speed)
+bool DataReplayer::play(float replay_speed)
 {
   const auto state = get_replayer_state();
   const bool resumable = state.next_idx < state.data_size;
@@ -191,18 +168,16 @@ bool DataReplayer::play(const float replay_speed)
       state.next_idx <= state.target_idx ? state.target_idx : state.data_size - 1;
     return play_index_range({state.next_idx, target_idx}, replay_speed);
   } else {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(
-        logger_,
-        "Replayer %s cannot play because it has either reached the target time or the end of the "
-        "timeline",
-        name_.c_str());
-    });
+    RCLCPP_WARN(
+      logger_,
+      "Replayer %s cannot play because it has either reached the target time or the end of the "
+      "timeline",
+      name_.c_str());
     return false;
   }
 }
 
-bool DataReplayer::play_index_range(const IndexRange & index_range, const float replay_speed)
+bool DataReplayer::play_index_range(const IndexRange & index_range, float replay_speed)
 {
   // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
   // bug
@@ -210,9 +185,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
 
   // Return if already playing
   if (state_.playing) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(logger_, "Replayer %s is already playing", name_.c_str());
-    });
+    RCLCPP_WARN(logger_, "Replayer %s is already playing", name_.c_str());
     return false;
   }
 
@@ -220,13 +193,11 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
   const auto [start_index, target_index] = index_range;
 
   if (replay_speed <= 0.0) {
-    with_lock(logger_mutex_, [this, replay_speed]() {
-      RCLCPP_WARN(
-        logger_,
-        "Replayer %s requested to play at a zero/negative replay speed of %f. Will play as fast as "
-        "possible.",
-        name_.c_str(), replay_speed);
-    });
+    RCLCPP_WARN(
+      logger_,
+      "Replayer %s requested to play at a zero/negative replay speed of %f. Will play as fast as "
+      "possible.",
+      name_.c_str(), replay_speed);
   }
 
   // Update state
@@ -246,23 +217,21 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, const float 
   play_thread_shutdown_flag_ = false;
   play_thread_ptr_ = std::make_unique<std::thread>(&DataReplayer::play_loop, this);
 
-  with_lock(logger_mutex_, [this]() {
-    RCLCPP_INFO(
-      logger_, "Replayer %s starting to play from %fs to %fs at x%f speed", name_.c_str(),
-      state_.current_time.seconds(),
-      timestamps_.at(std::min<std::size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
-      state_.replay_speed);
-  });
+  RCLCPP_INFO(
+    logger_, "Replayer %s starting to play from %fs to %fs at x%f speed", name_.c_str(),
+    state_.current_time.seconds(),
+    timestamps_.at(std::min<std::size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
+    state_.replay_speed);
 
   return true;
 }
 
-[[nodiscard]] std::size_t DataReplayer::get_next_index() const
+std::size_t DataReplayer::get_next_index() const
 {
   return with_lock(state_mutex_, [&state_ = std::as_const(state_)]() { return state_.next_idx; });
 }
 
-void DataReplayer::prepare_data(const std::size_t index_to_prep)
+void DataReplayer::prepare_data(std::size_t index_to_prep)
 {
   std::scoped_lock lock(interface_mutex_);
 
@@ -271,15 +240,14 @@ void DataReplayer::prepare_data(const std::size_t index_to_prep)
     [this, index_to_prep](const auto & interface_ptr) {
       const auto prepare_success = interface_ptr->prepare(index_to_prep);
       if (!prepare_success) {
-        with_lock(logger_mutex_, [this, name = interface_ptr->name(), index_to_prep]() {
-          RCLCPP_WARN(
-            logger_, "Failed to prepare data for %s, index %ld", name.c_str(), index_to_prep);
-        });
+        RCLCPP_WARN(
+          logger_, "Failed to prepare data for %s, index %ld", interface_ptr->name().c_str(),
+          index_to_prep);
       }
     });
 }
 
-void DataReplayer::play_data(const std::size_t index_to_play)
+void DataReplayer::play_data(std::size_t index_to_play)
 {
   std::scoped_lock lock(interface_mutex_);
 
@@ -288,19 +256,16 @@ void DataReplayer::play_data(const std::size_t index_to_play)
     [this, index_to_play](const auto & interface_ptr) {
       const auto play_success = interface_ptr->play(index_to_play);
       if (!play_success) {
-        with_lock(logger_mutex_, [this, name = interface_ptr->name(), index_to_play]() {
-          RCLCPP_WARN(
-            logger_, "Failed to play data for %s, index %ld", name.c_str(), index_to_play);
-        });
+        RCLCPP_WARN(
+          logger_, "Failed to play data for %s, index %ld", interface_ptr->name().c_str(),
+          index_to_play);
       }
     });
 }
 
 void DataReplayer::play_loop()
 {
-  with_lock(logger_mutex_, [this]() {
-    RCLCPP_INFO(logger_, "Replayer %s's play loop started", name_.c_str());
-  });
+  RCLCPP_INFO(logger_, "Replayer %s's play loop started", name_.c_str());
 
   // Prepare data of first frame before starting loop
   prepare_data(get_next_index());
@@ -321,9 +286,7 @@ void DataReplayer::play_loop()
     play_data(current_index);
     const auto play_end_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
     const auto play_duration = play_end_time - play_start_time;
-    with_lock(logger_mutex_, [this, duration = play_duration.seconds()]() {
-      RCLCPP_DEBUG(logger_, "Time taken to play data: %fs", duration);
-    });
+    RCLCPP_DEBUG(logger_, "Time taken to play data: %fs", play_duration.seconds());
 
     // Update state
     modify_state([this, &timestamps = std::as_const(timestamps_)](auto & replayer_state) {
@@ -332,9 +295,7 @@ void DataReplayer::play_loop()
                                       ? timestamps.at(replayer_state.next_idx)
                                       : replayer_state.final_time;
 
-      with_lock(logger_mutex_, [this, seconds = replayer_state.current_time.seconds()]() {
-        RCLCPP_DEBUG(logger_, "Current time: %fs", seconds);
-      });
+      RCLCPP_DEBUG(logger_, "Current time: %fs", replayer_state.current_time.seconds());
     });
 
     // If play has been completed, break from loop
@@ -350,9 +311,7 @@ void DataReplayer::play_loop()
     prepare_data(next_index);
     const auto prep_end_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
     const auto prep_duration = prep_end_time - prep_start_time;
-    with_lock(logger_mutex_, [this, duration = prep_duration.seconds()]() {
-      RCLCPP_DEBUG(logger_, "Time taken for data preparation: %fs", duration);
-    });
+    RCLCPP_DEBUG(logger_, "Time taken for data preparation: %fs", prep_duration.seconds());
 
     // Compute time to wait till next iteration
     const auto iteration_end_time = rclcpp::Clock(RCL_SYSTEM_TIME).now();
@@ -369,11 +328,9 @@ void DataReplayer::play_loop()
 
     // If duration till wait is negative, give a warning and immediately continue to next iteration
     if (duration_till_next_play < rclcpp::Duration(0, 0)) {
-      with_lock(logger_mutex_, [this, &duration_till_next_play]() {
-        RCLCPP_WARN(
-          logger_, "Replayer %s behind schedule by %f seconds", name_.c_str(),
-          -1.0 * duration_till_next_play.seconds());
-      });
+      RCLCPP_WARN(
+        logger_, "Replayer %s behind schedule by %f seconds", name_.c_str(),
+        -1.0 * duration_till_next_play.seconds());
       continue;
     }
 
@@ -388,23 +345,19 @@ void DataReplayer::play_loop()
 
   // Set final state
   modify_state([](auto & replayer_state) { replayer_state.playing = false; });
-  with_lock(logger_mutex_, [this]() {
-    RCLCPP_INFO(logger_, "Replayer %s's play loop ended", name_.c_str());
-  });
+  RCLCPP_INFO(logger_, "Replayer %s's play loop ended", name_.c_str());
 }
 
 bool DataReplayer::pause()
 {
   if (!is_playing()) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(logger_, "Replayer %s is not playing, already paused", name_.c_str());
-    });
+    RCLCPP_WARN(logger_, "Replayer %s is not playing, already paused", name_.c_str());
     return true;
   }
 
   stop_play_thread();
 
-  with_lock(logger_mutex_, [this]() { RCLCPP_INFO(logger_, "Replayer %s paused", name_.c_str()); });
+  RCLCPP_INFO(logger_, "Replayer %s paused", name_.c_str());
 
   return true;
 }
@@ -416,11 +369,9 @@ bool DataReplayer::stop()
   }
 
   const auto reset_success = reset();
-  with_lock(logger_mutex_, [this, reset_success]() {
-    RCLCPP_INFO(
-      logger_, "Replayer %s stopped %s", name_.c_str(),
-      reset_success ? "successfully" : "unsuccessfully");
-  });
+  RCLCPP_INFO(
+    logger_, "Replayer %s stopped %s", name_.c_str(),
+    reset_success ? "successfully" : "unsuccessfully");
 
   return reset_success;
 }
@@ -428,9 +379,7 @@ bool DataReplayer::stop()
 bool DataReplayer::reset()
 {
   if (is_playing()) {
-    with_lock(logger_mutex_, [this]() {
-      RCLCPP_WARN(logger_, "Cannot reset replayer %s when it is playing", name_.c_str());
-    });
+    RCLCPP_WARN(logger_, "Cannot reset replayer %s when it is playing", name_.c_str());
     return false;
   }
 
@@ -439,8 +388,7 @@ bool DataReplayer::reset()
     replayer_state.current_time = replayer_state.start_time;
   });
 
-  with_lock(
-    logger_mutex_, [this]() { RCLCPP_INFO(logger_, "Replayer %s has been reset", name_.c_str()); });
+  RCLCPP_INFO(logger_, "Replayer %s has been reset", name_.c_str());
 
   return true;
 }
@@ -458,7 +406,7 @@ void DataReplayer::stop_play_thread()
 
 DataReplayer::~DataReplayer() { stop_play_thread(); }
 
-[[nodiscard]] DataReplayer::ReplayerState DataReplayer::get_replayer_state() const
+DataReplayer::ReplayerState DataReplayer::get_replayer_state() const
 {
   return with_lock(state_mutex_, [this] [[nodiscard]] () { return state_; });
 }
@@ -478,7 +426,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   modify_state_no_lock(modify_cb);
 };
 
-[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
+DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
   const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
@@ -520,8 +468,8 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
                                        : std::nullopt;
 }
 
-[[nodiscard]] DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
-  const StepRequest & step_request, const std::size_t next_idx, const std::size_t data_size)
+DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
+  const StepRequest & step_request, std::size_t next_idx, std::size_t data_size)
 {
   // Invalid if step size is zero
   if (step_request.number_steps < 1) {

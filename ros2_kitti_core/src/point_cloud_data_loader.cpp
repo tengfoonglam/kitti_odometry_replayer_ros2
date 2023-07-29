@@ -14,14 +14,14 @@ PointCloudDataLoader::PointCloudDataLoader(
 {
 }
 
-[[nodiscard]] std::optional<size_t> PointCloudDataLoader::get_last_index_of_sequence(
+std::optional<size_t> PointCloudDataLoader::get_last_index_of_sequence(
   const std::filesystem::path & load_path)
 {
   return get_last_index_of_point_cloud_sequence(load_path);
 }
 
-[[nodiscard]] PointCloudDataLoader::ReturnType PointCloudDataLoader::load_data(
-  const std::size_t idx, const std::filesystem::path & load_path)
+PointCloudDataLoader::ReturnType PointCloudDataLoader::load_data(
+  std::size_t idx, const std::filesystem::path & load_path)
 {
   return load_point_cloud_from_file(from_index_to_point_cloud_file_path(idx, load_path));
 }

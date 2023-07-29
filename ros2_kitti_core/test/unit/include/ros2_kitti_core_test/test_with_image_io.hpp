@@ -20,8 +20,7 @@ public:
   static constexpr int kSampleImageHeight{10};
 
   static void write_example_image_files(
-    const std::vector<std::size_t> & indices, const std::filesystem::path & folder,
-    const int image_type)
+    const std::vector<std::size_t> & indices, const std::filesystem::path & folder, int image_type)
   {
     for (std::size_t i = 0; i < indices.size(); i++) {
       const auto file_path = r2k_core::from_index_to_image_file_path(indices.at(i), folder);

@@ -31,7 +31,7 @@ public:
 
   DataLoader(const std::string & name, rclcpp::Logger logger) : DataLoaderBase(name, logger) {}
 
-  [[nodiscard]] OptionalReturnType get_data(const std::size_t idx)
+  [[nodiscard]] OptionalReturnType get_data(std::size_t idx)
   {
     if (!can_process_data(idx, __func__)) {
       return std::nullopt;
@@ -40,7 +40,7 @@ public:
   }
 
 protected:
-  [[nodiscard]] virtual OptionalReturnType get_data_internal(const std::size_t idx) = 0;
+  [[nodiscard]] virtual OptionalReturnType get_data_internal(std::size_t idx) = 0;
 };
 
 }  // namespace r2k_core

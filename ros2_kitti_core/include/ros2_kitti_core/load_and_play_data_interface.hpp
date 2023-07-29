@@ -38,9 +38,9 @@ public:
 
   [[nodiscard]] virtual std::size_t data_size() const { return data_loader_ptr_->data_size(); }
 
-  bool virtual prepare(const std::size_t idx) { return data_loader_ptr_->prepare_data(idx); }
+  bool virtual prepare(std::size_t idx) { return data_loader_ptr_->prepare_data(idx); }
 
-  bool play(const std::size_t idx)
+  bool play(std::size_t idx)
   {
     const auto data_opt = data_loader_ptr_->get_data(idx);
     if (!data_opt.has_value()) {

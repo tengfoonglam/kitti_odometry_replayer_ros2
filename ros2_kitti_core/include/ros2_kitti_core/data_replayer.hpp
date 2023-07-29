@@ -27,9 +27,9 @@ public:
     Timestamp current_time;
     Timestamp target_time;
     Timestamp final_time;
-    std::size_t next_idx{};
-    std::size_t target_idx{};
-    std::size_t data_size{};
+    std::size_t next_idx{0};
+    std::size_t target_idx{0};
+    std::size_t data_size{0};
 
     friend bool operator==(const ReplayerState & lhs, const ReplayerState & rhs);
   };
@@ -43,9 +43,9 @@ public:
 
   struct StepRequest
   {
-    std::size_t number_steps{};
+    std::size_t number_steps{0};
     float replay_speed{1.0f};
-    explicit StepRequest(const std::size_t number_steps_in, const float replay_speed_in = 1.0f);
+    explicit StepRequest(std::size_t number_steps_in, float replay_speed_in = 1.0f);
   };
 
   using StateChangeCallback = std::function<void(const ReplayerState &)>;
@@ -67,7 +67,7 @@ public:
 
   [[nodiscard]] ReplayerState get_replayer_state() const;
 
-  bool play(const float replay_speed = 1.0f);
+  bool play(float replay_speed = 1.0f);
 
   bool set_time_range(const SetTimeRangeRequest & set_time_range_request);
 
@@ -85,18 +85,16 @@ public:
     const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps);
 
   [[nodiscard]] static IndexRangeOpt process_step_request(
-    const StepRequest & step_request, const std::size_t next_idx, const std::size_t data_size);
+    const StepRequest & step_request, std::size_t next_idx, std::size_t data_size);
 
 private:
   const std::string name_;
   const Timestamps timestamps_;  // Note: const member variable ok since this class cannot be
                                  // moved/copied due to mutex anyway
+  rclcpp::Logger logger_;
 
   mutable std::mutex state_mutex_;
   ReplayerState state_;
-
-  mutable std::mutex logger_mutex_;
-  rclcpp::Logger logger_;
 
   mutable std::mutex thread_mutex_;
   std::shared_ptr<std::thread> play_thread_ptr_;
@@ -128,11 +126,11 @@ private:
 
   [[nodiscard]] std::size_t get_next_index() const;
 
-  void prepare_data(const std::size_t index);
+  void prepare_data(std::size_t index);
 
-  void play_data(const std::size_t index);
+  void play_data(std::size_t index);
 
-  bool play_index_range(const IndexRange & index_range, const float replay_speed);
+  bool play_index_range(const IndexRange & index_range, float replay_speed);
 };
 
 }  // namespace r2k_core

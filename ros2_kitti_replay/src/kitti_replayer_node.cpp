@@ -206,7 +206,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 }
 
 template <typename T>
-[[nodiscard]] std::shared_ptr<KITTIReplayerNode::LoadAndPlayDataInterface<T>>
+std::shared_ptr<KITTIReplayerNode::LoadAndPlayDataInterface<T>>
 KITTIReplayerNode::make_shared_interface(
   const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
   std::unique_ptr<T> loader_ptr)
@@ -262,7 +262,7 @@ void KITTIReplayerNode::set_time_range(
 
 template <typename T>
 void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
-  const LoadAndPlayDataInterface<T> & interface, const std::size_t expected_data_size)
+  const LoadAndPlayDataInterface<T> & interface, std::size_t expected_data_size)
 {
   const auto interface_name = interface.name();
 
@@ -282,7 +282,7 @@ void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
   }
 }
 
-[[nodiscard]] KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
+KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
   const DataReplayer::ReplayerState & replayer_state)
 {
   ReplayerStateMsg output;

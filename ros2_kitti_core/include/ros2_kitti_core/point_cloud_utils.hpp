@@ -23,7 +23,7 @@ static constexpr const char kKittiPCExtension[]{".bin"};
 [[nodiscard]] bool is_kitti_point_cloud_file(const std::filesystem::path & pc_path);
 
 [[nodiscard]] std::filesystem::path from_index_to_point_cloud_file_path(
-  const std::size_t idx, const std::filesystem::path & folder_path);
+  std::size_t idx, const std::filesystem::path & folder_path);
 
 [[nodiscard]] std::optional<std::size_t> get_last_index_of_point_cloud_sequence(
   const std::filesystem::path & pc_path);

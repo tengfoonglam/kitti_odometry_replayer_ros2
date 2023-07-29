@@ -13,7 +13,7 @@ DataLoaderBase::DataLoaderBase(const std::string & name)
 {
 }
 
-[[nodiscard]] std::size_t DataLoaderBase::data_size() const
+std::size_t DataLoaderBase::data_size() const
 {
   return ready() ? timestamps_.size() : std::size_t{0};
 };
@@ -28,7 +28,7 @@ bool DataLoaderBase::setup(const Timestamps & timestamps, const std::filesystem:
   return setup_internal(timestamps, load_path);
 }
 
-bool DataLoaderBase::prepare_data(const std::size_t idx)
+bool DataLoaderBase::prepare_data(std::size_t idx)
 {
   if (!can_process_data(idx, __func__)) {
     return false;
@@ -36,7 +36,7 @@ bool DataLoaderBase::prepare_data(const std::size_t idx)
   return prepare_data_internal(idx);
 }
 
-bool DataLoaderBase::can_process_data(const std::size_t idx, const std::string & call_name)
+bool DataLoaderBase::can_process_data(std::size_t idx, const std::string & call_name)
 {
   if (ready() && idx < data_size()) {
     return true;

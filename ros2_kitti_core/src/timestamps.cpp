@@ -8,8 +8,7 @@
 namespace r2k_core
 {
 
-[[nodiscard]] std::optional<Timestamps> extract_timestamps_from_file(
-  const std::filesystem::path & times_path)
+std::optional<Timestamps> extract_timestamps_from_file(const std::filesystem::path & times_path)
 {
   // Check if text file is .txt file and exists
   if (!std::filesystem::exists(times_path) || times_path.extension().string() != ".txt") {
