@@ -1,12 +1,14 @@
 name: CI
 
-on: [pull_request]
-  # push:
-  #   branches:
-  #     - main
+# on: [pull_request]
+
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  industrial_ci:
+  ros2_kitti_ci:
     strategy:
       matrix:
         env:
@@ -17,31 +19,35 @@ jobs:
         -Wall -Wextra
       BASEDIR: ${{ github.workspace }}/.work
       TARGET_CMAKE_ARGS: >
+        -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
+        -DCMAKE_SHARED_LINKER_FLAGS=-fuse-ld=lld
+        -DCMAKE_MODULE_LINKER_FLAGS=-fuse-ld=lld
         -DCMAKE_BUILD_TYPE=${{ matrix.env.CCOV && 'Debug' || 'Release'}}
-        -DCMAKE_CXX_FLAGS="$CXXFLAGS${{ matrix.env.CCOV && ' --coverage'}}"
+        -DCMAKE_CXX_FLAGS="$CXXFLAGS${{ matrix.env.CCOV && ' --coverage -O2 -fno-omit-frame-pointer'}}"
       UPSTREAM_CMAKE_ARGS: "-DCMAKE_CXX_FLAGS=''"
       DOWNSTREAM_CMAKE_ARGS: -DCMAKE_CXX_FLAGS="-Wall -Wextra"
+      ADDITIONAL_DEBS: lld
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - id: ici
         uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
-      - name: Generate codecov report for ros2_kitti_core
-        working-directory: ${{ env.BASEDIR }}/target_ws
-        env: ${{matrix.env}}
-        if: always() && matrix.env.CCOV && steps.ici.outputs.target_test_results == '0'
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get install -q -y lcov
-          sudo apt-get install -q -y tree
-          tree
-          lcov --capture --directory $PWD --output-file $PWD/coverage.info
-          lcov --extract coverage.info "$PWD/*" --output-file $PWD/coverage.info
-          lcov --remove coverage.info "*/test/*" --output-file $PWD/coverage.info
-      - name: Upload codecov report for ros2_kitti_core
-        uses: codecov/codecov-action@v3
-        with:
-          files: ${{ env.BASEDIR }}/target_ws/coverage.info
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      # - name: Generate codecov report for ros2_kitti_core
+      #   working-directory: ${{ env.BASEDIR }}/target_ws
+      #   env: ${{matrix.env}}
+      #   if: always() && matrix.env.CCOV && steps.ici.outputs.target_test_results == '0'
+      #   run: |
+      #     sudo apt-get -qq update
+      #     sudo apt-get install -q -y lcov
+      #     sudo apt-get install -q -y tree
+      #     tree
+      #     lcov --capture --directory $PWD --output-file $PWD/coverage.info
+      #     lcov --extract coverage.info "$PWD/*" --output-file $PWD/coverage.info
+      #     lcov --remove coverage.info "*/test/*" --output-file $PWD/coverage.info
+      # - name: Upload codecov report for ros2_kitti_core
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     files: ${{ env.BASEDIR }}/target_ws/coverage.info
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
