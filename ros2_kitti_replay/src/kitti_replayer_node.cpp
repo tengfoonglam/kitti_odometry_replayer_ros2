@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <image_transport/image_transport.hpp>
 #include <ros2_kitti_core/clock_data_loader.hpp>
 #include <ros2_kitti_core/image_data_loader.hpp>
 #include <ros2_kitti_core/point_cloud_data_loader.hpp>
@@ -14,7 +15,6 @@
 
 namespace r2k_replay
 {
-
 const rclcpp::QoS KITTIReplayerNode::kLatchingQoS{
   rclcpp::QoSInitialization{RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT, 1},
   rmw_qos_profile_t{
@@ -367,9 +367,8 @@ KITTIReplayerNode::create_image_play_data_interface(
   img_loader_ptr->setup(timestamps, folder_path);
   auto interface_ptr = make_shared_interface(
     topic_name + "_interface",
-    [pub_ptr = create_publisher<ImageDataLoader::DataType>(topic_name, kPublisherHistoryDepth)](
-      const auto & msg) {
-      pub_ptr->publish(msg);
+    [pub = image_transport::create_publisher(this, topic_name)](const auto & msg) {
+      pub.publish(msg);
       return true;
     },
     std::move(img_loader_ptr));

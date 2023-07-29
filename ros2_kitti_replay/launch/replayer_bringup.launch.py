@@ -245,10 +245,10 @@ def generate_launch_description() -> LaunchDescription:
                             + os.path.join(
                                 get_package_share_directory("ros2_kitti_replay"),
                                 "rviz",
-                                "visualize_run.rviz",
+                                "visualize_ground_truth.rviz",  # TODO(tf) Switch between odom/gt
                             )
                         ],
-                    )
+                    ),
                 ],
             ),
         ]
