@@ -21,6 +21,10 @@ from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 from typing import List
 
+POINT_CLOUD_FOLDER_AVAILABLE = True
+GRAY_IMAGES_FOLDER_AVAILABLE = True
+COLOUR_IMAGES_FOLDER_AVAILABLE = True
+
 
 def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     # Replayer Launch Configurations
@@ -33,9 +37,15 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     ground_truth_data_frame_prefix = LaunchConfiguration(
         "ground_truth_data_frame_prefix", default="ground_truth"
     )
-    enable_point_cloud = LaunchConfiguration("enable_point_cloud", default="true")
-    enable_gray_images = LaunchConfiguration("enable_gray_images", default="true")
-    enable_colour_images = LaunchConfiguration("enable_colour_images", default="true")
+    enable_point_cloud = LaunchConfiguration(
+        "enable_point_cloud", default=str(POINT_CLOUD_FOLDER_AVAILABLE)
+    )
+    enable_gray_images = LaunchConfiguration(
+        "enable_gray_images", default=str(GRAY_IMAGES_FOLDER_AVAILABLE)
+    )
+    enable_colour_images = LaunchConfiguration(
+        "enable_colour_images", default=str(COLOUR_IMAGES_FOLDER_AVAILABLE)
+    )
 
     # Odometry Node Launch Configurations
     odometry_data_frame_prefix = LaunchConfiguration(
@@ -328,19 +338,19 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument(
                 "enable_point_cloud",
-                default_value="true",
+                default_value=str(POINT_CLOUD_FOLDER_AVAILABLE),
                 description="Replayer publishes and odometry node "
                 "(if configured to load) subscribes to the point cloud",
             ),
             DeclareLaunchArgument(
                 "enable_gray_images",
-                default_value="true",
+                default_value=str(GRAY_IMAGES_FOLDER_AVAILABLE),
                 description="Replayer publishes and odometry node "
                 "(if configured to load) subscribes to the gray images (p0 and p1)",
             ),
             DeclareLaunchArgument(
                 "enable_colour_images",
-                default_value="true",
+                default_value=str(COLOUR_IMAGES_FOLDER_AVAILABLE),
                 description="Replayer publishes and odometry node "
                 "(if configured to load) subscribes to the colour images (p2 and p3)",
             ),
