@@ -95,6 +95,7 @@ def generate_launch_description() -> LaunchDescription:
     # Odometry node params
     VEHICLE_BASE_LINK = "p0"  # Fixed by URDF
     ODOMETRY_FRAME_ID = "odom"  # Fixed for convenience
+    POINTCLOUD_TOPIC = "lidar_pc"  # Fixed in Replayer
     odometry_reference_frame_id = PathJoinSubstitution(
         [ground_truth_namespace, VEHICLE_BASE_LINK]
     )
@@ -133,7 +134,7 @@ def generate_launch_description() -> LaunchDescription:
             {
                 "use_sim_time": use_sim_time,
                 "odometry_frame_id": ODOMETRY_FRAME_ID,
-                "pointcloud_topic": "lidar_pc",
+                "pointcloud_topic": POINTCLOUD_TOPIC,
                 "base_link_frame_id": odometry_base_link_frame_id,
                 "sensor_frame_id": odometry_sensor_link_frame_id,
                 "config_path": odometry_config_path,
