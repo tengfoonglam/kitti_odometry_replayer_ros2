@@ -27,10 +27,10 @@ namespace r2k_replay
 class KITTIReplayerNode final : public rclcpp::Node
 {
 public:
-  static constexpr const char * const kDefaultGroundTruthNamespace = "ground_truth";
-  static constexpr const char * const kDefaultOdometryNamespace = "odometry";
-  static constexpr const char * const kDefaultGlobalFrame = "map";
-  static constexpr const char * const kDefaultOdomFrame = "odom";
+  static constexpr const char kDefaultGroundTruthDataFramePrefix[]{"ground_truth"};
+  static constexpr const char kDefaultOdometryDataFramePrefix[]{"odometry"};
+  static constexpr const char kDefaultGlobalFrame[]{"map"};
+  static constexpr const char kDefaultOdomFrame[]{"odom"};
   static constexpr float kOdometryFrameLookupTimeout = 5.0;
   static constexpr std::size_t kPublisherHistoryDepth = 10;
 

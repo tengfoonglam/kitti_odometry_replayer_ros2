@@ -41,8 +41,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("point_cloud_folder_path", "");
   declare_parameter("gray_image_folder_path", "");
   declare_parameter("colour_image_folder_path", "");
-  declare_parameter("ground_truth_namespace", kDefaultGroundTruthNamespace);
-  declare_parameter("odometry_namespace", kDefaultOdometryNamespace);
+  declare_parameter("ground_truth_data_frame_prefix", kDefaultGroundTruthDataFramePrefix);
+  declare_parameter("odometry_data_frame_prefix", kDefaultOdometryDataFramePrefix);
   declare_parameter("odometry_reference_frame_id", "");
 
   // Wait for parameters to be loaded
@@ -66,10 +66,10 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     parameters_client.get_parameter("gray_image_folder_path", std::string{""}));
   const auto colour_image_folder_path = std::filesystem::path(
     parameters_client.get_parameter("colour_image_folder_path", std::string{""}));
-  const auto ground_truth_namespace = parameters_client.get_parameter(
-    "ground_truth_namespace", std::string{kDefaultGroundTruthNamespace});
-  const auto odometry_namespace =
-    parameters_client.get_parameter("odometry_namespace", std::string{kDefaultOdometryNamespace});
+  const auto ground_truth_data_frame_prefix = parameters_client.get_parameter(
+    "ground_truth_data_frame_prefix", std::string{kDefaultGroundTruthDataFramePrefix});
+  const auto odometry_data_frame_prefix = parameters_client.get_parameter(
+    "odometry_data_frame_prefix", std::string{kDefaultOdometryDataFramePrefix});
   odometry_reference_frame_id_ =
     parameters_client.get_parameter("odometry_reference_frame_id", std::string{""});
 
@@ -144,7 +144,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   if (ground_truth_path_opt_.has_value()) {
     PoseDataLoader::Header pose_header;
     pose_header.frame_id = kDefaultGlobalFrame;
-    const std::string child_id = ground_truth_namespace + "/p0";
+    const std::string child_id = ground_truth_data_frame_prefix + "/p0";
     auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
       "pose_loader", get_logger().get_child("pose_loader"), pose_header, child_id);
     pose_loader_ptr->setup(timestamps, poses_path);
@@ -161,7 +161,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Point Cloud
   PointCloudDataLoader::Header pc_header;
-  pc_header.frame_id = odometry_namespace + "/lidar";
+  pc_header.frame_id = odometry_data_frame_prefix + "/lidar";
   auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
     "pc_loader", get_logger().get_child("pc_loader"), pc_header);
   pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
@@ -178,12 +178,12 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Gray Images
   auto p0_img_ptr = create_image_play_data_interface(
-    odometry_namespace + "/p0", "p0_img", gray_image_folder_path / "image_0", timestamps);
+    odometry_data_frame_prefix + "/p0", "p0_img", gray_image_folder_path / "image_0", timestamps);
   play_data_interface_check_shutdown_if_fail(*p0_img_ptr, number_stamps);
   play_data_interface_ptrs.push_back(p0_img_ptr);
 
   auto p1_img_ptr = create_image_play_data_interface(
-    odometry_namespace + "/p1", "p1_img", gray_image_folder_path / "image_1", timestamps);
+    odometry_data_frame_prefix + "/p1", "p1_img", gray_image_folder_path / "image_1", timestamps);
   play_data_interface_check_shutdown_if_fail(*p1_img_ptr, number_stamps);
   play_data_interface_ptrs.push_back(p1_img_ptr);
 

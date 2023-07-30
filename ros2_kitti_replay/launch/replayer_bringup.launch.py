@@ -29,19 +29,23 @@ def launch_setup(context: LaunchContext) -> LaunchDescription:
     dataset_path = LaunchConfiguration(
         "dataset_path", default="/media/ltf/LTFUbuntuSSD/kitti_dataset"
     )
-    ground_truth_namespace = LaunchConfiguration(
-        "ground_truth_namespace", default="ground_truth"
+    ground_truth_data_frame_prefix = LaunchConfiguration(
+        "ground_truth_data_frame_prefix", default="ground_truth"
     )
 
     # Odometry Node Launch Configurations
-    odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
+    odometry_data_frame_prefix = LaunchConfiguration(
+        "odometry_data_frame_prefix", default="odometry"
+    )
     odometry_package = LaunchConfiguration("odometry_package", default="")
     odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
     odometry_config_path = LaunchConfiguration("odometry_config_path", default="")
     vehicle_sensor_link = LaunchConfiguration("vehicle_sensor_link", default="lidar")
 
     # Shared Launch Configurations
-    odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
+    odometry_data_frame_prefix = LaunchConfiguration(
+        "odometry_data_frame_prefix", default="odometry"
+    )
 
     # Check whether it is required to lauch the odometry node
     launch_odometry = PythonExpression(
@@ -102,13 +106,13 @@ def launch_setup(context: LaunchContext) -> LaunchDescription:
     ODOMETRY_FRAME_ID = "odom"  # Fixed for convenience
     POINTCLOUD_TOPIC = "lidar_pc"  # Fixed in Replayer
     odometry_reference_frame_id = PathJoinSubstitution(
-        [ground_truth_namespace, VEHICLE_BASE_LINK]
+        [ground_truth_data_frame_prefix, VEHICLE_BASE_LINK]
     )
     odometry_base_link_frame_id = PathJoinSubstitution(
-        [odometry_namespace, VEHICLE_BASE_LINK]
+        [odometry_data_frame_prefix, VEHICLE_BASE_LINK]
     )
     odometry_sensor_link_frame_id = PathJoinSubstitution(
-        [odometry_namespace, vehicle_sensor_link]
+        [odometry_data_frame_prefix, vehicle_sensor_link]
     )
 
     # Set which RVIZ file to launch
@@ -150,8 +154,8 @@ def launch_setup(context: LaunchContext) -> LaunchDescription:
                 "point_cloud_folder_path": point_cloud_folder_path,
                 "gray_image_folder_path": gray_image_folder_path,
                 "colour_image_folder_path": colour_image_folder_path,
-                "ground_truth_namespace": ground_truth_namespace,
-                "odometry_namespace": odometry_namespace,
+                "ground_truth_data_frame_prefix": ground_truth_data_frame_prefix,
+                "odometry_data_frame_prefix": odometry_data_frame_prefix,
                 "odometry_reference_frame_id": odometry_reference_frame_id,
             }
         ],
@@ -186,7 +190,7 @@ def launch_setup(context: LaunchContext) -> LaunchDescription:
                     "use_sim_time": use_sim_time,
                     "urdf_filename": urdf_filename,
                     "launch_rviz": "False",
-                    "frame_prefix": ground_truth_namespace,
+                    "frame_prefix": ground_truth_data_frame_prefix,
                 }.items(),
             ),
             IncludeLaunchDescription(
@@ -200,7 +204,7 @@ def launch_setup(context: LaunchContext) -> LaunchDescription:
                     "use_sim_time": use_sim_time,
                     "urdf_filename": urdf_filename,
                     "launch_rviz": "False",
-                    "frame_prefix": odometry_namespace,
+                    "frame_prefix": odometry_data_frame_prefix,
                     "static_frame_base_frame_id": "odom",
                 }.items(),
                 condition=IfCondition(launch_odometry),
@@ -253,14 +257,19 @@ def generate_launch_description() -> LaunchDescription:
             description="Path where all dataset folders are located",
         ),
         DeclareLaunchArgument(
-            "ground_truth_namespace",
+            "ground_truth_data_frame_prefix",
             default_value="ground_truth",
-            description="Namespace used for the ground truth pose topic",
+            description="Prefix prepended to the frame_id of the ground truth pose message",
         ),
         DeclareLaunchArgument(
-            "odometry_namespace",
+            "odometry_data_frame_prefix",
             default_value="odometry",
-            description="Namespace used for the data topics (point clouds, images, etc)",
+            description="Prefix prepended to the frame_id of the published data topics such as"
+            "point clouds, images, etc. "
+            "Note: Only used then a odometry node is specified to be launched. Otherwise, "
+            "the odometry data topics will be prepended with the ground_truth_data_frame_prefix "
+            "instead. This is so that the data topics are visualized on the ground truth vehicle "
+            "when an odometry node is not running.",
         ),
         DeclareLaunchArgument(
             "odometry_package",
@@ -278,7 +287,8 @@ def generate_launch_description() -> LaunchDescription:
             "vehicle_sensor_link",
             default_value="lidar",
             description="Name of the link which the odometry sensor is "
-            "located (e.g. lidar, p0)",
+            "located (e.g. lidar, p0)"
+            "Leave empty if launching odometry component is not required",
         ),
         DeclareLaunchArgument(
             "odometry_config_path",
