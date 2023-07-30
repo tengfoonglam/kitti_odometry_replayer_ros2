@@ -60,6 +60,27 @@ def launch_setup(context: LaunchContext) -> LaunchDescription:
         ]
     )
 
+    # Check whether to override odometry data frame_id prefix
+
+    # Set this False if you are running your own custom odometry node
+    # (not launched with the replayer as a single component) and still want to
+    # specify your own frame_id prefix
+    OVERRIDE_ODOMETRY_DATA_PREFIX = True
+
+    processed_odometry_data_frame_prefix = PythonExpression(
+        [
+            '"',
+            ground_truth_data_frame_prefix,
+            '" if ((not',
+            launch_odometry,
+            ") and ",
+            OVERRIDE_ODOMETRY_DATA_PREFIX,
+            ') else "',
+            odometry_data_frame_prefix,
+            '"',
+        ]
+    )
+
     # Paths of data files
     dataset_number_padded = PythonExpression(['f"{', dataset_number, ':02}"'])
     timestamp_path = PathJoinSubstitution(
@@ -154,7 +175,7 @@ def launch_setup(context: LaunchContext) -> LaunchDescription:
                 "point_cloud_folder_path": point_cloud_folder_path,
                 "gray_image_folder_path": gray_image_folder_path,
                 "colour_image_folder_path": colour_image_folder_path,
-                "ground_truth_data_frame_prefix": ground_truth_data_frame_prefix,
+                "ground_truth_data_frame_prefix": processed_odometry_data_frame_prefix,
                 "odometry_data_frame_prefix": odometry_data_frame_prefix,
                 "odometry_reference_frame_id": odometry_reference_frame_id,
             }
@@ -268,8 +289,10 @@ def generate_launch_description() -> LaunchDescription:
             "point clouds, images, etc. "
             "Note: Only used then a odometry node is specified to be launched. Otherwise, "
             "the odometry data topics will be prepended with the ground_truth_data_frame_prefix "
-            "instead. This is so that the data topics are visualized on the ground truth vehicle "
-            "when an odometry node is not running.",
+            "instead. This is so that the data topics are visualized correctly "
+            "on the ground truth vehicle when an odometry node is not running. "
+            "If you want to disable this automatic overriding of the frame prefix, set the "
+            "variable OVERRIDE_ODOMETRY_DATA_PREFIX in the launch file to False",
         ),
         DeclareLaunchArgument(
             "odometry_package",
