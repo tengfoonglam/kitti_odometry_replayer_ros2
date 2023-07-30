@@ -17,15 +17,42 @@ from launch_ros.descriptions import ComposableNode
 
 
 def generate_launch_description() -> LaunchDescription:
+    # Replayer Launch Configurations
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
 
     dataset_number = LaunchConfiguration("dataset_number", default="00")
     dataset_path = LaunchConfiguration(
         "dataset_path", default="/media/ltf/LTFUbuntuSSD/kitti_dataset"
     )
+    ground_truth_namespace = LaunchConfiguration(
+        "ground_truth_namespace", default="ground_truth"
+    )
 
+    # Odometry Node Launch Configurations
+    odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
+    odometry_package = LaunchConfiguration("odometry_package", default="")
+    odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
+    odometry_config_path = LaunchConfiguration("odometry_config_path", default="")
+    vehicle_sensor_link = LaunchConfiguration("vehicle_sensor_link", default="lidar")
+
+    # Shared Launch Configurations
+    odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
+
+    # Check whether it is required to lauch the odometry node
+    launch_odometry = PythonExpression(
+        [
+            'len("',
+            odometry_package,
+            '") > 0 and len("',
+            odometry_plugin,
+            '") > 0 and len("',
+            vehicle_sensor_link,
+            '") > 0',
+        ]
+    )
+
+    # Paths of data files
     dataset_number_padded = PythonExpression(['f"{', dataset_number, ':02}"'])
-
     timestamp_path = PathJoinSubstitution(
         [
             dataset_path,
@@ -49,7 +76,6 @@ def generate_launch_description() -> LaunchDescription:
             "velodyne",
         ]
     )
-
     gray_image_folder_path = PathJoinSubstitution(
         [
             dataset_path,
@@ -57,7 +83,6 @@ def generate_launch_description() -> LaunchDescription:
             dataset_number_padded,
         ]
     )
-
     colour_image_folder_path = PathJoinSubstitution(
         [
             dataset_path,
@@ -65,31 +90,22 @@ def generate_launch_description() -> LaunchDescription:
             dataset_number_padded,
         ]
     )
-
     urdf_filename = PythonExpression(['f"{', dataset_number, ':02}.urdf.xml"'])
-    ground_truth_namespace = LaunchConfiguration(
-        "ground_truth_namespace", default="ground_truth"
-    )
-    odometry_namespace = LaunchConfiguration("odometry_namespace", default="odometry")
-    odometry_package = LaunchConfiguration("odometry_package", default="")
-    odometry_plugin = LaunchConfiguration("odometry_plugin", default="")
-    odometry_config_path = LaunchConfiguration("odometry_config_path", default="")
+
+    # Odometry node params
     VEHICLE_BASE_LINK = "p0"  # Fixed by URDF
-    vehicle_sensor_link = LaunchConfiguration("vehicle_sensor_link", default="lidar")
+    ODOMETRY_FRAME_ID = "odom"  # Fixed for convenience
     odometry_reference_frame_id = PathJoinSubstitution(
         [ground_truth_namespace, VEHICLE_BASE_LINK]
     )
-    # global_frame_id = LaunchConfiguration("global_frame_id", default="map")
-    ODOMETRY_FRAME_ID = "odom"
-
     odometry_base_link_frame_id = PathJoinSubstitution(
         [odometry_namespace, VEHICLE_BASE_LINK]
     )
-
     odometry_sensor_link_frame_id = PathJoinSubstitution(
         [odometry_namespace, vehicle_sensor_link]
     )
 
+    # Create Compositions with and without odometry node
     replayer_component = ComposableNode(
         package="ros2_kitti_replay",
         plugin="r2k_replay::KITTIReplayerNode",
@@ -123,18 +139,6 @@ def generate_launch_description() -> LaunchDescription:
                 "config_path": odometry_config_path,
             }
         ],
-    )
-
-    launch_odometry = PythonExpression(
-        [
-            'len("',
-            odometry_package,
-            '") > 0 and len("',
-            odometry_plugin,
-            '") > 0 and len("',
-            vehicle_sensor_link,
-            '") > 0',
-        ]
     )
 
     return LaunchDescription(
