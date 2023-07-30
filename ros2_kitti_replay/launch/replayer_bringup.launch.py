@@ -3,8 +3,13 @@ import os
 # from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
+from launch import LaunchContext, LaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+    TimerAction,
+)
 from launch.conditions import IfCondition
 from launch.substitutions import (
     LaunchConfiguration,
@@ -16,7 +21,7 @@ from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 
 
-def generate_launch_description() -> LaunchDescription:
+def launch_setup(context: LaunchContext) -> LaunchDescription:
     # Replayer Launch Configurations
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
 
@@ -106,6 +111,32 @@ def generate_launch_description() -> LaunchDescription:
         [odometry_namespace, vehicle_sensor_link]
     )
 
+    # Set which RVIZ file to launch
+    visualize_ground_truth_rviz_path = os.path.join(
+        get_package_share_directory("ros2_kitti_replay"),
+        "rviz",
+        "visualize_ground_truth.rviz",
+    )
+
+    visualize_odometry_run_rviz_path = os.path.join(
+        get_package_share_directory("ros2_kitti_replay"),
+        "rviz",
+        "visualize_run.rviz",
+    )
+
+    rviz_path_arg = PythonExpression(
+        [
+            '"-d"+(',
+            '"',
+            visualize_odometry_run_rviz_path,
+            '" if ',
+            launch_odometry,
+            ' else "',
+            visualize_ground_truth_rviz_path,
+            '")',
+        ]
+    )
+
     # Create Compositions with and without odometry node
     replayer_component = ComposableNode(
         package="ros2_kitti_replay",
@@ -144,50 +175,6 @@ def generate_launch_description() -> LaunchDescription:
 
     return LaunchDescription(
         [
-            DeclareLaunchArgument(
-                "dataset_number",
-                default_value="00",
-                description="Dataset number to load. Omit any leading zeros.",
-            ),
-            DeclareLaunchArgument(
-                "dataset_path",
-                default_value="/media/ltf/LTFUbuntuSSD/kitti_dataset",
-                description="Path where all dataset folders are located",
-            ),
-            DeclareLaunchArgument(
-                "ground_truth_namespace",
-                default_value="ground_truth",
-                description="Namespace used for the ground truth pose topic",
-            ),
-            DeclareLaunchArgument(
-                "odometry_namespace",
-                default_value="odometry",
-                description="Namespace used for the data topics (point clouds, images, etc)",
-            ),
-            DeclareLaunchArgument(
-                "odometry_package",
-                default_value="",
-                description="Package in which odometry component is located. "
-                "Leave empty if launching odometry component is not required",
-            ),
-            DeclareLaunchArgument(
-                "odometry_plugin",
-                default_value="",
-                description="Name of odometry component to launch. "
-                "Leave empty if launching odometry component is not required",
-            ),
-            DeclareLaunchArgument(
-                "vehicle_sensor_link",
-                default_value="lidar",
-                description="Name of the link which the odometry sensor is "
-                "located (e.g. lidar, p0)",
-            ),
-            DeclareLaunchArgument(
-                "odometry_config_path",
-                default_value="",
-                description="Path config file used for the odometry component. "
-                "Leave empty if launching odometry component is not required",
-            ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
                     [
@@ -245,16 +232,59 @@ def generate_launch_description() -> LaunchDescription:
                         executable="rviz2",
                         name="rviz2",
                         parameters=[{"use_sim_time": use_sim_time}],
-                        arguments=[
-                            "-d"
-                            + os.path.join(
-                                get_package_share_directory("ros2_kitti_replay"),
-                                "rviz",
-                                "visualize_ground_truth.rviz",  # TODO(tf) Switch between odom/gt
-                            )
-                        ],
+                        arguments=[rviz_path_arg],
                     ),
                 ],
             ),
         ]
     )
+
+
+def generate_launch_description() -> LaunchDescription:
+    return [
+        DeclareLaunchArgument(
+            "dataset_number",
+            default_value="00",
+            description="Dataset number to load. Omit any leading zeros.",
+        ),
+        DeclareLaunchArgument(
+            "dataset_path",
+            default_value="/media/ltf/LTFUbuntuSSD/kitti_dataset",
+            description="Path where all dataset folders are located",
+        ),
+        DeclareLaunchArgument(
+            "ground_truth_namespace",
+            default_value="ground_truth",
+            description="Namespace used for the ground truth pose topic",
+        ),
+        DeclareLaunchArgument(
+            "odometry_namespace",
+            default_value="odometry",
+            description="Namespace used for the data topics (point clouds, images, etc)",
+        ),
+        DeclareLaunchArgument(
+            "odometry_package",
+            default_value="",
+            description="Package in which odometry component is located. "
+            "Leave empty if launching odometry component is not required",
+        ),
+        DeclareLaunchArgument(
+            "odometry_plugin",
+            default_value="",
+            description="Name of odometry component to launch. "
+            "Leave empty if launching odometry component is not required",
+        ),
+        DeclareLaunchArgument(
+            "vehicle_sensor_link",
+            default_value="lidar",
+            description="Name of the link which the odometry sensor is "
+            "located (e.g. lidar, p0)",
+        ),
+        DeclareLaunchArgument(
+            "odometry_config_path",
+            default_value="",
+            description="Path config file used for the odometry component. "
+            "Leave empty if launching odometry component is not required",
+        ),
+        OpaqueFunction(function=launch_setup),
+    ]
