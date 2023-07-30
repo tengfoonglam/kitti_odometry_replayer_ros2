@@ -44,6 +44,9 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("ground_truth_data_frame_prefix", kDefaultGroundTruthDataFramePrefix);
   declare_parameter("odometry_data_frame_prefix", kDefaultOdometryDataFramePrefix);
   declare_parameter("odometry_reference_frame_id", "");
+  declare_parameter("publish_point_cloud", true);
+  declare_parameter("publish_gray_images", true);
+  declare_parameter("publish_colour_images", true);
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -72,6 +75,10 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     "odometry_data_frame_prefix", std::string{kDefaultOdometryDataFramePrefix});
   odometry_reference_frame_id_ =
     parameters_client.get_parameter("odometry_reference_frame_id", std::string{""});
+  const bool publish_point_cloud = parameters_client.get_parameter("publish_point_cloud", true);
+  const bool publish_gray_images = parameters_client.get_parameter("publish_gray_images", true);
+  [[maybe_unused]] const bool publish_colour_images =
+    parameters_client.get_parameter("publish_colour_images", true);
 
   // Create TF listener and wait until odometry frame is available and publish it
   tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
@@ -160,34 +167,40 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   }
 
   // Point Cloud
-  PointCloudDataLoader::Header pc_header;
-  pc_header.frame_id = odometry_data_frame_prefix + "/lidar";
-  auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
-    "pc_loader", get_logger().get_child("pc_loader"), pc_header);
-  pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
-  auto pc_interface_ptr = make_shared_interface(
-    "pc_interface",
-    [pub_ptr = create_publisher<PointCloudDataLoader::DataType>(
-       "lidar_pc", kPublisherHistoryDepth)](const auto & msg) {
-      pub_ptr->publish(msg);
-      return true;
-    },
-    std::move(pc_loader_ptr));
-  play_data_interface_check_shutdown_if_fail(*pc_interface_ptr, number_stamps);
-  play_data_interface_ptrs.push_back(pc_interface_ptr);
+  if (publish_point_cloud) {
+    PointCloudDataLoader::Header pc_header;
+    pc_header.frame_id = odometry_data_frame_prefix + "/lidar";
+    auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
+      "pc_loader", get_logger().get_child("pc_loader"), pc_header);
+    pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
+    auto pc_interface_ptr = make_shared_interface(
+      "pc_interface",
+      [pub_ptr = create_publisher<PointCloudDataLoader::DataType>(
+         "lidar_pc", kPublisherHistoryDepth)](const auto & msg) {
+        pub_ptr->publish(msg);
+        return true;
+      },
+      std::move(pc_loader_ptr));
+    play_data_interface_check_shutdown_if_fail(*pc_interface_ptr, number_stamps);
+    play_data_interface_ptrs.push_back(pc_interface_ptr);
+  }
 
   // Gray Images
-  auto p0_img_ptr = create_image_play_data_interface(
-    odometry_data_frame_prefix + "/p0", "p0_img", gray_image_folder_path / "image_0", timestamps);
-  play_data_interface_check_shutdown_if_fail(*p0_img_ptr, number_stamps);
-  play_data_interface_ptrs.push_back(p0_img_ptr);
+  if (publish_gray_images) {
+    auto p0_img_ptr = create_image_play_data_interface(
+      odometry_data_frame_prefix + "/p0", "p0_img", gray_image_folder_path / "image_0", timestamps);
+    play_data_interface_check_shutdown_if_fail(*p0_img_ptr, number_stamps);
+    play_data_interface_ptrs.push_back(p0_img_ptr);
 
-  auto p1_img_ptr = create_image_play_data_interface(
-    odometry_data_frame_prefix + "/p1", "p1_img", gray_image_folder_path / "image_1", timestamps);
-  play_data_interface_check_shutdown_if_fail(*p1_img_ptr, number_stamps);
-  play_data_interface_ptrs.push_back(p1_img_ptr);
+    auto p1_img_ptr = create_image_play_data_interface(
+      odometry_data_frame_prefix + "/p1", "p1_img", gray_image_folder_path / "image_1", timestamps);
+    play_data_interface_check_shutdown_if_fail(*p1_img_ptr, number_stamps);
+    play_data_interface_ptrs.push_back(p1_img_ptr);
+  }
 
   // Colour Images
+  // if (publish_colour_images) {
+  // }
 
   // Create replayer and add interfaces
   replayer_ptr_ = std::make_unique<DataReplayer>("kitti_replayer", timestamps);

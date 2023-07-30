@@ -33,6 +33,9 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     ground_truth_data_frame_prefix = LaunchConfiguration(
         "ground_truth_data_frame_prefix", default="ground_truth"
     )
+    enable_point_cloud = LaunchConfiguration("enable_point_cloud", default="true")
+    enable_gray_images = LaunchConfiguration("enable_gray_images", default="true")
+    enable_colour_images = LaunchConfiguration("enable_colour_images", default="true")
 
     # Odometry Node Launch Configurations
     odometry_data_frame_prefix = LaunchConfiguration(
@@ -180,6 +183,9 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
                 "ground_truth_data_frame_prefix": ground_truth_data_frame_prefix,
                 "odometry_data_frame_prefix": processed_odometry_data_frame_prefix,
                 "odometry_reference_frame_id": odometry_reference_frame_id,
+                "publish_point_cloud": enable_point_cloud,
+                "publish_gray_images": enable_gray_images,
+                "publish_colour_images": enable_colour_images,
             }
         ],
     )
@@ -319,6 +325,24 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="",
                 description="Path config file used for the odometry component. "
                 "Leave empty if launching odometry component is not required",
+            ),
+            DeclareLaunchArgument(
+                "enable_point_cloud",
+                default_value="true",
+                description="Replayer publishes and odometry node "
+                "(if configured to load) subscribes to the point cloud",
+            ),
+            DeclareLaunchArgument(
+                "enable_gray_images",
+                default_value="true",
+                description="Replayer publishes and odometry node "
+                "(if configured to load) subscribes to the gray images (p0 and p1)",
+            ),
+            DeclareLaunchArgument(
+                "enable_colour_images",
+                default_value="true",
+                description="Replayer publishes and odometry node "
+                "(if configured to load) subscribes to the colour images (p2 and p3)",
             ),
             OpaqueFunction(function=launch_setup),
         ]

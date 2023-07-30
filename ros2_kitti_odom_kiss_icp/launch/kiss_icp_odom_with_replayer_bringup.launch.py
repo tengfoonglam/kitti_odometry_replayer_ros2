@@ -56,6 +56,8 @@ def generate_launch_description() -> LaunchDescription:
                     "odometry_plugin": "r2k_odom_kiss_icp::KissICPOdometryNode",
                     "odometry_config_path": odometry_config_path,
                     "vehicle_sensor_link": "lidar",
+                    "enable_gray_images": "false",
+                    "enable_colour_images": "false",
                 }.items(),
             ),
         ]
