@@ -5,7 +5,14 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Path1/Topic1
+        - /RobotModel1
+        - /RobotModel1/Description Topic1
+        - /TF1
+        - /PointCloud21
+        - /Path1
+        - /RobotModel2
+        - /Path2
+        - /Path2/Offset1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -47,7 +54,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 1
+    - Alpha: 0.30000001192092896
       Class: rviz_default_plugins/RobotModel
       Collision Enabled: false
       Description File: ""
@@ -125,7 +132,7 @@ Visualization Manager:
       Visual Enabled: true
     - Class: rviz_default_plugins/TF
       Enabled: true
-      Frame Timeout: 15
+      Frame Timeout: 9999999980506448000
       Frames:
         All Enabled: true
         ground_truth/lidar:
@@ -151,6 +158,26 @@ Visualization Manager:
         map:
           Value: true
         odom:
+          Value: true
+        odometry/lidar:
+          Value: true
+        odometry/p0:
+          Value: true
+        odometry/p1:
+          Value: true
+        odometry/p2:
+          Value: true
+        odometry/p3:
+          Value: true
+        odometry/vehicle:
+          Value: true
+        odometry/wbl:
+          Value: true
+        odometry/wbr:
+          Value: true
+        odometry/wfl:
+          Value: true
+        odometry/wfr:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -179,7 +206,25 @@ Visualization Manager:
             ground_truth/wfr:
               {}
           odom:
-            {}
+            odometry/p0:
+              odometry/lidar:
+                {}
+              odometry/p1:
+                {}
+              odometry/p2:
+                {}
+              odometry/p3:
+                {}
+              odometry/vehicle:
+                {}
+              odometry/wbl:
+                {}
+              odometry/wbr:
+                {}
+              odometry/wfl:
+                {}
+              odometry/wfr:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -192,16 +237,16 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: Intensity
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
+      Max Intensity: 0.9900000095367432
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: PointCloud2
-      Position Transformer: ""
+      Position Transformer: XYZ
       Selectable: false
       Size (Pixels): 1
       Size (m): 0.009999999776482582
@@ -232,7 +277,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Pose Color: 255; 85; 255
-      Pose Style: Axes
+      Pose Style: None
       Radius: 0.05000000074505806
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
@@ -243,6 +288,110 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /ground_truth_path
+      Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /odometry/robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        p0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        p1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        p2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        p3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        vehicle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wbl:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wbr:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wfl:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wfr:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: RobotModel
+      TF Prefix: odometry
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 255; 85; 255
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.10000000149011612
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: Axes
+      Radius: 0.05000000074505806
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /odometry/path
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
@@ -345,26 +494,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/XYOrbit
-      Distance: 30.727210998535156
+      Class: rviz_default_plugins/Orbit
+      Distance: 41.46788787841797
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.18367528915405273
-        Y: 3.2964928150177
-        Z: 0
+        X: -0.5038739442825317
+        Y: 13.492310523986816
+        Z: 16.949512481689453
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: -0.8397964239120483
-      Target Frame: ground_truth/p0
-      Value: XYOrbit (rviz_default_plugins)
-      Yaw: 4.738580226898193
+      Pitch: -0.8347890377044678
+      Target Frame: odometry/p0
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 4.713588237762451
     Saved: ~
 Window Geometry:
   Displays:
@@ -380,7 +529,7 @@ Window Geometry:
     collapsed: false
   Image P3:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001560000035afc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000035a000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000035afc020000000cfb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000c00430061006d006500720061000000003d000000990000000000000000fb0000000a0049006d006100670065010000003d000000a90000000000000000fb0000000a0049006d00610067006501000000ec000000af0000000000000000fb0000000a0049006d00610067006501000001a1000000a90000000000000000fb0000000a0049006d00610067006501000002500000009d0000000000000000fb000000100049006d006100670065002000500030010000003d0000009d0000002800fffffffb000000100049006d00610067006500200050003101000000e0000000a50000002800fffffffb000000100049006d006100670065002000500032010000018b000000b00000002800fffffffb000000100049006d0061006700650020005000330100000241000000ac0000002800fffffffb0000000a0056006900650077007301000002f3000000a4000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007360000003efc0100000002fb0000000800540069006d0065010000000000000736000002fb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004c50000035a00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001a40000035afc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000035a000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000035afc0200000007fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb000000100049006d006100670065002000500030010000003d0000009a0000002800fffffffb000000100049006d00610067006500200050003101000000dd000000a60000002800fffffffb000000100049006d0061006700650020005000320100000189000000b50000002800fffffffb000000100049006d00610067006500200050003301000002440000009e0000002800fffffffb0000000a0056006900650077007301000002e8000000af000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007360000003efc0100000002fb0000000800540069006d0065010000000000000736000002fb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004770000035a00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:

@@ -13,7 +13,7 @@ using ImageMsg = sensor_msgs::msg::Image;
 
 static constexpr const char kGrayImageEncoding[]{"mono8"};
 static constexpr auto kGrayImageOpenCVType{CV_8UC1};
-static constexpr const char kColourImageEncoding[]{"rgb8"};
+static constexpr const char kColourImageEncoding[]{"bgr8"};
 static constexpr auto kColourImageOpenCVType{CV_8UC3};
 static constexpr std::size_t kNumberDigitsImageFilename{6};
 static constexpr const char kKittiImageExtension[]{".png"};

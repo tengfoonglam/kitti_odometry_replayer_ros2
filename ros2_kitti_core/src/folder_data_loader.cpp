@@ -37,17 +37,16 @@ bool FolderDataLoader<RT>::setup_internal(
     max_idx_ = std::min(data_idx_opt.value(), this->timestamps_.size() - 1);
     this->ready_ = true;
     RCLCPP_INFO(
-      this->logger_, "%s point cloud data loader setup successful. Number of point clouds: %zu",
+      this->logger_, "%s folder data loader setup successful. Number of files: %zu",
       this->name().c_str(), max_idx_ + 1);
   } else {
     if (timestamps.empty()) {
       RCLCPP_WARN(
-        this->logger_, "%s point cloud data loader setup failed. No timestamps provided",
+        this->logger_, "%s folder data loader setup failed. No timestamps provided",
         this->name().c_str());
     } else {
       RCLCPP_WARN(
-        this->logger_,
-        "%s point cloud data loader setup failed. Could not find point cloud files at %s",
+        this->logger_, "%s folder data loader setup failed. Could not find files at %s",
         this->name().c_str(), load_path.string().c_str());
     }
   }

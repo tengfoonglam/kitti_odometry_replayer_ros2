@@ -30,9 +30,21 @@ KissICPOdometryNode::KissICPOdometryNode(const rclcpp::NodeOptions & options)
   RCLCPP_INFO_STREAM(get_logger(), "Loaded settings: \n" << config_);
 
   odometry_ptr_ = std::make_unique<kiss_icp::pipeline::KissICP>(config_);
+
+  if (!point_cloud_sub_ptr_) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Point cloud subscriber has not been initialized when the Odometry Node Requires Point Cloud "
+      "Data");
+    rclcpp::shutdown();
+  }
+
+  point_cloud_sub_ptr_->registerCallback(
+    std::bind(&KissICPOdometryNode::point_cloud_cb, this, std::placeholders::_1));
 }
 
-void KissICPOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
+void KissICPOdometryNode::point_cloud_cb(
+  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pc_ptr)
 {
   std::scoped_lock lock(mutex_);
 

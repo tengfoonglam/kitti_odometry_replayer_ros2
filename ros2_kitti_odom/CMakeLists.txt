@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ros2_kitti_odom LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(message_filters REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ros2_kitti_interface REQUIRED)
@@ -33,6 +35,8 @@ add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
+                          image_transport
+                          message_filters
                           nav_msgs
                           rclcpp
                           ros2_kitti_interface
@@ -58,7 +62,9 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(nav_msgs
+ament_export_dependencies(image_transport
+                          message_filters
+                          nav_msgs
                           rclcpp
                           ros2_kitti_interface
                           sensor_msgs

@@ -8,6 +8,21 @@ namespace r2k_odom
 
 const tf2::Transform OdometryNodeBase::kIdentityTransform{tf2::Quaternion{0., 0., 0., 1.}};
 
+[[nodiscard]] std::unique_ptr<OdometryNodeBase::ImageSubscriber>
+create_image_subscriber_if_topic_not_empty(rclcpp::Node * node_ptr, const std::string & topic_name)
+{
+  const bool empty_topic_name = topic_name.empty();
+
+  if (empty_topic_name) {
+    return nullptr;
+  } else {
+    RCLCPP_INFO(
+      node_ptr->get_logger(), "Initialized image subscriber with topic %s", topic_name.c_str());
+    return std::make_unique<OdometryNodeBase::ImageSubscriber>(
+      node_ptr, topic_name, std::string{OdometryNodeBase::kImageTransportHint});
+  }
+}
+
 OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
 : Node("kitti_odometry", options),
   odom_tf_sensor_(kIdentityTransform),
@@ -18,7 +33,11 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
 
   // Declare Node params
   declare_parameter("odometry_frame_id", kDefaultOdometryFrameId);
-  declare_parameter("pointcloud_topic", kDefaultPointCloudTopicName);
+  declare_parameter("pointcloud_topic", "");
+  declare_parameter("p0_img_topic", "");
+  declare_parameter("p1_img_topic", "");
+  declare_parameter("p2_img_topic", "");
+  declare_parameter("p3_img_topic", "");
   declare_parameter("base_link_frame_id", "");
   declare_parameter("sensor_frame_id", "");
   declare_parameter("config_path", "");
@@ -36,13 +55,16 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   odometry_frame_id_ =
     parameters_client.get_parameter("odometry_frame_id", std::string{kDefaultOdometryFrameId});
   const auto pointcloud_topic =
-    parameters_client.get_parameter("pointcloud_topic", std::string{kDefaultPointCloudTopicName});
+    parameters_client.get_parameter("pointcloud_topic", std::string{""});
+  const auto p0_topic = parameters_client.get_parameter("p0_img_topic", std::string{""});
+  const auto p1_topic = parameters_client.get_parameter("p1_img_topic", std::string{""});
+  const auto p2_topic = parameters_client.get_parameter("p2_img_topic", std::string{""});
+  const auto p3_topic = parameters_client.get_parameter("p3_img_topic", std::string{""});
   base_link_frame_id_ = parameters_client.get_parameter("base_link_frame_id", std::string{""});
   sensor_frame_id_ = parameters_client.get_parameter("sensor_frame_id", std::string{""});
   config_path_ = parameters_client.get_parameter("config_path", std::string{""});
 
   shutdown_if_empty(odometry_frame_id_, "odometry_frame_id");
-  shutdown_if_empty(pointcloud_topic, "pointcloud_topic");
   shutdown_if_empty(base_link_frame_id_, "base_link_frame_id");
   shutdown_if_empty(sensor_frame_id_, "sensor_frame_id");
 
@@ -84,9 +106,17 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     std::bind(&OdometryNodeBase::reset, this, std::placeholders::_1, std::placeholders::_2));
   tf_broadcaster_ptr_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
   path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
-  point_cloud_sub_ptr_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    pointcloud_topic, 10,
-    std::bind(&OdometryNodeBase::point_cloud_cb, this, std::placeholders::_1));
+
+  if (!pointcloud_topic.empty()) {
+    point_cloud_sub_ptr_ = std::make_unique<PointCloudSubscriber>(this, pointcloud_topic);
+    RCLCPP_INFO(
+      get_logger(), "Initialized point cloud subscriber with topic %s", pointcloud_topic.c_str());
+  }
+
+  p0_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p0_topic);
+  p1_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p1_topic);
+  p2_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p2_topic);
+  p3_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p3_topic);
 }
 
 void OdometryNodeBase::shutdown_if_empty(
@@ -103,11 +133,6 @@ void OdometryNodeBase::reset(
   std::shared_ptr<TriggerSrv::Response> response_ptr)
 {
   response_ptr->success = reset_internal();
-}
-
-void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
-{
-  point_cloud_cb_internal(pc_ptr);
 }
 
 void OdometryNodeBase::notify_new_transform(

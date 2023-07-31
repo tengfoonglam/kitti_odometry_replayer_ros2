@@ -26,7 +26,7 @@ private:
   kiss_icp::pipeline::KISSConfig config_;
   r2k_core::Timer timer_;
 
-  void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
+  void point_cloud_cb(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pc_ptr);
   bool reset_internal() final;
 };
 

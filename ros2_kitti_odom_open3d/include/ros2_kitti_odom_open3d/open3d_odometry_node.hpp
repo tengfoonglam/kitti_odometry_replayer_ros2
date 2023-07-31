@@ -34,7 +34,7 @@ private:
   r2k_core::Timer normal_computation_timer_;
   r2k_core::Timer icp_timer_;
 
-  void point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr) final;
+  void point_cloud_cb(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pc_ptr);
   bool reset_internal() final;
 
   [[nodiscard]] tf2::Transform perform_registration(

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ros2_kitti_replay LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
+find_package(image_transport REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
@@ -37,6 +38,7 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_LIST} ${SOURCE_LIST})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_definitions(${PROJECT_NAME} PRIVATE "COMPOSITION_BUILDING_DLL")
 ament_target_dependencies(${PROJECT_NAME}
+                          image_transport
                           nav_msgs
                           rclcpp
                           rclcpp_components
@@ -72,7 +74,8 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(nav_msgs
+ament_export_dependencies(image_transport
+                          nav_msgs
                           rclcpp
                           rclcpp_components
                           ros2_kitti_core
