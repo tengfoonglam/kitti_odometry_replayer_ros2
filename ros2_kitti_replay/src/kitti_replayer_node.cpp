@@ -77,8 +77,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     parameters_client.get_parameter("odometry_reference_frame_id", std::string{""});
   const bool publish_point_cloud = parameters_client.get_parameter("publish_point_cloud", true);
   const bool publish_gray_images = parameters_client.get_parameter("publish_gray_images", true);
-  [[maybe_unused]] const bool publish_colour_images =
-    parameters_client.get_parameter("publish_colour_images", true);
+  const bool publish_colour_images = parameters_client.get_parameter("publish_colour_images", true);
 
   // Create TF listener and wait until odometry frame is available and publish it
   tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
@@ -199,8 +198,19 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   }
 
   // Colour Images
-  // if (publish_colour_images) {
-  // }
+  if (publish_colour_images) {
+    auto p2_img_ptr = create_image_play_data_interface(
+      odometry_data_frame_prefix + "/p2", "p2_img", colour_image_folder_path / "image_2",
+      timestamps);
+    play_data_interface_check_shutdown_if_fail(*p2_img_ptr, number_stamps);
+    play_data_interface_ptrs.push_back(p2_img_ptr);
+
+    auto p3_img_ptr = create_image_play_data_interface(
+      odometry_data_frame_prefix + "/p3", "p3_img", colour_image_folder_path / "image_3",
+      timestamps);
+    play_data_interface_check_shutdown_if_fail(*p3_img_ptr, number_stamps);
+    play_data_interface_ptrs.push_back(p3_img_ptr);
+  }
 
   // Create replayer and add interfaces
   replayer_ptr_ = std::make_unique<DataReplayer>("kitti_replayer", timestamps);
