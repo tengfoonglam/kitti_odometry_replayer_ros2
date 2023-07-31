@@ -38,7 +38,7 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   declare_parameter("p1_img_topic", "");
   declare_parameter("p2_img_topic", "");
   declare_parameter("p3_img_topic", "");
-  declare_parameter("bse_link_frame_id", "");
+  declare_parameter("base_link_frame_id", "");
   declare_parameter("sensor_frame_id", "");
   declare_parameter("config_path", "");
 

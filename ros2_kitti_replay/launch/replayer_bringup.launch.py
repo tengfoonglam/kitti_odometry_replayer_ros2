@@ -157,19 +157,19 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     )
 
     pointcloud_topic = PythonExpression(
-        ['"', POINTCLOUD_TOPIC, '" if ', enable_point_cloud, ' else ""']
+        ['"', POINTCLOUD_TOPIC, '" if "', enable_point_cloud, '" == "true" else ""']
     )
     p0_image_topic = PythonExpression(
-        ['"', P0_IMAGE_TOPIC, '" if ', enable_gray_images, ' else ""']
+        ['"', P0_IMAGE_TOPIC, '" if "', enable_gray_images, '" == "true" else ""']
     )
     p1_image_topic = PythonExpression(
-        ['"', P1_IMAGE_TOPIC, '" if ', enable_gray_images, ' else ""']
+        ['"', P1_IMAGE_TOPIC, '" if "', enable_gray_images, '" == "true" else ""']
     )
     p2_image_topic = PythonExpression(
-        ['"', P2_IMAGE_TOPIC, '" if ', enable_colour_images, ' else ""']
+        ['"', P2_IMAGE_TOPIC, '" if "', enable_colour_images, '" == "true" else ""']
     )
     p3_image_topic = PythonExpression(
-        ['"', P3_IMAGE_TOPIC, '" if ', enable_colour_images, ' else ""']
+        ['"', P3_IMAGE_TOPIC, '" if "', enable_colour_images, '" == "true" else ""']
     )
 
     # Set which RVIZ file to launch
