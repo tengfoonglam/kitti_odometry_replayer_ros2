@@ -6,6 +6,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <builtin_interfaces/msg/time.hpp>
+#include <image_transport/subscriber_filter.hpp>
 #include <memory>
 #include <mutex>
 #include <nav_msgs/msg/path.hpp>
@@ -23,8 +24,8 @@ namespace r2k_odom
 class OdometryNodeBase : public rclcpp::Node
 {
 public:
-  static constexpr const char * const kDefaultOdometryFrameId{"odom"};
-  static constexpr const char * const kDefaultPointCloudTopicName{"odom_pointcloud"};
+  static constexpr const char kDefaultOdometryFrameId[]{"odom"};
+  static constexpr const char kImageTransportHint[]{"raw"};
   static constexpr float kBaseLinkTFScannerLookupTimeout = 5.0;
   static const tf2::Transform kIdentityTransform;
 
@@ -35,8 +36,8 @@ public:
   using Publisher = rclcpp::Publisher<T>;
   template <typename T>
   using Service = rclcpp::Service<T>;
-  template <typename T>
-  using Subscriber = message_filters::Subscriber<T>;
+  using PointCloudSubscriber = message_filters::Subscriber<sensor_msgs::msg::PointCloud2>;
+  using ImageSubscriber = image_transport::SubscriberFilter;
 
   explicit OdometryNodeBase(const rclcpp::NodeOptions & options);
 
@@ -61,7 +62,11 @@ protected:
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ptr_;
   Service<TriggerSrv>::SharedPtr reset_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Path>> path_pub_ptr_;
-  std::unique_ptr<Subscriber<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
+  std::unique_ptr<PointCloudSubscriber> point_cloud_sub_ptr_;
+  std::unique_ptr<ImageSubscriber> p0_img_sub_ptr_;
+  std::unique_ptr<ImageSubscriber> p1_img_sub_ptr_;
+  std::unique_ptr<ImageSubscriber> p2_img_sub_ptr_;
+  std::unique_ptr<ImageSubscriber> p3_img_sub_ptr_;
   std::string odometry_frame_id_;
   std::string base_link_frame_id_;
   std::string sensor_frame_id_;

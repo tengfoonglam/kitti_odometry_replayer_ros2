@@ -141,6 +141,11 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     VEHICLE_BASE_LINK = "p0"  # Fixed by URDF
     ODOMETRY_FRAME_ID = "odom"  # Fixed for convenience
     POINTCLOUD_TOPIC = "lidar_pc"  # Fixed in Replayer
+    P0_IMAGE_TOPIC = "p0_img"  # Fixed in Replayer
+    P1_IMAGE_TOPIC = "p1_img"  # Fixed in Replayer
+    P2_IMAGE_TOPIC = "p2_img"  # Fixed in Replayer
+    P3_IMAGE_TOPIC = "p3_img"  # Fixed in Replayer
+
     odometry_reference_frame_id = PathJoinSubstitution(
         [ground_truth_data_frame_prefix, VEHICLE_BASE_LINK]
     )
@@ -149,6 +154,22 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     )
     odometry_sensor_link_frame_id = PathJoinSubstitution(
         [odometry_data_frame_prefix, vehicle_sensor_link]
+    )
+
+    pointcloud_topic = PythonExpression(
+        ['"', POINTCLOUD_TOPIC, '" if ', enable_point_cloud, ' else ""']
+    )
+    p0_image_topic = PythonExpression(
+        ['"', P0_IMAGE_TOPIC, '" if ', enable_gray_images, ' else ""']
+    )
+    p1_image_topic = PythonExpression(
+        ['"', P1_IMAGE_TOPIC, '" if ', enable_gray_images, ' else ""']
+    )
+    p2_image_topic = PythonExpression(
+        ['"', P2_IMAGE_TOPIC, '" if ', enable_colour_images, ' else ""']
+    )
+    p3_image_topic = PythonExpression(
+        ['"', P3_IMAGE_TOPIC, '" if ', enable_colour_images, ' else ""']
     )
 
     # Set which RVIZ file to launch
@@ -208,7 +229,11 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
             {
                 "use_sim_time": use_sim_time,
                 "odometry_frame_id": ODOMETRY_FRAME_ID,
-                "pointcloud_topic": POINTCLOUD_TOPIC,
+                "pointcloud_topic": pointcloud_topic,
+                "p0_img_topic": p0_image_topic,
+                "p1_img_topic": p1_image_topic,
+                "p2_img_topic": p2_image_topic,
+                "p3_img_topic": p3_image_topic,
                 "base_link_frame_id": odometry_base_link_frame_id,
                 "sensor_frame_id": odometry_sensor_link_frame_id,
                 "config_path": odometry_config_path,
