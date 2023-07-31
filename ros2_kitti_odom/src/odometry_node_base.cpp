@@ -84,9 +84,11 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     std::bind(&OdometryNodeBase::reset, this, std::placeholders::_1, std::placeholders::_2));
   tf_broadcaster_ptr_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
   path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
-  point_cloud_sub_ptr_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    pointcloud_topic, 10,
-    std::bind(&OdometryNodeBase::point_cloud_cb, this, std::placeholders::_1));
+
+  if (!pointcloud_topic.empty()) {
+    point_cloud_sub_ptr_ =
+      std::make_unique<Subscriber<sensor_msgs::msg::PointCloud2>>(this, pointcloud_topic);
+  }
 }
 
 void OdometryNodeBase::shutdown_if_empty(
@@ -103,11 +105,6 @@ void OdometryNodeBase::reset(
   std::shared_ptr<TriggerSrv::Response> response_ptr)
 {
   response_ptr->success = reset_internal();
-}
-
-void OdometryNodeBase::point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
-{
-  point_cloud_cb_internal(pc_ptr);
 }
 
 void OdometryNodeBase::notify_new_transform(

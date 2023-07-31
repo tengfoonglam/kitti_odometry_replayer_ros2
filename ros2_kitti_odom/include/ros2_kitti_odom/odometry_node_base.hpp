@@ -1,6 +1,7 @@
 #ifndef ROS2_KITTI_ODOM__ODOMETRY_NODE_BASE_HPP_
 #define ROS2_KITTI_ODOM__ODOMETRY_NODE_BASE_HPP_
 
+#include <message_filters/subscriber.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -35,7 +36,7 @@ public:
   template <typename T>
   using Service = rclcpp::Service<T>;
   template <typename T>
-  using Subscription = rclcpp::Subscription<T>;
+  using Subscriber = message_filters::Subscriber<T>;
 
   explicit OdometryNodeBase(const rclcpp::NodeOptions & options);
 
@@ -46,8 +47,6 @@ protected:
     [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,
     std::shared_ptr<TriggerSrv::Response> response_ptr);
 
-  void point_cloud_cb(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr);
-
   virtual bool reset_internal()
   {
     std::scoped_lock lock(path_mutex_);
@@ -56,17 +55,13 @@ protected:
   }
   virtual void notify_new_transform(
     const Time & timestamp, const tf2::Transform & sensor_start_tf_sensor_current);
-  virtual void point_cloud_cb_internal(
-    [[maybe_unused]] sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
-  {
-  }
 
   void shutdown_if_empty(const std::string & string_to_check, const std::string & param_name);
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ptr_;
   Service<TriggerSrv>::SharedPtr reset_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Path>> path_pub_ptr_;
-  std::shared_ptr<Subscription<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
+  std::unique_ptr<Subscriber<sensor_msgs::msg::PointCloud2>> point_cloud_sub_ptr_;
   std::string odometry_frame_id_;
   std::string base_link_frame_id_;
   std::string sensor_frame_id_;

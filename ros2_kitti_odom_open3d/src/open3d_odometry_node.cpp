@@ -29,16 +29,29 @@ Open3DOdometryNode::Open3DOdometryNode(const rclcpp::NodeOptions & options)
   }
 
   RCLCPP_INFO_STREAM(get_logger(), "Loaded settings: \n" << config_);
+
+  if (!point_cloud_sub_ptr_) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Point cloud subscriber has not been initialized when the Odometry Node Requires Point Cloud "
+      "Data");
+    rclcpp::shutdown();
+  }
+
+  point_cloud_sub_ptr_->registerCallback(
+    std::bind(&Open3DOdometryNode::point_cloud_cb, this, std::placeholders::_1));
 }
 
-void Open3DOdometryNode::point_cloud_cb_internal(sensor_msgs::msg::PointCloud2::SharedPtr pc_ptr)
+void Open3DOdometryNode::point_cloud_cb(
+  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pc_ptr)
 {
   std::scoped_lock lock(mutex_);
 
   // Convert to Open3D Point Cloud
   auto current_pc_ptr = std::make_shared<O3DPointCloud>();
+  const auto pc_copy_ptr = std::make_shared<sensor_msgs::msg::PointCloud2>(*pc_ptr);
   static constexpr bool kSkipColour = true;
-  open3d_conversions::rosToOpen3d(pc_ptr, *current_pc_ptr, kSkipColour);
+  open3d_conversions::rosToOpen3d(pc_copy_ptr, *current_pc_ptr, kSkipColour);
 
   // Decimate point cloud and compute normals
   normal_computation_timer_.start();
