@@ -234,11 +234,6 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   replayer_ptr_->set_state_change_cb(std::move(state_change_cb));
 
   // Bind services
-  set_time_range_service_ptr_ = create_service<SetTimeRangeSrv>(
-    "~/set_time_range",
-    std::bind(
-      &KITTIReplayerNode::set_time_range, this, std::placeholders::_1, std::placeholders::_2));
-
   step_service_ptr_ = create_service<StepSrv>(
     "~/step",
     std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
@@ -281,30 +276,6 @@ void KITTIReplayerNode::pause(
   std::shared_ptr<TriggerSrv::Response> response_ptr)
 {
   response_ptr->success = replayer_ptr_->pause();
-}
-
-void KITTIReplayerNode::set_time_range(
-  const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
-  std::shared_ptr<SetTimeRangeSrv::Response> response_ptr)
-{
-  using r2k_core::Timestamp;
-
-  const auto success = replayer_ptr_->set_time_range(
-    {Timestamp(request_ptr->request.start_time, RCL_SYSTEM_TIME),
-     Timestamp(request_ptr->request.end_time, RCL_SYSTEM_TIME)});
-  response_ptr->response.success = success;
-
-  if (success && ground_truth_path_opt_.has_value()) {
-    const auto & ground_truth_path = ground_truth_path_opt_.value();
-    const auto replayer_state = replayer_ptr_->get_replayer_state();
-    const auto start_it = std::next(std::cbegin(ground_truth_path), replayer_state.next_idx);
-    const auto end_idx = (replayer_state.target_idx + 1 >= replayer_state.data_size)
-                           ? replayer_state.data_size
-                           : replayer_state.target_idx + 1;
-    const auto end_it = std::next(std::cbegin(ground_truth_path), end_idx);
-    publish_ground_truth_path({start_it, end_it});
-    RCLCPP_INFO(get_logger(), "Updated ground truth path");
-  }
 }
 
 template <typename T>
