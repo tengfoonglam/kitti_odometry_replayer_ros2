@@ -102,8 +102,8 @@ class TestProcessStepRequestNormalOperations
 
 TEST_P(TestProcessStepRequestNormalOperations, NormalOperationsTests)
 {
-  const auto [request, next_idx, data_size, answer] = GetParam();
-  const auto output = DataReplayer::process_step_request(request, next_idx, data_size);
+  const auto [request, next_idx, end_idx, answer] = GetParam();
+  const auto output = DataReplayer::process_step_request(request, next_idx, end_idx);
   assert_optional_index_range_equal(answer, output);
 }
 

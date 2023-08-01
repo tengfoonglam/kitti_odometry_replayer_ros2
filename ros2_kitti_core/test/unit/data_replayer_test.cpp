@@ -193,8 +193,8 @@ TEST_F(TestDataReplayer, NormalInitializationTest)
 {
   const auto state = replayer.get_replayer_state();
   ASSERT_EQ(state.start_time, kTimestamps.front());
-  ASSERT_EQ(state.final_time, kTimestamps.back());
-  ASSERT_EQ(state.data_size, kTimestamps.size());
+  ASSERT_EQ(state.end_time, kTimestamps.back());
+  ASSERT_EQ(state.end_idx, kTimestamps.size());
 }
 
 TEST_F(TestDataReplayer, EmptyTimestampInitializationTest)

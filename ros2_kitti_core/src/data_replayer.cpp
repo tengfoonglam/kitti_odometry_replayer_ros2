@@ -27,9 +27,9 @@ bool operator==(const DataReplayer::ReplayerState & lhs, const DataReplayer::Rep
 {
   return (lhs.playing == rhs.playing) && (lhs.replay_speed == rhs.replay_speed) &&
          (lhs.start_time == rhs.start_time) && (lhs.current_time == rhs.current_time) &&
-         (lhs.target_time == rhs.target_time) && (lhs.final_time == rhs.final_time) &&
+         (lhs.target_time == rhs.target_time) && (lhs.end_time == rhs.end_time) &&
          (lhs.next_idx == rhs.next_idx) && (lhs.target_idx == rhs.target_idx) &&
-         (lhs.data_size == rhs.data_size);
+         (lhs.end_idx == rhs.end_idx);
 }
 
 DataReplayer::DataReplayer(
@@ -48,8 +48,8 @@ DataReplayer::DataReplayer(
     replayer_state.start_time = timestamps.front();
     replayer_state.current_time = timestamps.front();
     replayer_state.target_time = timestamps.back();
-    replayer_state.final_time = timestamps.back();
-    replayer_state.data_size = timestamps.size();
+    replayer_state.end_time = timestamps.back();
+    replayer_state.end_idx = timestamps.size();
     replayer_state.next_idx = 0;
     replayer_state.target_idx = timestamps.size() - 1;
   });
@@ -145,7 +145,7 @@ bool DataReplayer::step(const StepRequest & step_request)
 {
   // Return if invalid step request
   const auto state = get_replayer_state();
-  const auto index_range_opt = process_step_request(step_request, state.next_idx, state.data_size);
+  const auto index_range_opt = process_step_request(step_request, state.next_idx, state.end_idx);
 
   if (!index_range_opt.has_value()) {
     RCLCPP_WARN(logger_, "Replayer %s cannot process invalid step request", name_.c_str());
@@ -162,10 +162,10 @@ bool DataReplayer::step(const StepRequest & step_request)
 bool DataReplayer::play(float replay_speed)
 {
   const auto state = get_replayer_state();
-  const bool resumable = state.next_idx < state.data_size;
+  const bool resumable = state.next_idx < state.end_idx;
   if (resumable) {
     const auto target_idx =
-      state.next_idx <= state.target_idx ? state.target_idx : state.data_size - 1;
+      state.next_idx <= state.target_idx ? state.target_idx : state.end_idx - 1;
     return play_index_range({state.next_idx, target_idx}, replay_speed);
   } else {
     RCLCPP_WARN(
@@ -220,7 +220,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, float replay
   RCLCPP_INFO(
     logger_, "Replayer %s starting to play from %fs to %fs at x%f speed", name_.c_str(),
     state_.current_time.seconds(),
-    timestamps_.at(std::min<std::size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
+    timestamps_.at(std::min<std::size_t>(state_.target_idx, state_.end_idx - 1)).seconds(),
     state_.replay_speed);
 
   return true;
@@ -291,16 +291,16 @@ void DataReplayer::play_loop()
     // Update state
     modify_state([this, &timestamps = std::as_const(timestamps_)](auto & replayer_state) {
       replayer_state.next_idx++;
-      replayer_state.current_time = replayer_state.next_idx < replayer_state.data_size
+      replayer_state.current_time = replayer_state.next_idx < replayer_state.end_idx
                                       ? timestamps.at(replayer_state.next_idx)
-                                      : replayer_state.final_time;
+                                      : replayer_state.end_time;
 
       RCLCPP_DEBUG(logger_, "Current time: %fs", replayer_state.current_time.seconds());
     });
 
     // If play has been completed, break from loop
     const auto play_complete = with_lock(state_mutex_, [&] [[nodiscard]] () {
-      return (state_.next_idx > state_.target_idx) || (state_.next_idx >= state_.data_size);
+      return (state_.next_idx > state_.target_idx) || (state_.next_idx >= state_.end_idx);
     });
     if (play_complete) {
       break;
@@ -469,7 +469,7 @@ DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
 }
 
 DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
-  const StepRequest & step_request, std::size_t next_idx, std::size_t data_size)
+  const StepRequest & step_request, std::size_t next_idx, std::size_t end_idx)
 {
   // Invalid if step size is zero
   if (step_request.number_steps < 1) {
@@ -477,12 +477,12 @@ DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
   }
 
   // Invalid if replayer is at the end of the timeline
-  if (next_idx >= data_size) {
+  if (next_idx >= end_idx) {
     return std::nullopt;
   }
 
   // Compute target index and return
-  const auto target_idx = std::min(next_idx + step_request.number_steps - 1, data_size - 1);
+  const auto target_idx = std::min(next_idx + step_request.number_steps - 1, end_idx - 1);
   return std::make_pair(next_idx, target_idx);
 }
 

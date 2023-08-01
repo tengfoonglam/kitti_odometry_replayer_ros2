@@ -309,10 +309,10 @@ KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
   output.start_time = replayer_state.start_time;
   output.current_time = replayer_state.current_time;
   output.target_time = replayer_state.target_time;
-  output.final_time = replayer_state.final_time;
+  output.end_time = replayer_state.end_time;
   output.next_idx = replayer_state.next_idx;
   output.target_idx = replayer_state.target_idx;
-  output.data_size = replayer_state.data_size;
+  output.end_idx = replayer_state.end_idx;
   return output;
 }
 

@@ -26,10 +26,10 @@ public:
     Timestamp start_time;
     Timestamp current_time;
     Timestamp target_time;
-    Timestamp final_time;
+    Timestamp end_time;
     std::size_t next_idx{0};
     std::size_t target_idx{0};
-    std::size_t data_size{0};
+    std::size_t end_idx{0};
 
     friend bool operator==(const ReplayerState & lhs, const ReplayerState & rhs);
   };
@@ -85,7 +85,7 @@ public:
     const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps);
 
   [[nodiscard]] static IndexRangeOpt process_step_request(
-    const StepRequest & step_request, std::size_t next_idx, std::size_t data_size);
+    const StepRequest & step_request, std::size_t next_idx, std::size_t end_idx);
 
 private:
   const std::string name_;
