@@ -150,7 +150,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   if (ground_truth_path_opt_.has_value()) {
     PoseDataLoader::Header pose_header;
     pose_header.frame_id = kDefaultGlobalFrame;
-    const std::string child_id = ground_truth_data_frame_prefix + "/p0";
+    const std::string child_id = add_prefix(ground_truth_data_frame_prefix, "p0");
     auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
       "pose_loader", get_logger().get_child("pose_loader"), pose_header, child_id);
     pose_loader_ptr->setup(timestamps, poses_path);
@@ -168,7 +168,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   // Point Cloud
   if (publish_point_cloud) {
     PointCloudDataLoader::Header pc_header;
-    pc_header.frame_id = odometry_data_frame_prefix + "/lidar";
+    pc_header.frame_id = add_prefix(odometry_data_frame_prefix, "lidar");
     auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
       "pc_loader", get_logger().get_child("pc_loader"), pc_header);
     pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
@@ -187,12 +187,14 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   // Gray Images
   if (publish_gray_images) {
     auto p0_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p0", "p0_img", gray_image_folder_path / "image_0", timestamps);
+      add_prefix(odometry_data_frame_prefix, "p0"), "p0_img", gray_image_folder_path / "image_0",
+      timestamps);
     play_data_interface_check_shutdown_if_fail(*p0_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p0_img_ptr);
 
     auto p1_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p1", "p1_img", gray_image_folder_path / "image_1", timestamps);
+      add_prefix(odometry_data_frame_prefix, "p1"), "p1_img", gray_image_folder_path / "image_1",
+      timestamps);
     play_data_interface_check_shutdown_if_fail(*p1_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p1_img_ptr);
   }
@@ -200,13 +202,13 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   // Colour Images
   if (publish_colour_images) {
     auto p2_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p2", "p2_img", colour_image_folder_path / "image_2",
+      add_prefix(odometry_data_frame_prefix, "p2"), "p2_img", colour_image_folder_path / "image_2",
       timestamps);
     play_data_interface_check_shutdown_if_fail(*p2_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p2_img_ptr);
 
     auto p3_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p3", "p3_img", colour_image_folder_path / "image_3",
+      add_prefix(odometry_data_frame_prefix, "p3"), "p3_img", colour_image_folder_path / "image_3",
       timestamps);
     play_data_interface_check_shutdown_if_fail(*p3_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p3_img_ptr);
@@ -396,6 +398,11 @@ KITTIReplayerNode::create_image_play_data_interface(
     },
     std::move(img_loader_ptr));
   return interface_ptr;
+}
+
+std::string KITTIReplayerNode::add_prefix(const std::string & prefix, const std::string & segment)
+{
+  return prefix.empty() ? segment : (prefix + "/" + segment);
 }
 
 }  // namespace r2k_replay

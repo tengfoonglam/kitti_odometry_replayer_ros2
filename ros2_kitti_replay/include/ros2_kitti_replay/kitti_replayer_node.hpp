@@ -82,6 +82,9 @@ private:
   void play_data_interface_check_shutdown_if_fail(
     const LoadAndPlayDataInterface<T> & interface, std::size_t expected_data_size);
 
+  [[nodiscard]] static std::string add_prefix(
+    const std::string & prefix, const std::string & segment);
+
   void play(
     const std::shared_ptr<PlaySrv::Request> request_ptr,
     std::shared_ptr<PlaySrv::Response> response_ptr);
