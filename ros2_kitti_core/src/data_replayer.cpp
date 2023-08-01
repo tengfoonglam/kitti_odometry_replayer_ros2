@@ -18,11 +18,6 @@ DataReplayer::StepRequest::StepRequest(std::size_t number_steps_in, float replay
 {
 }
 
-DataReplayer::DataReplayer(const std::string & name, const Timestamps & timestamps)
-: DataReplayer(name, timestamps, rclcpp::get_logger(name))
-{
-}
-
 bool operator==(const DataReplayer::ReplayerState & lhs, const DataReplayer::ReplayerState & rhs)
 {
   return (lhs.playing == rhs.playing) && (lhs.replay_speed == rhs.replay_speed) &&
@@ -438,7 +433,7 @@ DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
   }
 
   // Return if start/end indexes are invalid
-  if (start_idx >= timestamps.size() || end_idx >= timestamps.size()) {
+  if (start_idx >= timestamps.size() || end_idx > timestamps.size()) {
     return std::nullopt;
   }
 

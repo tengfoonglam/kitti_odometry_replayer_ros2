@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -54,8 +55,9 @@ public:
   using IndexRange = std::tuple<std::size_t, std::size_t>;
   using IndexRangeOpt = std::optional<IndexRange>;
 
-  explicit DataReplayer(const std::string & name, const Timestamps & timestamps);
-  DataReplayer(const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger);
+  DataReplayer(
+    const std::string & name, const Timestamps & timestamps,
+    rclcpp::Logger logger = rclcpp::get_logger("replayer"));
 
   DataReplayer(const DataReplayer & other) = delete;
   DataReplayer & operator=(const DataReplayer & other) = delete;
