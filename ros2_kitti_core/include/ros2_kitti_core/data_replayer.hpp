@@ -83,7 +83,8 @@ public:
   ~DataReplayer();
 
   [[nodiscard]] static IndexRangeOpt process_set_time_range_request(
-    const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps);
+    const SetTimeRangeRequest & set_time_range_request, std::size_t start_idx, std::size_t end_idx,
+    const Timestamps & timestamps);
 
   [[nodiscard]] static IndexRangeOpt process_step_request(
     const StepRequest & step_request, std::size_t next_idx, std::size_t end_idx);

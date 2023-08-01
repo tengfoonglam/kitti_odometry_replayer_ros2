@@ -118,7 +118,8 @@ bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_req
   }
 
   // Return if invalid play request
-  const auto index_range_opt = process_set_time_range_request(set_time_range_request, timestamps_);
+  const auto index_range_opt = process_set_time_range_request(
+    set_time_range_request, state_.start_idx, state_.end_idx, timestamps_);
   if (!index_range_opt.has_value()) {
     RCLCPP_WARN(
       logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
@@ -127,12 +128,12 @@ bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_req
   }
 
   // Modify next and target times
-  const auto [start_index, target_index] = index_range_opt.value();
-  modify_state_no_lock([start_index, target_index, this](auto & replayer_state) {
-    replayer_state.current_time = timestamps_.at(start_index);
-    replayer_state.next_idx = start_index;
-    replayer_state.target_time = timestamps_.at(target_index);
-    replayer_state.target_idx = target_index;
+  const auto [next_idx, target_idx] = index_range_opt.value();
+  modify_state_no_lock([next_idx, target_idx, this](auto & replayer_state) {
+    replayer_state.current_time = timestamps_.at(next_idx);
+    replayer_state.next_idx = next_idx;
+    replayer_state.target_time = timestamps_.at(target_idx);
+    replayer_state.target_idx = target_idx;
 
     RCLCPP_INFO(
       logger_, "Replayer set to play time range between from %fs to %fs",
@@ -191,7 +192,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, float replay
   }
 
   // Update state and start thread
-  const auto [start_index, target_index] = index_range;
+  const auto [next_idx, target_idx] = index_range;
 
   if (replay_speed <= 0.0) {
     RCLCPP_WARN(
@@ -202,12 +203,12 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, float replay
   }
 
   // Update state
-  modify_state_no_lock([start_index, target_index, replay_speed, this](auto & replayer_state) {
+  modify_state_no_lock([next_idx, target_idx, replay_speed, this](auto & replayer_state) {
     replayer_state.playing = true;
-    replayer_state.current_time = timestamps_.at(start_index);
-    replayer_state.next_idx = start_index;
-    replayer_state.target_time = timestamps_.at(target_index);
-    replayer_state.target_idx = target_index;
+    replayer_state.current_time = timestamps_.at(next_idx);
+    replayer_state.next_idx = next_idx;
+    replayer_state.target_time = timestamps_.at(target_idx);
+    replayer_state.target_idx = target_idx;
     replayer_state.replay_speed = std::max(0.0f, replay_speed);
   });
 
@@ -428,10 +429,16 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
 };
 
 DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
-  const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps)
+  const SetTimeRangeRequest & set_time_range_request, std::size_t start_idx, std::size_t end_idx,
+  const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
   if (timestamps.empty()) {
+    return std::nullopt;
+  }
+
+  // Return if start/end indexes are invalid
+  if (start_idx >= timestamps.size() || end_idx >= timestamps.size()) {
     return std::nullopt;
   }
 
@@ -445,28 +452,28 @@ DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
   }
 
   // Find starting index
-  std::size_t start_index{0};
-  for (auto i = start_index; i < timestamps.size(); i++) {
+  std::size_t next_idx{start_idx};
+  for (auto i = next_idx; i < timestamps.size(); i++) {
     const auto & timestamp = timestamps.at(i);
-    start_index = i;
+    next_idx = i;
     if (timestamp >= start_time) {
       break;
     }
   }
 
   // Find target index
-  std::size_t target_index{timestamps.size()};
-  for (auto i = target_index; i-- > 0;) {
+  std::size_t target_idx{end_idx};
+  for (auto i = target_idx; i-- > 0;) {
     const auto & timestamp = timestamps.at(i);
-    target_index = i;
+    target_idx = i;
     if (timestamp <= target_time) {
       break;
     }
   }
 
   // Return result
-  return (target_index >= start_index) ? std::optional(std::make_tuple(start_index, target_index))
-                                       : std::nullopt;
+  return (target_idx >= next_idx) ? std::optional(std::make_tuple(next_idx, target_idx))
+                                  : std::nullopt;
 }
 
 DataReplayer::IndexRangeOpt DataReplayer::process_step_request(

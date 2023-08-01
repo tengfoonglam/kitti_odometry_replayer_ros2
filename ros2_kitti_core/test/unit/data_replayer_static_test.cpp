@@ -50,7 +50,10 @@ const auto & kTimestamps = TestProcessSetTimeRangeRequestNormalOperations::kTime
 TEST_P(TestProcessSetTimeRangeRequestNormalOperations, NormalOperationsTests)
 {
   const auto [request, timestamps, answer] = GetParam();
-  const auto output = DataReplayer::process_set_time_range_request(request, timestamps);
+  static constexpr std::size_t start_idx{0};
+  const std::size_t end_idx{timestamps.size()};
+  const auto output =
+    DataReplayer::process_set_time_range_request(request, start_idx, end_idx, timestamps);
   assert_optional_index_range_equal(answer, output);
 }
 
@@ -89,10 +92,17 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(TestDataReplayerStatic, EmptyTimestampTests)
 {
+  static const Timestamps empty_timestamps{};
+  static constexpr std::size_t start_idx{0};
+  const std::size_t end_idx{empty_timestamps.size()};
+
   const auto index_opt = DataReplayer::process_set_time_range_request(
-    SetTimeRangeRequest(Timestamp(), Timestamp(1)), Timestamps{});
+    SetTimeRangeRequest(Timestamp(), Timestamp(1)), start_idx, end_idx, empty_timestamps);
   ASSERT_FALSE(index_opt.has_value());
 }
+
+// TODO(tf) Add test cases for invalid start, end index values
+// TODO(tf) Add test cases for cropping due to non-zero start, end index values
 
 class TestProcessStepRequestNormalOperations
 : public TestDataReplayerStatic,
