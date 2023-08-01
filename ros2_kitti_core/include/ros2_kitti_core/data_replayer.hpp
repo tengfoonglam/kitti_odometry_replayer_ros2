@@ -27,6 +27,7 @@ public:
     Timestamp current_time;
     Timestamp target_time;
     Timestamp end_time;
+    std::size_t start_idx{0};
     std::size_t next_idx{0};
     std::size_t target_idx{0};
     std::size_t end_idx{0};

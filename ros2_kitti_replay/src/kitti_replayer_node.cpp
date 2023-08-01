@@ -310,6 +310,7 @@ KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
   output.current_time = replayer_state.current_time;
   output.target_time = replayer_state.target_time;
   output.end_time = replayer_state.end_time;
+  output.start_idx = replayer_state.start_idx;
   output.next_idx = replayer_state.next_idx;
   output.target_idx = replayer_state.target_idx;
   output.end_idx = replayer_state.end_idx;

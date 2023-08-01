@@ -29,7 +29,7 @@ bool operator==(const DataReplayer::ReplayerState & lhs, const DataReplayer::Rep
          (lhs.start_time == rhs.start_time) && (lhs.current_time == rhs.current_time) &&
          (lhs.target_time == rhs.target_time) && (lhs.end_time == rhs.end_time) &&
          (lhs.next_idx == rhs.next_idx) && (lhs.target_idx == rhs.target_idx) &&
-         (lhs.end_idx == rhs.end_idx);
+         (lhs.end_idx == rhs.end_idx) && (lhs.start_idx == rhs.start_idx);
 }
 
 DataReplayer::DataReplayer(
@@ -45,6 +45,7 @@ DataReplayer::DataReplayer(
   }
 
   modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
+    replayer_state.start_idx = 0;
     replayer_state.start_time = timestamps.front();
     replayer_state.current_time = timestamps.front();
     replayer_state.target_time = timestamps.back();
