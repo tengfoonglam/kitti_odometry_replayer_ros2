@@ -40,7 +40,9 @@ public:
   {
     Timestamp start_time;
     Timestamp end_time;
-    TimeRange(const Timestamp & start_time_in, const Timestamp & end_time_in);
+    TimeRange(
+      const Timestamp & start_time_in = Timestamp{0, 0},
+      const Timestamp & end_time_in = Timestamp{0, 0});
   };
 
   struct StepRequest
@@ -57,7 +59,8 @@ public:
 
   DataReplayer(
     const std::string & name, const Timestamps & timestamps,
-    rclcpp::Logger logger = rclcpp::get_logger("replayer"));
+    rclcpp::Logger logger = rclcpp::get_logger("replayer"),
+    const TimeRange & time_range = TimeRange());
 
   DataReplayer(const DataReplayer & other) = delete;
   DataReplayer & operator=(const DataReplayer & other) = delete;
@@ -84,7 +87,7 @@ public:
 
   ~DataReplayer();
 
-  [[nodiscard]] static IndexRangeOpt process_set_next_play_time_range_request(
+  [[nodiscard]] static IndexRangeOpt get_index_range_from_time_range(
     const TimeRange & set_next_play_time_range_request, std::size_t start_idx, std::size_t end_idx,
     const Timestamps & timestamps);
 

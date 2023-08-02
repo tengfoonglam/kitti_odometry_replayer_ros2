@@ -54,7 +54,7 @@ TEST_P(TestProcessTimeRangeNormalOperations, NormalOperationsTests)
   ASSERT_GT(timestamps.size(), std::size_t{0});
   const std::size_t end_idx{timestamps.size()};
   const auto output =
-    DataReplayer::process_set_next_play_time_range_request(request, start_idx, end_idx, timestamps);
+    DataReplayer::get_index_range_from_time_range(request, start_idx, end_idx, timestamps);
   assert_optional_index_range_equal(answer, output);
 }
 
@@ -96,7 +96,7 @@ TEST(TestDataReplayerStatic, EmptyTimestampTests)
   static constexpr std::size_t start_idx{0};
   static constexpr std::size_t end_idx{0};
 
-  const auto index_opt = DataReplayer::process_set_next_play_time_range_request(
+  const auto index_opt = DataReplayer::get_index_range_from_time_range(
     TimeRange(Timestamp(), Timestamp(1)), start_idx, end_idx, empty_timestamps);
   ASSERT_FALSE(index_opt.has_value());
 }

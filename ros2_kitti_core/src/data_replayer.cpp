@@ -27,7 +27,8 @@ bool operator==(const DataReplayer::ReplayerState & lhs, const DataReplayer::Rep
 }
 
 DataReplayer::DataReplayer(
-  const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger)
+  const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger,
+  const TimeRange & time_range)
 : name_(name), timestamps_(timestamps), logger_(logger)
 {
   if (timestamps.empty()) {
@@ -38,15 +39,46 @@ DataReplayer::DataReplayer(
     return;
   }
 
-  modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
-    replayer_state.start_idx = 0;
-    replayer_state.start_time = timestamps.front();
-    replayer_state.current_time = timestamps.front();
-    replayer_state.target_time = timestamps.back();
-    replayer_state.end_time = timestamps.back();
-    replayer_state.end_idx = timestamps.size();
-    replayer_state.next_idx = 0;
-    replayer_state.target_idx = timestamps.size() - 1;
+  const Timestamp kZeroTime{0, 0};
+  std::size_t start_idx = 0;
+  std::size_t end_idx = timestamps_.size();
+  Timestamp start_time = timestamps.front();
+  Timestamp end_time = timestamps.back();
+
+  const bool specific_time_range_specified =
+    !(time_range.start_time == kZeroTime && time_range.end_time == kZeroTime);
+  if (specific_time_range_specified) {
+    const auto index_range_opt =
+      get_index_range_from_time_range(time_range, 0, timestamps_.size(), timestamps_);
+
+    if (index_range_opt.has_value()) {
+      const auto & index_range = index_range_opt.value();
+      start_idx = std::get<0>(index_range);
+      end_idx = std::get<1>(index_range);
+      start_time = timestamps.at(start_idx);
+      end_time = timestamps.at(end_idx);
+      RCLCPP_INFO(
+        logger_, "Replayer %s specified to play from %f to %f seconds", name_.c_str(),
+        time_range.start_time.seconds(), time_range.end_time.seconds());
+    } else {
+      RCLCPP_ERROR(
+        logger_,
+        "Failed to process the specified time range for replayer %s. Defaulting to playing entire "
+        "timeline",
+        name_.c_str());
+    }
+  }
+
+  modify_state([&timestamps = std::as_const(timestamps_), start_idx, end_idx, start_time,
+                end_time](auto & replayer_state) {
+    replayer_state.start_idx = start_idx;
+    replayer_state.start_time = start_time;
+    replayer_state.current_time = start_time;
+    replayer_state.target_time = end_time;
+    replayer_state.end_time = end_time;
+    replayer_state.end_idx = end_idx;
+    replayer_state.next_idx = start_idx;
+    replayer_state.target_idx = end_idx - 1;
   });
 }
 
@@ -112,7 +144,7 @@ bool DataReplayer::set_next_play_time_range(const TimeRange & set_next_play_time
   }
 
   // Return if invalid play request
-  const auto index_range_opt = process_set_next_play_time_range_request(
+  const auto index_range_opt = get_index_range_from_time_range(
     set_next_play_time_range_request, state_.start_idx, state_.end_idx, timestamps_);
   if (!index_range_opt.has_value()) {
     RCLCPP_WARN(
@@ -423,7 +455,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   modify_state_no_lock(modify_cb);
 };
 
-DataReplayer::IndexRangeOpt DataReplayer::process_set_next_play_time_range_request(
+DataReplayer::IndexRangeOpt DataReplayer::get_index_range_from_time_range(
   const TimeRange & set_next_play_time_range_request, std::size_t start_idx, std::size_t end_idx,
   const Timestamps & timestamps)
 {
