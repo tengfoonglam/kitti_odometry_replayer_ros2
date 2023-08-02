@@ -63,10 +63,10 @@ private:
 class TestDataReplayer : public ::testing::Test
 {
 public:
-  static constexpr std::size_t kNumberTimestamps = 10;
-  static constexpr std::size_t kStartTimeSeconds = 2;
-  static constexpr auto kTimestampIntervalNs = static_cast<size_t>(1e7);
-  static constexpr auto kCheckIntervalNs = kTimestampIntervalNs / 100;
+  static constexpr std::size_t kNumberTimestamps{10};
+  static constexpr std::size_t kStartTimeSeconds{2};
+  static constexpr auto kTimestampIntervalNs{static_cast<size_t>(1e7)};
+  static constexpr auto kCheckIntervalNs{kTimestampIntervalNs / 100};
   static const Timestamps kTimestamps;
 
   StateChangeCallback get_state_change_callback()
@@ -305,7 +305,7 @@ TEST_F(TestDataReplayer, ResetTest)
 
 TEST_F(TestDataReplayer, StepThenPlayTest)
 {
-  constexpr std::size_t numberSteps = 3;
+  constexpr std::size_t numberSteps{3};
   ASSERT_LT(numberSteps, kNumberTimestamps);
   ASSERT_TRUE(replayer.step(StepRequest{numberSteps}));
   wait_till_replayer_no_longer_playing();
