@@ -17,7 +17,7 @@ using r2k_core::DataReplayer;
 using r2k_core::PlayDataInterfaceBase;
 using r2k_core::Timestamp;
 using r2k_core::Timestamps;
-using SetTimeRangeRequest = r2k_core::DataReplayer::SetTimeRangeRequest;
+using TimeRange = r2k_core::DataReplayer::TimeRange;
 using ReplayerState = r2k_core::DataReplayer::ReplayerState;
 using StateChangeCallback = r2k_core::DataReplayer::StateChangeCallback;
 using StepRequest = r2k_core::DataReplayer::StepRequest;
@@ -143,7 +143,7 @@ public:
   void play_timeline_halfway(const std::function<void()> & interrupt_play_cb)
   {
     ASSERT_TRUE(
-      replayer.set_time_range(SetTimeRangeRequest(kTimestamps.front(), kTimestamps.back())));
+      replayer.set_next_play_time_range(TimeRange(kTimestamps.front(), kTimestamps.back())));
     ASSERT_TRUE(replayer.play());
     ASSERT_TRUE(replayer.is_playing());
     std::this_thread::sleep_for(
@@ -214,7 +214,7 @@ TEST_F(TestDataReplayer, PlayTest)
 TEST_F(TestDataReplayer, SetTimeRangeBasicTest)
 {
   ASSERT_TRUE(
-    replayer.set_time_range(SetTimeRangeRequest(kTimestamps.front(), kTimestamps.back())));
+    replayer.set_next_play_time_range(TimeRange(kTimestamps.front(), kTimestamps.back())));
   ASSERT_TRUE(replayer.play());
   wait_till_replayer_no_longer_playing();
   assert_timeline_played_exactly_once();
@@ -240,8 +240,8 @@ TEST_F(TestDataReplayer, SetTimeRangeSegmentTest)
   const Timestamps truncated_timestamp{
     &kTimestamps[start_index], &kTimestamps[start_index + segment_length]};
 
-  ASSERT_TRUE(replayer.set_time_range(
-    SetTimeRangeRequest(truncated_timestamp.front(), truncated_timestamp.back())));
+  ASSERT_TRUE(replayer.set_next_play_time_range(
+    TimeRange(truncated_timestamp.front(), truncated_timestamp.back())));
   ASSERT_TRUE(replayer.play());
   wait_till_replayer_no_longer_playing();
   assert_timeline_played_exactly_once(start_index, truncated_timestamp);

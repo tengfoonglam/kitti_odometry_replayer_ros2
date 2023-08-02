@@ -7,9 +7,8 @@
 namespace r2k_core
 {
 
-DataReplayer::SetTimeRangeRequest::SetTimeRangeRequest(
-  const Timestamp & start_time_in, const Timestamp & target_time_in)
-: start_time(start_time_in), target_time(target_time_in)
+DataReplayer::TimeRange::TimeRange(const Timestamp & start_time_in, const Timestamp & end_time_in)
+: start_time(start_time_in), end_time(end_time_in)
 {
 }
 
@@ -100,7 +99,7 @@ bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
   return true;
 }
 
-bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_request)
+bool DataReplayer::set_next_play_time_range(const TimeRange & set_next_play_time_range_request)
 {
   // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
   // bug
@@ -113,12 +112,13 @@ bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_req
   }
 
   // Return if invalid play request
-  const auto index_range_opt = process_set_time_range_request(
-    set_time_range_request, state_.start_idx, state_.end_idx, timestamps_);
+  const auto index_range_opt = process_set_next_play_time_range_request(
+    set_next_play_time_range_request, state_.start_idx, state_.end_idx, timestamps_);
   if (!index_range_opt.has_value()) {
     RCLCPP_WARN(
       logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
-      set_time_range_request.start_time.seconds(), set_time_range_request.target_time.seconds());
+      set_next_play_time_range_request.start_time.seconds(),
+      set_next_play_time_range_request.end_time.seconds());
     return false;
   }
 
@@ -423,8 +423,8 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   modify_state_no_lock(modify_cb);
 };
 
-DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
-  const SetTimeRangeRequest & set_time_range_request, std::size_t start_idx, std::size_t end_idx,
+DataReplayer::IndexRangeOpt DataReplayer::process_set_next_play_time_range_request(
+  const TimeRange & set_next_play_time_range_request, std::size_t start_idx, std::size_t end_idx,
   const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
@@ -438,11 +438,11 @@ DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
   }
 
   // Aliases
-  const auto & start_time = set_time_range_request.start_time;
-  const auto & target_time = set_time_range_request.target_time;
+  const auto & start_time = set_next_play_time_range_request.start_time;
+  const auto & end_time = set_next_play_time_range_request.end_time;
 
-  // Return if start_time is after last timestamp or target_time is before first timestamp
-  if (start_time > timestamps.back() || target_time < timestamps.front()) {
+  // Return if start_time is after last timestamp or end_time is before first timestamp
+  if (start_time > timestamps.back() || end_time < timestamps.front()) {
     return std::nullopt;
   }
 
@@ -461,7 +461,7 @@ DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
   for (auto i = target_idx; i-- > 0;) {
     const auto & timestamp = timestamps.at(i);
     target_idx = i;
-    if (timestamp <= target_time) {
+    if (timestamp <= end_time) {
       break;
     }
   }

@@ -10,7 +10,7 @@ namespace
 using r2k_core::DataReplayer;
 using r2k_core::Timestamp;
 using r2k_core::Timestamps;
-using SetTimeRangeRequest = DataReplayer::SetTimeRangeRequest;
+using TimeRange = DataReplayer::TimeRange;
 using StepRequest = DataReplayer::StepRequest;
 using IndexRangeOpt = DataReplayer::IndexRangeOpt;
 }  // namespace
@@ -28,67 +28,66 @@ public:
   }
 };
 
-class TestProcessSetTimeRangeRequestNormalOperations
+class TestProcessTimeRangeNormalOperations
 : public TestDataReplayerStatic,
-  public ::testing::WithParamInterface<std::tuple<SetTimeRangeRequest, Timestamps, IndexRangeOpt>>
+  public ::testing::WithParamInterface<std::tuple<TimeRange, Timestamps, IndexRangeOpt>>
 {
 public:
   static const Timestamps kTimestamps;
   static constexpr std::size_t kStartTimeS{1};
   static constexpr std::size_t kEndTimeS{5};
 };
-const Timestamps TestProcessSetTimeRangeRequestNormalOperations::kTimestamps =
+const Timestamps TestProcessTimeRangeNormalOperations::kTimestamps =
   r2k_core_test::generate_test_timestamps(
-    TestProcessSetTimeRangeRequestNormalOperations::kStartTimeS,
-    TestProcessSetTimeRangeRequestNormalOperations::kEndTimeS);
+    TestProcessTimeRangeNormalOperations::kStartTimeS,
+    TestProcessTimeRangeNormalOperations::kEndTimeS);
 
 namespace
 {
-const auto & kTimestamps = TestProcessSetTimeRangeRequestNormalOperations::kTimestamps;
+const auto & kTimestamps = TestProcessTimeRangeNormalOperations::kTimestamps;
 }  // namespace
 
-TEST_P(TestProcessSetTimeRangeRequestNormalOperations, NormalOperationsTests)
+TEST_P(TestProcessTimeRangeNormalOperations, NormalOperationsTests)
 {
   const auto [request, timestamps, answer] = GetParam();
   static constexpr std::size_t start_idx{0};
   ASSERT_GT(timestamps.size(), std::size_t{0});
   const std::size_t end_idx{timestamps.size()};
   const auto output =
-    DataReplayer::process_set_time_range_request(request, start_idx, end_idx, timestamps);
+    DataReplayer::process_set_next_play_time_range_request(request, start_idx, end_idx, timestamps);
   assert_optional_index_range_equal(answer, output);
 }
 
 INSTANTIATE_TEST_SUITE_P(
-  TestDataReplayerStatic, TestProcessSetTimeRangeRequestNormalOperations,
+  TestDataReplayerStatic, TestProcessTimeRangeNormalOperations,
   ::testing::Values(
     std::make_tuple(
-      SetTimeRangeRequest(kTimestamps.front(), kTimestamps.back()), kTimestamps,
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps,
       std::optional(std::make_tuple(0, kTimestamps.size() - 1))),
     std::make_tuple(
-      SetTimeRangeRequest(kTimestamps.front(), kTimestamps.front()), kTimestamps,
+      TimeRange(kTimestamps.front(), kTimestamps.front()), kTimestamps,
+      std::optional(std::make_tuple(0, 0))),
+    std::make_tuple(TimeRange(Timestamp(0, 5), Timestamp(0, 5)), kTimestamps, std::nullopt),
+    std::make_tuple(
+      TimeRange(Timestamp(0, 5), Timestamp(1, 5)), kTimestamps,
       std::optional(std::make_tuple(0, 0))),
     std::make_tuple(
-      SetTimeRangeRequest(Timestamp(0, 5), Timestamp(0, 5)), kTimestamps, std::nullopt),
-    std::make_tuple(
-      SetTimeRangeRequest(Timestamp(0, 5), Timestamp(1, 5)), kTimestamps,
-      std::optional(std::make_tuple(0, 0))),
-    std::make_tuple(
-      SetTimeRangeRequest(Timestamp(0, 0), Timestamp(6, 0)), kTimestamps,
+      TimeRange(Timestamp(0, 0), Timestamp(6, 0)), kTimestamps,
       std::optional(std::make_tuple(0, kTimestamps.size() - 1))),
     std::make_tuple(
-      SetTimeRangeRequest(Timestamp(2, 5), Timestamp(4, 5)), kTimestamps,
+      TimeRange(Timestamp(2, 5), Timestamp(4, 5)), kTimestamps,
       std::optional(std::make_tuple(2, 3))),
     std::make_tuple(
-      SetTimeRangeRequest(Timestamp(2, 5), Timestamp(6, 0)), kTimestamps,
+      TimeRange(Timestamp(2, 5), Timestamp(6, 0)), kTimestamps,
       std::optional(std::make_tuple(2, kTimestamps.size() - 1))),
     std::make_tuple(
-      SetTimeRangeRequest(Timestamp(0, 0), Timestamp(3, 5)), kTimestamps,
+      TimeRange(Timestamp(0, 0), Timestamp(3, 5)), kTimestamps,
       std::optional(std::make_tuple(0, 2))),
     std::make_tuple(
-      SetTimeRangeRequest(Timestamp(2, 0), Timestamp(2, 0)), kTimestamps,
+      TimeRange(Timestamp(2, 0), Timestamp(2, 0)), kTimestamps,
       std::optional(std::make_tuple(1, 1))),
     std::make_tuple(
-      SetTimeRangeRequest(kTimestamps.back(), kTimestamps.back()), kTimestamps,
+      TimeRange(kTimestamps.back(), kTimestamps.back()), kTimestamps,
       std::optional(std::make_tuple(kTimestamps.size() - 1, kTimestamps.size() - 1)))));
 
 TEST(TestDataReplayerStatic, EmptyTimestampTests)
@@ -97,8 +96,8 @@ TEST(TestDataReplayerStatic, EmptyTimestampTests)
   static constexpr std::size_t start_idx{0};
   static constexpr std::size_t end_idx{0};
 
-  const auto index_opt = DataReplayer::process_set_time_range_request(
-    SetTimeRangeRequest(Timestamp(), Timestamp(1)), start_idx, end_idx, empty_timestamps);
+  const auto index_opt = DataReplayer::process_set_next_play_time_range_request(
+    TimeRange(Timestamp(), Timestamp(1)), start_idx, end_idx, empty_timestamps);
   ASSERT_FALSE(index_opt.has_value());
 }
 
