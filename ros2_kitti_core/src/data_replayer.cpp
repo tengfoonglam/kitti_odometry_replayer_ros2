@@ -58,8 +58,10 @@ DataReplayer::DataReplayer(
       start_time = timestamps.at(start_idx);
       end_time = timestamps.at(end_idx);
       RCLCPP_INFO(
-        logger_, "Replayer %s specified to play from %f to %f seconds", name_.c_str(),
-        time_range.start_time.seconds(), time_range.end_time.seconds());
+        logger_,
+        "Replayer %s configured to play from %f to %f seconds (Might differ slightly from "
+        "specified time)",
+        name_.c_str(), start_time.seconds(), end_time.seconds());
     } else {
       RCLCPP_ERROR(
         logger_,
