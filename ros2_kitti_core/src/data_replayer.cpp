@@ -466,7 +466,7 @@ DataReplayer::IndexRangeOpt DataReplayer::get_index_range_from_time_range(
   }
 
   // Return if start/end indexes are invalid
-  if (start_idx >= timestamps.size() || end_idx > timestamps.size()) {
+  if (start_idx >= timestamps.size() || end_idx > timestamps.size() || start_idx > end_idx) {
     return std::nullopt;
   }
 

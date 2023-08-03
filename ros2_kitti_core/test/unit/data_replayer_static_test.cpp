@@ -60,6 +60,16 @@ INSTANTIATE_TEST_SUITE_P(
   TestDataReplayerStatic, TestProcessTimeRangeNormalOperations,
   ::testing::Values(
     std::make_tuple(
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, 1, 1, std::nullopt),
+    std::make_tuple(
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, 0, kTimestamps.size() + 1,
+      std::nullopt),
+    std::make_tuple(
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, 2, 1, std::nullopt),
+    std::make_tuple(
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, kTimestamps.size(),
+      kTimestamps.size(), std::nullopt),
+    std::make_tuple(
       TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(0, kTimestamps.size() - 1))),
     std::make_tuple(
@@ -88,7 +98,22 @@ INSTANTIATE_TEST_SUITE_P(
       std::optional(std::make_tuple(1, 1))),
     std::make_tuple(
       TimeRange(kTimestamps.back(), kTimestamps.back()), kTimestamps, 0, kTimestamps.size(),
-      std::optional(std::make_tuple(kTimestamps.size() - 1, kTimestamps.size() - 1)))));
+      std::optional(std::make_tuple(kTimestamps.size() - 1, kTimestamps.size() - 1))),
+    std::make_tuple(
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, 1, 2,
+      std::optional(std::make_tuple(1, 1))),
+    std::make_tuple(
+      TimeRange(Timestamp(0, 0), Timestamp(3, 5)), kTimestamps, 1, 3,
+      std::optional(std::make_tuple(1, 2))),
+    std::make_tuple(
+      TimeRange(Timestamp(2, 0), Timestamp(3, 5)), kTimestamps, 1, 3,
+      std::optional(std::make_tuple(1, 2))),
+    std::make_tuple(
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, 1, 4,
+      std::optional(std::make_tuple(1, 3))),
+    std::make_tuple(
+      TimeRange(Timestamp(3, 0), kTimestamps.back()), kTimestamps, 1, 4,
+      std::optional(std::make_tuple(2, 3)))));
 
 TEST(TestDataReplayerStatic, EmptyTimestampTests)
 {
@@ -100,9 +125,6 @@ TEST(TestDataReplayerStatic, EmptyTimestampTests)
     TimeRange(Timestamp(), Timestamp(1)), start_idx, end_idx, empty_timestamps);
   ASSERT_FALSE(index_opt.has_value());
 }
-
-// TODO(tf) Add test cases for invalid start, end index values
-// TODO(tf) Add test cases for cropping due to non-zero start, end index values
 
 class TestProcessStepRequestNormalOperations
 : public TestDataReplayerStatic,
