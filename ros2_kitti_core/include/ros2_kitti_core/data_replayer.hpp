@@ -75,7 +75,7 @@ public:
 
   bool play(float replay_speed = 1.0f);
 
-  bool set_next_play_time_range(const TimeRange & set_next_play_time_range_request);
+  bool set_next_play_time_range(const TimeRange & next_play_time_range);
 
   bool step(const StepRequest & step_request);
 
@@ -88,7 +88,7 @@ public:
   ~DataReplayer();
 
   [[nodiscard]] static IndexRangeOpt get_index_range_from_time_range(
-    const TimeRange & set_next_play_time_range_request, std::size_t start_idx, std::size_t end_idx,
+    const TimeRange & next_play_time_range, std::size_t start_idx, std::size_t end_idx,
     const Timestamps & timestamps);
 
   [[nodiscard]] static IndexRangeOpt process_step_request(

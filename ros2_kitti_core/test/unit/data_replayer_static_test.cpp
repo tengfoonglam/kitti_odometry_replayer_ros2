@@ -30,7 +30,8 @@ public:
 
 class TestProcessTimeRangeNormalOperations
 : public TestDataReplayerStatic,
-  public ::testing::WithParamInterface<std::tuple<TimeRange, Timestamps, IndexRangeOpt>>
+  public ::testing::WithParamInterface<
+    std::tuple<TimeRange, Timestamps, std::size_t, std::size_t, IndexRangeOpt>>
 {
 public:
   static const Timestamps kTimestamps;
@@ -49,10 +50,7 @@ const auto & kTimestamps = TestProcessTimeRangeNormalOperations::kTimestamps;
 
 TEST_P(TestProcessTimeRangeNormalOperations, NormalOperationsTests)
 {
-  const auto [request, timestamps, answer] = GetParam();
-  static constexpr std::size_t start_idx{0};
-  ASSERT_GT(timestamps.size(), std::size_t{0});
-  const std::size_t end_idx{timestamps.size()};
+  const auto [request, timestamps, start_idx, end_idx, answer] = GetParam();
   const auto output =
     DataReplayer::get_index_range_from_time_range(request, start_idx, end_idx, timestamps);
   assert_optional_index_range_equal(answer, output);
@@ -62,32 +60,34 @@ INSTANTIATE_TEST_SUITE_P(
   TestDataReplayerStatic, TestProcessTimeRangeNormalOperations,
   ::testing::Values(
     std::make_tuple(
-      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps,
+      TimeRange(kTimestamps.front(), kTimestamps.back()), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(0, kTimestamps.size() - 1))),
     std::make_tuple(
-      TimeRange(kTimestamps.front(), kTimestamps.front()), kTimestamps,
-      std::optional(std::make_tuple(0, 0))),
-    std::make_tuple(TimeRange(Timestamp(0, 5), Timestamp(0, 5)), kTimestamps, std::nullopt),
-    std::make_tuple(
-      TimeRange(Timestamp(0, 5), Timestamp(1, 5)), kTimestamps,
+      TimeRange(kTimestamps.front(), kTimestamps.front()), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(0, 0))),
     std::make_tuple(
-      TimeRange(Timestamp(0, 0), Timestamp(6, 0)), kTimestamps,
+      TimeRange(Timestamp(0, 5), Timestamp(0, 5)), kTimestamps, 0, kTimestamps.size(),
+      std::nullopt),
+    std::make_tuple(
+      TimeRange(Timestamp(0, 5), Timestamp(1, 5)), kTimestamps, 0, kTimestamps.size(),
+      std::optional(std::make_tuple(0, 0))),
+    std::make_tuple(
+      TimeRange(Timestamp(0, 0), Timestamp(6, 0)), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(0, kTimestamps.size() - 1))),
     std::make_tuple(
-      TimeRange(Timestamp(2, 5), Timestamp(4, 5)), kTimestamps,
+      TimeRange(Timestamp(2, 5), Timestamp(4, 5)), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(2, 3))),
     std::make_tuple(
-      TimeRange(Timestamp(2, 5), Timestamp(6, 0)), kTimestamps,
+      TimeRange(Timestamp(2, 5), Timestamp(6, 0)), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(2, kTimestamps.size() - 1))),
     std::make_tuple(
-      TimeRange(Timestamp(0, 0), Timestamp(3, 5)), kTimestamps,
+      TimeRange(Timestamp(0, 0), Timestamp(3, 5)), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(0, 2))),
     std::make_tuple(
-      TimeRange(Timestamp(2, 0), Timestamp(2, 0)), kTimestamps,
+      TimeRange(Timestamp(2, 0), Timestamp(2, 0)), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(1, 1))),
     std::make_tuple(
-      TimeRange(kTimestamps.back(), kTimestamps.back()), kTimestamps,
+      TimeRange(kTimestamps.back(), kTimestamps.back()), kTimestamps, 0, kTimestamps.size(),
       std::optional(std::make_tuple(kTimestamps.size() - 1, kTimestamps.size() - 1)))));
 
 TEST(TestDataReplayerStatic, EmptyTimestampTests)

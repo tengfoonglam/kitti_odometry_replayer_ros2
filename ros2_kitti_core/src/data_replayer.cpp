@@ -133,7 +133,7 @@ bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
   return true;
 }
 
-bool DataReplayer::set_next_play_time_range(const TimeRange & set_next_play_time_range_request)
+bool DataReplayer::set_next_play_time_range(const TimeRange & next_play_time_range)
 {
   // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
   // bug
@@ -147,12 +147,11 @@ bool DataReplayer::set_next_play_time_range(const TimeRange & set_next_play_time
 
   // Return if invalid play request
   const auto index_range_opt = get_index_range_from_time_range(
-    set_next_play_time_range_request, state_.start_idx, state_.end_idx, timestamps_);
+    next_play_time_range, state_.start_idx, state_.end_idx, timestamps_);
   if (!index_range_opt.has_value()) {
     RCLCPP_WARN(
       logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
-      set_next_play_time_range_request.start_time.seconds(),
-      set_next_play_time_range_request.end_time.seconds());
+      next_play_time_range.start_time.seconds(), next_play_time_range.end_time.seconds());
     return false;
   }
 
@@ -458,7 +457,7 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
 };
 
 DataReplayer::IndexRangeOpt DataReplayer::get_index_range_from_time_range(
-  const TimeRange & set_next_play_time_range_request, std::size_t start_idx, std::size_t end_idx,
+  const TimeRange & next_play_time_range, std::size_t start_idx, std::size_t end_idx,
   const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
@@ -472,8 +471,8 @@ DataReplayer::IndexRangeOpt DataReplayer::get_index_range_from_time_range(
   }
 
   // Aliases
-  const auto & start_time = set_next_play_time_range_request.start_time;
-  const auto & end_time = set_next_play_time_range_request.end_time;
+  const auto & start_time = next_play_time_range.start_time;
+  const auto & end_time = next_play_time_range.end_time;
 
   // Return if start_time is after last timestamp or end_time is before first timestamp
   if (start_time > timestamps.back() || end_time < timestamps.front()) {
