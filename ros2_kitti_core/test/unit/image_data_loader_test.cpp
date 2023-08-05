@@ -23,7 +23,7 @@ TEST_P(TestImageDataLoader, NormalOperation)
   ASSERT_EQ(number_timestamps, timestamps.size());
 
   std::vector<std::size_t> image_indices(number_images);
-  std::iota(image_indices.begin(), image_indices.end(), 0);
+  std::iota(std::begin(image_indices), std::end(image_indices), 0);
   ASSERT_EQ(number_images, image_indices.size());
 
   write_example_image_files(image_indices, kTestFolderPath, r2k_core::kGrayImageOpenCVType);

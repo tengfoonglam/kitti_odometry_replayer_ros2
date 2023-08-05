@@ -23,12 +23,13 @@ TEST_P(TestPointCloudDataLoader, NormalOperation)
   ASSERT_EQ(number_timestamps, timestamps.size());
 
   std::vector<std::size_t> pc_indices(number_point_clouds);
-  std::iota(pc_indices.begin(), pc_indices.end(), 0);
+  std::iota(std::begin(pc_indices), std::end(pc_indices), 0);
   ASSERT_EQ(number_point_clouds, pc_indices.size());
 
   std::vector<KITTIPoints> point_clouds(number_point_clouds);
   std::transform(
-    pc_indices.cbegin(), pc_indices.cend(), point_clouds.begin(), [](const auto indice) {
+    std::cbegin(pc_indices), std::cend(pc_indices), std::begin(point_clouds),
+    [](const auto indice) {
       return KITTIPoints(indice, KITTIPoint{1.0f, 2.0f, 3.0f, 4.0f});
     });
   ASSERT_EQ(number_point_clouds, point_clouds.size());

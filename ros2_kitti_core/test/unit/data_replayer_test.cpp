@@ -270,7 +270,8 @@ TEST_F(TestDataReplayer, PauseWhilePlayingTest)
   wait_till_replayer_no_longer_playing(replayer);
   ASSERT_FALSE(replayer.is_playing());
   assert_timeline_played_exactly_once(
-    resume_idx, Timestamps{std::next(kTimestamps.cbegin(), resume_idx), kTimestamps.cend()});
+    resume_idx,
+    Timestamps{std::next(std::cbegin(kTimestamps), resume_idx), std::cend(kTimestamps)});
 }
 
 TEST_F(TestDataReplayer, StopWhilePlayingTest)
@@ -325,7 +326,7 @@ TEST_F(TestDataReplayer, TruncatedTimestampInitialization)
   const Timestamp kTargetTime{kTimestamps.at(kTargetIdx)};
   const Timestamp kEndTime{kTargetTime};
   const Timestamps truncated_timestamps(
-    kTimestamps.cbegin() + kStartIdx, kTimestamps.cbegin() + kTargetIdx + 1);
+    std::cbegin(kTimestamps) + kStartIdx, std::cbegin(kTimestamps) + kTargetIdx + 1);
 
   const auto assert_expected_initial_truncated_state = [&](const auto & state) {
     ASSERT_EQ(state.start_idx, kStartIdx);

@@ -235,7 +235,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     const auto state = replayer_ptr_->get_replayer_state();
     const auto & full_path = ground_truth_path_opt_.value();
     const Transforms path_to_visualize{
-      full_path.cbegin() + state.start_idx, full_path.cbegin() + state.end_idx};
+      std::cbegin(full_path) + state.start_idx, std::cbegin(full_path) + state.end_idx};
     publish_ground_truth_path(path_to_visualize);
   }
 
