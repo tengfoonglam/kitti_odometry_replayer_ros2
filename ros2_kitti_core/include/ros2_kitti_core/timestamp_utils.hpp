@@ -11,6 +11,13 @@ namespace r2k_core
 using Timestamp = rclcpp::Time;
 using Timestamps = std::vector<rclcpp::Time>;
 
+template <typename T>
+[[nodiscard]] inline Timestamp to_timestamp(T seconds)
+{
+  static_assert(std::is_floating_point_v<T>, "Input argument must be a floating type");
+  return Timestamp(static_cast<int64_t>(seconds * 1e9));
+}
+
 /**
  * @brief      Extract timestamps from a KITTI times .txt file
  * @note       It is the user's responsibility to ensure that

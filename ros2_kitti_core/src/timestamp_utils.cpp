@@ -28,8 +28,7 @@ std::optional<Timestamps> extract_timestamps_from_file(const std::filesystem::pa
   // If successful, parse each line as a double then convert to ros time
   Timestamps output;
   for (std::string line; std::getline(times_file, line);) {
-    const double timestamp_seconds = std::atof(line.c_str());
-    output.emplace_back(static_cast<std::int64_t>(timestamp_seconds * 1e9));
+    output.push_back(to_timestamp(std::stod(line)));
   }
 
   return output;
