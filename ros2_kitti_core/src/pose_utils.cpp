@@ -52,7 +52,7 @@ std::optional<Transforms> extract_poses_from_file(const std::filesystem::path & 
 
     std::array<double, expected_number_elements> elems;
     std::transform(
-      string_elements.cbegin(), string_elements.cend(), elems.begin(),
+      std::cbegin(string_elements), std::cend(string_elements), std::begin(elems),
       [](const auto & str) -> double { return std::atof(str.c_str()); });
 
     const tf2::Vector3 translation{elems[3], elems[7], elems[11]};

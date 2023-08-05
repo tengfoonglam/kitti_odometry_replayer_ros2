@@ -16,7 +16,6 @@
 #include <ros2_kitti_core/timestamp_utils.hpp>
 #include <ros2_kitti_interface/msg/replayer_state.hpp>
 #include <ros2_kitti_interface/srv/play.hpp>
-#include <ros2_kitti_interface/srv/set_time_range.hpp>
 #include <ros2_kitti_interface/srv/step.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
@@ -31,6 +30,7 @@ public:
   static constexpr const char kDefaultOdometryDataFramePrefix[]{"odometry"};
   static constexpr const char kDefaultGlobalFrame[]{"map"};
   static constexpr const char kDefaultOdomFrame[]{"odom"};
+  static constexpr const char kVehicleBaseLink[]{"p0"};
   static constexpr float kOdometryFrameLookupTimeout = 5.0;
   static constexpr std::size_t kPublisherHistoryDepth = 10;
 
@@ -39,7 +39,6 @@ public:
 
   using ReplayerStateMsg = ros2_kitti_interface::msg::ReplayerState;
   using PlaySrv = ros2_kitti_interface::srv::Play;
-  using SetTimeRangeSrv = ros2_kitti_interface::srv::SetTimeRange;
   using StepSrv = ros2_kitti_interface::srv::Step;
   using TriggerSrv = std_srvs::srv::Trigger;
   template <typename T>
@@ -59,7 +58,6 @@ public:
     const DataReplayer::ReplayerState & replayer_state);
 
 private:
-  std::string odometry_reference_frame_id_;
   std::optional<Transforms> ground_truth_path_opt_;
 
   std::unique_ptr<DataReplayer> replayer_ptr_;
@@ -67,7 +65,6 @@ private:
   Service<PlaySrv>::SharedPtr play_service_ptr_;
   Service<StepSrv>::SharedPtr step_service_ptr_;
   Service<TriggerSrv>::SharedPtr pause_service_ptr_;
-  Service<SetTimeRangeSrv>::SharedPtr set_time_range_service_ptr_;
   std::shared_ptr<Publisher<nav_msgs::msg::Path>> gt_path_pub_ptr_;
   std::unique_ptr<tf2_ros::Buffer> tf_listener_buffer_ptr_;
   std::unique_ptr<tf2_ros::TransformListener> tf_listener_ptr_;
@@ -82,6 +79,9 @@ private:
   void play_data_interface_check_shutdown_if_fail(
     const LoadAndPlayDataInterface<T> & interface, std::size_t expected_data_size);
 
+  [[nodiscard]] static std::string add_prefix(
+    const std::string & prefix, const std::string & segment);
+
   void play(
     const std::shared_ptr<PlaySrv::Request> request_ptr,
     std::shared_ptr<PlaySrv::Response> response_ptr);
@@ -93,10 +93,6 @@ private:
   void pause(
     [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,
     std::shared_ptr<TriggerSrv::Response> response_ptr);
-
-  void set_time_range(
-    const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
-    std::shared_ptr<SetTimeRangeSrv::Response> response_ptr);
 
   void publish_ground_truth_path(const Transforms & transforms);
 

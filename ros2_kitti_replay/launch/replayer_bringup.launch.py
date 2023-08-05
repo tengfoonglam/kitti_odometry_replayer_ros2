@@ -30,6 +30,9 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     # Replayer Launch Configurations
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
 
+    start_time = LaunchConfiguration("start_time", default="0.0")
+    end_time = LaunchConfiguration("end_time", default="0.0")
+
     dataset_number = LaunchConfiguration("dataset_number", default="00")
     dataset_path = LaunchConfiguration(
         "dataset_path", default="/media/ltf/LTFUbuntuSSD/kitti_dataset"
@@ -146,9 +149,6 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     P2_IMAGE_TOPIC = "p2_img"  # Fixed in Replayer
     P3_IMAGE_TOPIC = "p3_img"  # Fixed in Replayer
 
-    odometry_reference_frame_id = PathJoinSubstitution(
-        [ground_truth_data_frame_prefix, VEHICLE_BASE_LINK]
-    )
     odometry_base_link_frame_id = PathJoinSubstitution(
         [odometry_data_frame_prefix, VEHICLE_BASE_LINK]
     )
@@ -213,10 +213,11 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
                 "colour_image_folder_path": colour_image_folder_path,
                 "ground_truth_data_frame_prefix": ground_truth_data_frame_prefix,
                 "odometry_data_frame_prefix": processed_odometry_data_frame_prefix,
-                "odometry_reference_frame_id": odometry_reference_frame_id,
                 "publish_point_cloud": enable_point_cloud,
                 "publish_gray_images": enable_gray_images,
                 "publish_colour_images": enable_colour_images,
+                "start_time": start_time,
+                "end_time": end_time,
             }
         ],
     )
@@ -378,6 +379,18 @@ def generate_launch_description() -> LaunchDescription:
                 default_value=str(COLOUR_IMAGES_FOLDER_AVAILABLE),
                 description="Replayer publishes and odometry node "
                 "(if configured to load) subscribes to the colour images (p2 and p3)",
+            ),
+            DeclareLaunchArgument(
+                "start_time",
+                default_value="0.0",
+                description="Start time of the replayer. Set to zero to play the "
+                "entire duration",
+            ),
+            DeclareLaunchArgument(
+                "end_time",
+                default_value="0.0",
+                description="End time of the replayer. Set to zero to play the "
+                "entire duration",
             ),
             OpaqueFunction(function=launch_setup),
         ]

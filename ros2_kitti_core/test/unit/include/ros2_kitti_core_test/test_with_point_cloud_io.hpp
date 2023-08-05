@@ -41,7 +41,7 @@ public:
     std::vector<KITTIPoint::value_type> data;
     data.reserve(number_points * number_fields);
     for (const auto & point : points) {
-      data.insert(data.end(), point.cbegin(), point.cend());
+      data.insert(std::end(data), std::cbegin(point), std::cend(point));
     }
 
     // Example code as provided by the KITTI README

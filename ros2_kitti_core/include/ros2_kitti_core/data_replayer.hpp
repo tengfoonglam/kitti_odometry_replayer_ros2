@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -26,19 +27,22 @@ public:
     Timestamp start_time;
     Timestamp current_time;
     Timestamp target_time;
-    Timestamp final_time;
+    Timestamp end_time;
+    std::size_t start_idx{0};
     std::size_t next_idx{0};
     std::size_t target_idx{0};
-    std::size_t data_size{0};
+    std::size_t end_idx{0};
 
     friend bool operator==(const ReplayerState & lhs, const ReplayerState & rhs);
   };
 
-  struct SetTimeRangeRequest
+  struct TimeRange
   {
     Timestamp start_time;
-    Timestamp target_time;
-    SetTimeRangeRequest(const Timestamp & start_time_in, const Timestamp & target_time_in);
+    Timestamp end_time;
+    TimeRange(
+      const Timestamp & start_time_in = Timestamp{0, 0},
+      const Timestamp & end_time_in = Timestamp{0, 0});
   };
 
   struct StepRequest
@@ -53,8 +57,10 @@ public:
   using IndexRange = std::tuple<std::size_t, std::size_t>;
   using IndexRangeOpt = std::optional<IndexRange>;
 
-  explicit DataReplayer(const std::string & name, const Timestamps & timestamps);
-  DataReplayer(const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger);
+  DataReplayer(
+    const std::string & name, const Timestamps & timestamps,
+    rclcpp::Logger logger = rclcpp::get_logger("replayer"),
+    const TimeRange & time_range = TimeRange());
 
   DataReplayer(const DataReplayer & other) = delete;
   DataReplayer & operator=(const DataReplayer & other) = delete;
@@ -69,7 +75,7 @@ public:
 
   bool play(float replay_speed = 1.0f);
 
-  bool set_time_range(const SetTimeRangeRequest & set_time_range_request);
+  bool set_next_play_time_range(const TimeRange & next_play_time_range);
 
   bool step(const StepRequest & step_request);
 
@@ -81,11 +87,12 @@ public:
 
   ~DataReplayer();
 
-  [[nodiscard]] static IndexRangeOpt process_set_time_range_request(
-    const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps);
+  [[nodiscard]] static IndexRangeOpt get_index_range_from_time_range(
+    const TimeRange & next_play_time_range, std::size_t start_idx, std::size_t end_idx,
+    const Timestamps & timestamps);
 
   [[nodiscard]] static IndexRangeOpt process_step_request(
-    const StepRequest & step_request, std::size_t next_idx, std::size_t data_size);
+    const StepRequest & step_request, std::size_t next_idx, std::size_t end_idx);
 
 private:
   const std::string name_;

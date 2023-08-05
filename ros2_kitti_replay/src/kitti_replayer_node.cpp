@@ -43,10 +43,11 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("colour_image_folder_path", "");
   declare_parameter("ground_truth_data_frame_prefix", kDefaultGroundTruthDataFramePrefix);
   declare_parameter("odometry_data_frame_prefix", kDefaultOdometryDataFramePrefix);
-  declare_parameter("odometry_reference_frame_id", "");
   declare_parameter("publish_point_cloud", true);
   declare_parameter("publish_gray_images", true);
   declare_parameter("publish_colour_images", true);
+  declare_parameter("start_time", 0.0);
+  declare_parameter("end_time", 0.0);
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -73,49 +74,11 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     "ground_truth_data_frame_prefix", std::string{kDefaultGroundTruthDataFramePrefix});
   const auto odometry_data_frame_prefix = parameters_client.get_parameter(
     "odometry_data_frame_prefix", std::string{kDefaultOdometryDataFramePrefix});
-  odometry_reference_frame_id_ =
-    parameters_client.get_parameter("odometry_reference_frame_id", std::string{""});
   const bool publish_point_cloud = parameters_client.get_parameter("publish_point_cloud", true);
   const bool publish_gray_images = parameters_client.get_parameter("publish_gray_images", true);
   const bool publish_colour_images = parameters_client.get_parameter("publish_colour_images", true);
-
-  // Create TF listener and wait until odometry frame is available and publish it
-  tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
-  tf_listener_ptr_ = std::make_unique<tf2_ros::TransformListener>(*tf_listener_buffer_ptr_);
-  static_tf_broadcaster_ptr_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
-
-  if (!odometry_reference_frame_id_.empty()) {
-    const auto from_frame = odometry_reference_frame_id_;
-    const auto to_frame = std::string{kDefaultGlobalFrame};
-
-    RCLCPP_INFO(
-      get_logger(), "Looking up odometry frame (TF from %s to %s)", from_frame.c_str(),
-      to_frame.c_str());
-    try {
-      auto odom_tf = tf_listener_buffer_ptr_->lookupTransform(
-        to_frame, from_frame, tf2::TimePointZero,
-        tf2::durationFromSec(kOdometryFrameLookupTimeout));
-      odom_tf.child_frame_id = kDefaultOdomFrame;
-      static_tf_broadcaster_ptr_->sendTransform(odom_tf);
-      RCLCPP_INFO(get_logger(), "Sucessfully established odometry frame");
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_ERROR(
-        get_logger(),
-        "Could not find odometry frame (TF from %s to %s): %s. Exiting replayer node.",
-        from_frame.c_str(), to_frame.c_str(), ex.what());
-      rclcpp::shutdown();
-    }
-  }
-
-  // Load ground truth pose for visualization (if available)
-  ground_truth_path_opt_ = extract_poses_from_file(poses_path);
-  if (ground_truth_path_opt_.has_value()) {
-    RCLCPP_INFO(get_logger(), "Ground truth path loaded for this dataset");
-    gt_path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("ground_truth_path", kLatchingQoS);
-    publish_ground_truth_path(ground_truth_path_opt_.value());
-  } else {
-    RCLCPP_WARN(get_logger(), "Ground truth path not available for this dataset");
-  }
+  const auto start_time = parameters_client.get_parameter("start_time", 0.0l);
+  const auto end_time = parameters_client.get_parameter("end_time", 0.0l);
 
   // Load timestamps
   auto timestamps_opt = extract_timestamps_from_file(timestamp_path);
@@ -147,10 +110,12 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   play_data_interface_ptrs.push_back(clock_interface_ptr);
 
   // Ground Truth Pose (if available)
+  ground_truth_path_opt_ = extract_poses_from_file(poses_path);
   if (ground_truth_path_opt_.has_value()) {
+    RCLCPP_INFO(get_logger(), "Ground truth path loaded for this dataset");
     PoseDataLoader::Header pose_header;
     pose_header.frame_id = kDefaultGlobalFrame;
-    const std::string child_id = ground_truth_data_frame_prefix + "/p0";
+    const std::string child_id = add_prefix(ground_truth_data_frame_prefix, "p0");
     auto pose_loader_ptr = std::make_unique<PoseDataLoader>(
       "pose_loader", get_logger().get_child("pose_loader"), pose_header, child_id);
     pose_loader_ptr->setup(timestamps, poses_path);
@@ -163,12 +128,14 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
       std::move(pose_loader_ptr));
     play_data_interface_check_shutdown_if_fail(*pose_interface_ptr, number_stamps);
     play_data_interface_ptrs.push_back(pose_interface_ptr);
+  } else {
+    RCLCPP_WARN(get_logger(), "Ground truth path not available for this dataset");
   }
 
   // Point Cloud
   if (publish_point_cloud) {
     PointCloudDataLoader::Header pc_header;
-    pc_header.frame_id = odometry_data_frame_prefix + "/lidar";
+    pc_header.frame_id = add_prefix(odometry_data_frame_prefix, "lidar");
     auto pc_loader_ptr = std::make_unique<PointCloudDataLoader>(
       "pc_loader", get_logger().get_child("pc_loader"), pc_header);
     pc_loader_ptr->setup(timestamps, point_cloud_folder_path);
@@ -187,12 +154,14 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   // Gray Images
   if (publish_gray_images) {
     auto p0_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p0", "p0_img", gray_image_folder_path / "image_0", timestamps);
+      add_prefix(odometry_data_frame_prefix, "p0"), "p0_img", gray_image_folder_path / "image_0",
+      timestamps);
     play_data_interface_check_shutdown_if_fail(*p0_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p0_img_ptr);
 
     auto p1_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p1", "p1_img", gray_image_folder_path / "image_1", timestamps);
+      add_prefix(odometry_data_frame_prefix, "p1"), "p1_img", gray_image_folder_path / "image_1",
+      timestamps);
     play_data_interface_check_shutdown_if_fail(*p1_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p1_img_ptr);
   }
@@ -200,20 +169,26 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   // Colour Images
   if (publish_colour_images) {
     auto p2_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p2", "p2_img", colour_image_folder_path / "image_2",
+      add_prefix(odometry_data_frame_prefix, "p2"), "p2_img", colour_image_folder_path / "image_2",
       timestamps);
     play_data_interface_check_shutdown_if_fail(*p2_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p2_img_ptr);
 
     auto p3_img_ptr = create_image_play_data_interface(
-      odometry_data_frame_prefix + "/p3", "p3_img", colour_image_folder_path / "image_3",
+      add_prefix(odometry_data_frame_prefix, "p3"), "p3_img", colour_image_folder_path / "image_3",
       timestamps);
     play_data_interface_check_shutdown_if_fail(*p3_img_ptr, number_stamps);
     play_data_interface_ptrs.push_back(p3_img_ptr);
   }
 
   // Create replayer and add interfaces
-  replayer_ptr_ = std::make_unique<DataReplayer>("kitti_replayer", timestamps);
+  const bool specified_time_range = !(start_time == 0.0l && end_time == 0.0l);
+  replayer_ptr_ = specified_time_range
+                    ? std::make_unique<DataReplayer>(
+                        "kitti_replayer", timestamps, get_logger(),
+                        DataReplayer::TimeRange(
+                          r2k_core::to_timestamp(start_time), r2k_core::to_timestamp(end_time)))
+                    : std::make_unique<DataReplayer>("kitti_replayer", timestamps, get_logger());
   for (auto interface_ptr : play_data_interface_ptrs) {
     if (!replayer_ptr_->add_play_data_interface(interface_ptr)) {
       RCLCPP_ERROR(
@@ -221,6 +196,48 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
         interface_ptr->name().c_str());
       rclcpp::shutdown();
     }
+  }
+
+  // Preparation for publishing transforms
+  static_tf_broadcaster_ptr_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
+  const auto initial_idx = replayer_ptr_->get_replayer_state().start_idx;
+  r2k_core::TransformStamped initial_transform_stamped;
+  initial_transform_stamped.header.frame_id = std::string{kDefaultGlobalFrame};
+  initial_transform_stamped.header.stamp = timestamps.at(initial_idx);
+  if (ground_truth_path_opt_.has_value()) {
+    initial_transform_stamped.transform = ground_truth_path_opt_.value().at(initial_idx);
+  }
+
+  // Publish initial tf of ground truth vehicle w.r.t global frame
+  const auto ground_truth_base_link =
+    add_prefix(ground_truth_data_frame_prefix, std::string{kVehicleBaseLink});
+  auto global_tf_ground_truth_base_link = initial_transform_stamped;
+  global_tf_ground_truth_base_link.child_frame_id = ground_truth_base_link;
+  static_tf_broadcaster_ptr_->sendTransform(global_tf_ground_truth_base_link);
+
+  // If odometry vehicle available, publish initial pose of odometry vehicle and the odometry
+  // frame w.r.t global frame
+  const bool has_odometry_vehicle = (ground_truth_data_frame_prefix != odometry_data_frame_prefix);
+  if (has_odometry_vehicle) {
+    const auto odometry_base_link =
+      add_prefix(odometry_data_frame_prefix, std::string{kVehicleBaseLink});
+    auto global_tf_odometry_base_link = initial_transform_stamped;
+    global_tf_odometry_base_link.child_frame_id = ground_truth_base_link;
+    static_tf_broadcaster_ptr_->sendTransform(global_tf_odometry_base_link);
+
+    auto global_tf_odom = initial_transform_stamped;
+    global_tf_odom.child_frame_id = std::string{kDefaultOdomFrame};
+    static_tf_broadcaster_ptr_->sendTransform(global_tf_odom);
+  }
+
+  // Load ground truth pose for visualization (if available)
+  if (ground_truth_path_opt_.has_value()) {
+    gt_path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("ground_truth_path", kLatchingQoS);
+    const auto state = replayer_ptr_->get_replayer_state();
+    const auto & full_path = ground_truth_path_opt_.value();
+    const Transforms path_to_visualize{
+      std::cbegin(full_path) + state.start_idx, std::cbegin(full_path) + state.end_idx};
+    publish_ground_truth_path(path_to_visualize);
   }
 
   // Add Cb to publish replayer state upon state changes
@@ -232,11 +249,6 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   replayer_ptr_->set_state_change_cb(std::move(state_change_cb));
 
   // Bind services
-  set_time_range_service_ptr_ = create_service<SetTimeRangeSrv>(
-    "~/set_time_range",
-    std::bind(
-      &KITTIReplayerNode::set_time_range, this, std::placeholders::_1, std::placeholders::_2));
-
   step_service_ptr_ = create_service<StepSrv>(
     "~/step",
     std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
@@ -281,30 +293,6 @@ void KITTIReplayerNode::pause(
   response_ptr->success = replayer_ptr_->pause();
 }
 
-void KITTIReplayerNode::set_time_range(
-  const std::shared_ptr<SetTimeRangeSrv::Request> request_ptr,
-  std::shared_ptr<SetTimeRangeSrv::Response> response_ptr)
-{
-  using r2k_core::Timestamp;
-
-  const auto success = replayer_ptr_->set_time_range(
-    {Timestamp(request_ptr->request.start_time, RCL_SYSTEM_TIME),
-     Timestamp(request_ptr->request.end_time, RCL_SYSTEM_TIME)});
-  response_ptr->response.success = success;
-
-  if (success && ground_truth_path_opt_.has_value()) {
-    const auto & ground_truth_path = ground_truth_path_opt_.value();
-    const auto replayer_state = replayer_ptr_->get_replayer_state();
-    const auto start_it = std::next(std::cbegin(ground_truth_path), replayer_state.next_idx);
-    const auto end_idx = (replayer_state.target_idx + 1 >= replayer_state.data_size)
-                           ? replayer_state.data_size
-                           : replayer_state.target_idx + 1;
-    const auto end_it = std::next(std::cbegin(ground_truth_path), end_idx);
-    publish_ground_truth_path({start_it, end_it});
-    RCLCPP_INFO(get_logger(), "Updated ground truth path");
-  }
-}
-
 template <typename T>
 void KITTIReplayerNode::play_data_interface_check_shutdown_if_fail(
   const LoadAndPlayDataInterface<T> & interface, std::size_t expected_data_size)
@@ -336,10 +324,11 @@ KITTIReplayerNode::ReplayerStateMsg KITTIReplayerNode::replayer_state_to_msg(
   output.start_time = replayer_state.start_time;
   output.current_time = replayer_state.current_time;
   output.target_time = replayer_state.target_time;
-  output.final_time = replayer_state.final_time;
+  output.end_time = replayer_state.end_time;
+  output.start_idx = replayer_state.start_idx;
   output.next_idx = replayer_state.next_idx;
   output.target_idx = replayer_state.target_idx;
-  output.data_size = replayer_state.data_size;
+  output.end_idx = replayer_state.end_idx;
   return output;
 }
 
@@ -352,7 +341,7 @@ void KITTIReplayerNode::publish_ground_truth_path(const Transforms & transforms)
   }
 
   std_msgs::msg::Header header;
-  header.frame_id = "map";
+  header.frame_id = std::string{kDefaultGlobalFrame};
 
   auto msg_ptr = std::make_unique<nav_msgs::msg::Path>();
   msg_ptr->header = header;
@@ -396,6 +385,11 @@ KITTIReplayerNode::create_image_play_data_interface(
     },
     std::move(img_loader_ptr));
   return interface_ptr;
+}
+
+std::string KITTIReplayerNode::add_prefix(const std::string & prefix, const std::string & segment)
+{
+  return prefix.empty() ? segment : (prefix + "/" + segment);
 }
 
 }  // namespace r2k_replay

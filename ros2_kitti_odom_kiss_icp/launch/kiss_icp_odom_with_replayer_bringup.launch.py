@@ -14,6 +14,9 @@ def generate_launch_description() -> LaunchDescription:
     odometry_config_name = LaunchConfiguration(
         "odometry_config_name", default="default"
     )
+    start_time = LaunchConfiguration("start_time", default="0.0")
+    end_time = LaunchConfiguration("end_time", default="0.0")
+
     odometry_config_path = PathJoinSubstitution(
         [
             PythonExpression(
@@ -43,6 +46,18 @@ def generate_launch_description() -> LaunchDescription:
                 description="Name of the config file used for the odometry component "
                 "(exclude .yml). Leave empty to launch default values",
             ),
+            DeclareLaunchArgument(
+                "start_time",
+                default_value="0.0",
+                description="Start time of the replayer. Set to zero to play the "
+                "entire duration",
+            ),
+            DeclareLaunchArgument(
+                "end_time",
+                default_value="0.0",
+                description="End time of the replayer. Set to zero to play the "
+                "entire duration",
+            ),
             IncludeLaunchDescription(
                 launch_description_source=PythonLaunchDescriptionSource(
                     [
@@ -59,6 +74,8 @@ def generate_launch_description() -> LaunchDescription:
                     "enable_point_cloud": "true",
                     "enable_gray_images": "false",
                     "enable_colour_images": "false",
+                    "start_time": start_time,
+                    "end_time": end_time,
                 }.items(),
             ),
         ]

@@ -17,7 +17,7 @@ bool is_numbered_file_with_correction_extension(
   const bool extension_match = path.extension().string() == extension;
   const auto & stem = path.stem().string();
   const bool number_char_match = stem.size() == stem_digits;
-  const bool stem_all_digits = std::all_of(stem.cbegin(), stem.cend(), ::isdigit);
+  const bool stem_all_digits = std::all_of(std::cbegin(stem), std::cend(stem), ::isdigit);
   return extension_match && number_char_match && stem_all_digits;
 }
 

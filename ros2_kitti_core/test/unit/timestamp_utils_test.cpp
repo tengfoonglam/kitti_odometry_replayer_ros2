@@ -8,6 +8,22 @@
 #include <ros2_kitti_core_test/test_with_io.hpp>
 #include <string_view>
 
+class TestToTimestamp : public ::testing::TestWithParam<double>
+{
+};
+
+TEST_P(TestToTimestamp, NormalOperation)
+{
+  const auto seconds = GetParam();
+  ASSERT_DOUBLE_EQ(r2k_core::to_timestamp(seconds).seconds(), seconds);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  TestTimestampUtils, TestToTimestamp,
+  ::testing::Values(
+    -1234567890.1234567890l, -1.23456l, -5.0l, -1.0l, 0.0l, 1.0l, 5.0l, 1.23456l,
+    1234567890.1234567890l));
+
 class TestExtractTimestampsFromFile : public r2k_core_test::TestWithIO
 {
 public:

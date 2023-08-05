@@ -3,7 +3,8 @@ float64 replay_speed
 builtin_interfaces/Time start_time
 builtin_interfaces/Time current_time
 builtin_interfaces/Time target_time
-builtin_interfaces/Time final_time
+builtin_interfaces/Time end_time
+uint64 start_idx
 uint64 next_idx
 uint64 target_idx
-uint64 data_size
+uint64 end_idx

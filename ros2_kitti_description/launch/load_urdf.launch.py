@@ -17,6 +17,10 @@ def generate_launch_description() -> LaunchDescription:
     urdf_filename = LaunchConfiguration("urdf_filename", default="default.urdf.xml")
     launch_rviz = LaunchConfiguration("launch_rviz", default="true")
     frame_prefix = LaunchConfiguration("frame_prefix", default="")
+    publish_initial_transform = LaunchConfiguration(
+        "publish_initial_transform", default="true"
+    )
+
     static_frame_base_frame_id = LaunchConfiguration(
         "static_frame_base_frame_id", default="map"
     )
@@ -48,9 +52,16 @@ def generate_launch_description() -> LaunchDescription:
                 description="Prefix to the tf frame names of the launched URDF",
             ),
             DeclareLaunchArgument(
+                "publish_initial_transform",
+                default_value="true",
+                description="Publish an identity transformation between the static frame and "
+                "the p0 frame so robot description can be properly displayed in RVIZ",
+            ),
+            DeclareLaunchArgument(
                 "static_frame_base_frame_id",
                 default_value="map",
-                description="Base frame id for the urdf",
+                description="Base frame id for the urdf. Ignoreed if publish_initial_transform is "
+                "set to false",
             ),
             Node(
                 package="tf2_ros",
@@ -76,6 +87,7 @@ def generate_launch_description() -> LaunchDescription:
                     "--child-frame-id",
                     p0_frame_id,
                 ],
+                condition=IfCondition(publish_initial_transform),
             ),
             Node(
                 package="robot_state_publisher",

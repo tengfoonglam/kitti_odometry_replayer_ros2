@@ -53,11 +53,11 @@ using Header = std_msgs::msg::Header;
 [[nodiscard]] inline auto get_timestamp_field(const PointCloud2 & msg)
 {
   const auto field_it =
-    std::find_if(msg.fields.cbegin(), msg.fields.cend(), [](const auto & field) {
+    std::find_if(std::cbegin(msg.fields), std::cend(msg.fields), [](const auto & field) {
       return (field.name == "t" || field.name == "timestamp" || field.name == "time");
     });
 
-  if (field_it == msg.fields.cend()) {
+  if (field_it == std::cend(msg.fields)) {
     throw std::runtime_error("Field 't', 'timestamp', or 'time'  does not exist");
   }
 
@@ -67,14 +67,14 @@ using Header = std_msgs::msg::Header;
 // Normalize timestamps from 0.0 to 1.0
 [[nodiscard]] inline auto normalize_timestamps(const std::vector<double> & timestamps)
 {
-  const double max_timestamp = *std::max_element(timestamps.cbegin(), timestamps.cend());
+  const double max_timestamp = *std::max_element(std::cbegin(timestamps), std::cend(timestamps));
   // check if already normalized
   if (max_timestamp < 1.0) {
     return timestamps;
   }
   std::vector<double> timestamps_normalized(timestamps.size());
   std::transform(
-    timestamps.cbegin(), timestamps.cend(), timestamps_normalized.begin(),
+    std::cbegin(timestamps), std::cend(timestamps), std::begin(timestamps_normalized),
     [&](const auto & timestamp) { return timestamp / max_timestamp; });
   return timestamps_normalized;
 }

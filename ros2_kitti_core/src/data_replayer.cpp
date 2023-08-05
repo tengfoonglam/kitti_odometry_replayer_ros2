@@ -7,9 +7,8 @@
 namespace r2k_core
 {
 
-DataReplayer::SetTimeRangeRequest::SetTimeRangeRequest(
-  const Timestamp & start_time_in, const Timestamp & target_time_in)
-: start_time(start_time_in), target_time(target_time_in)
+DataReplayer::TimeRange::TimeRange(const Timestamp & start_time_in, const Timestamp & end_time_in)
+: start_time(start_time_in), end_time(end_time_in)
 {
 }
 
@@ -18,22 +17,18 @@ DataReplayer::StepRequest::StepRequest(std::size_t number_steps_in, float replay
 {
 }
 
-DataReplayer::DataReplayer(const std::string & name, const Timestamps & timestamps)
-: DataReplayer(name, timestamps, rclcpp::get_logger(name))
-{
-}
-
 bool operator==(const DataReplayer::ReplayerState & lhs, const DataReplayer::ReplayerState & rhs)
 {
   return (lhs.playing == rhs.playing) && (lhs.replay_speed == rhs.replay_speed) &&
          (lhs.start_time == rhs.start_time) && (lhs.current_time == rhs.current_time) &&
-         (lhs.target_time == rhs.target_time) && (lhs.final_time == rhs.final_time) &&
+         (lhs.target_time == rhs.target_time) && (lhs.end_time == rhs.end_time) &&
          (lhs.next_idx == rhs.next_idx) && (lhs.target_idx == rhs.target_idx) &&
-         (lhs.data_size == rhs.data_size);
+         (lhs.end_idx == rhs.end_idx) && (lhs.start_idx == rhs.start_idx);
 }
 
 DataReplayer::DataReplayer(
-  const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger)
+  const std::string & name, const Timestamps & timestamps, rclcpp::Logger logger,
+  const TimeRange & time_range)
 : name_(name), timestamps_(timestamps), logger_(logger)
 {
   if (timestamps.empty()) {
@@ -44,14 +39,51 @@ DataReplayer::DataReplayer(
     return;
   }
 
-  modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
-    replayer_state.start_time = timestamps.front();
-    replayer_state.current_time = timestamps.front();
-    replayer_state.target_time = timestamps.back();
-    replayer_state.final_time = timestamps.back();
-    replayer_state.data_size = timestamps.size();
-    replayer_state.next_idx = 0;
-    replayer_state.target_idx = timestamps.size() - 1;
+  const Timestamp kZeroTime{0, 0};
+
+  ReplayerState temp_state;
+  temp_state.start_idx = 0;
+  temp_state.start_time = timestamps.front();
+  temp_state.next_idx = temp_state.start_idx;
+  temp_state.current_time = temp_state.start_time;
+  temp_state.end_idx = timestamps.size();
+  temp_state.end_time = timestamps.back();
+  temp_state.target_idx = temp_state.end_idx - 1;
+  temp_state.target_time = temp_state.end_time;
+
+  const bool specific_time_range_specified =
+    !(time_range.start_time == kZeroTime && time_range.end_time == kZeroTime);
+  if (specific_time_range_specified) {
+    const auto index_range_opt =
+      get_index_range_from_time_range(time_range, 0, timestamps_.size(), timestamps_);
+
+    if (index_range_opt.has_value()) {
+      const auto & index_range = index_range_opt.value();
+      temp_state.start_idx = std::get<0>(index_range);
+      temp_state.start_time = timestamps.at(temp_state.start_idx);
+      temp_state.next_idx = temp_state.start_idx;
+      temp_state.current_time = temp_state.start_time;
+      temp_state.target_idx = std::get<1>(index_range);
+      temp_state.target_time = timestamps.at(temp_state.target_idx);
+      temp_state.end_idx = temp_state.target_idx + 1;
+      temp_state.end_time = temp_state.target_time;
+
+      RCLCPP_INFO(
+        logger_,
+        "Replayer %s configured to play from %f to %f seconds (Might differ slightly from "
+        "specified time)",
+        name_.c_str(), temp_state.start_time.seconds(), temp_state.end_time.seconds());
+    } else {
+      RCLCPP_ERROR(
+        logger_,
+        "Failed to process the specified time range for replayer %s. Defaulting to playing entire "
+        "timeline",
+        name_.c_str());
+    }
+  }
+
+  modify_state([&temp_state = std::as_const(temp_state)](auto & replayer_state) {
+    replayer_state = temp_state;
   });
 }
 
@@ -104,7 +136,7 @@ bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
   return true;
 }
 
-bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_request)
+bool DataReplayer::set_next_play_time_range(const TimeRange & next_play_time_range)
 {
   // Lock state till the end of function execution, prevent Time-of-check to time-of-use (TOCTOU)
   // bug
@@ -117,21 +149,22 @@ bool DataReplayer::set_time_range(const SetTimeRangeRequest & set_time_range_req
   }
 
   // Return if invalid play request
-  const auto index_range_opt = process_set_time_range_request(set_time_range_request, timestamps_);
+  const auto index_range_opt = get_index_range_from_time_range(
+    next_play_time_range, state_.start_idx, state_.end_idx, timestamps_);
   if (!index_range_opt.has_value()) {
     RCLCPP_WARN(
       logger_, "Replayer %s cannot process invalid play request from %fs to %fs", name_.c_str(),
-      set_time_range_request.start_time.seconds(), set_time_range_request.target_time.seconds());
+      next_play_time_range.start_time.seconds(), next_play_time_range.end_time.seconds());
     return false;
   }
 
   // Modify next and target times
-  const auto [start_index, target_index] = index_range_opt.value();
-  modify_state_no_lock([start_index, target_index, this](auto & replayer_state) {
-    replayer_state.current_time = timestamps_.at(start_index);
-    replayer_state.next_idx = start_index;
-    replayer_state.target_time = timestamps_.at(target_index);
-    replayer_state.target_idx = target_index;
+  const auto [next_idx, target_idx] = index_range_opt.value();
+  modify_state_no_lock([next_idx, target_idx, this](auto & replayer_state) {
+    replayer_state.current_time = timestamps_.at(next_idx);
+    replayer_state.next_idx = next_idx;
+    replayer_state.target_time = timestamps_.at(target_idx);
+    replayer_state.target_idx = target_idx;
 
     RCLCPP_INFO(
       logger_, "Replayer set to play time range between from %fs to %fs",
@@ -145,7 +178,7 @@ bool DataReplayer::step(const StepRequest & step_request)
 {
   // Return if invalid step request
   const auto state = get_replayer_state();
-  const auto index_range_opt = process_step_request(step_request, state.next_idx, state.data_size);
+  const auto index_range_opt = process_step_request(step_request, state.next_idx, state.end_idx);
 
   if (!index_range_opt.has_value()) {
     RCLCPP_WARN(logger_, "Replayer %s cannot process invalid step request", name_.c_str());
@@ -162,10 +195,10 @@ bool DataReplayer::step(const StepRequest & step_request)
 bool DataReplayer::play(float replay_speed)
 {
   const auto state = get_replayer_state();
-  const bool resumable = state.next_idx < state.data_size;
+  const bool resumable = state.next_idx < state.end_idx;
   if (resumable) {
     const auto target_idx =
-      state.next_idx <= state.target_idx ? state.target_idx : state.data_size - 1;
+      state.next_idx <= state.target_idx ? state.target_idx : state.end_idx - 1;
     return play_index_range({state.next_idx, target_idx}, replay_speed);
   } else {
     RCLCPP_WARN(
@@ -190,7 +223,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, float replay
   }
 
   // Update state and start thread
-  const auto [start_index, target_index] = index_range;
+  const auto [next_idx, target_idx] = index_range;
 
   if (replay_speed <= 0.0) {
     RCLCPP_WARN(
@@ -201,12 +234,12 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, float replay
   }
 
   // Update state
-  modify_state_no_lock([start_index, target_index, replay_speed, this](auto & replayer_state) {
+  modify_state_no_lock([next_idx, target_idx, replay_speed, this](auto & replayer_state) {
     replayer_state.playing = true;
-    replayer_state.current_time = timestamps_.at(start_index);
-    replayer_state.next_idx = start_index;
-    replayer_state.target_time = timestamps_.at(target_index);
-    replayer_state.target_idx = target_index;
+    replayer_state.current_time = timestamps_.at(next_idx);
+    replayer_state.next_idx = next_idx;
+    replayer_state.target_time = timestamps_.at(target_idx);
+    replayer_state.target_idx = target_idx;
     replayer_state.replay_speed = std::max(0.0f, replay_speed);
   });
 
@@ -220,7 +253,7 @@ bool DataReplayer::play_index_range(const IndexRange & index_range, float replay
   RCLCPP_INFO(
     logger_, "Replayer %s starting to play from %fs to %fs at x%f speed", name_.c_str(),
     state_.current_time.seconds(),
-    timestamps_.at(std::min<std::size_t>(state_.target_idx, state_.data_size - 1)).seconds(),
+    timestamps_.at(std::min<std::size_t>(state_.target_idx, state_.end_idx - 1)).seconds(),
     state_.replay_speed);
 
   return true;
@@ -291,16 +324,16 @@ void DataReplayer::play_loop()
     // Update state
     modify_state([this, &timestamps = std::as_const(timestamps_)](auto & replayer_state) {
       replayer_state.next_idx++;
-      replayer_state.current_time = replayer_state.next_idx < replayer_state.data_size
+      replayer_state.current_time = replayer_state.next_idx < replayer_state.end_idx
                                       ? timestamps.at(replayer_state.next_idx)
-                                      : replayer_state.final_time;
+                                      : replayer_state.end_time;
 
       RCLCPP_DEBUG(logger_, "Current time: %fs", replayer_state.current_time.seconds());
     });
 
     // If play has been completed, break from loop
     const auto play_complete = with_lock(state_mutex_, [&] [[nodiscard]] () {
-      return (state_.next_idx > state_.target_idx) || (state_.next_idx >= state_.data_size);
+      return (state_.next_idx > state_.target_idx) || (state_.next_idx >= state_.end_idx);
     });
     if (play_complete) {
       break;
@@ -384,7 +417,7 @@ bool DataReplayer::reset()
   }
 
   modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
-    replayer_state.next_idx = 0;
+    replayer_state.next_idx = replayer_state.start_idx;
     replayer_state.current_time = replayer_state.start_time;
   });
 
@@ -426,50 +459,56 @@ void DataReplayer::modify_state(const StateModificationCallback & modify_cb)
   modify_state_no_lock(modify_cb);
 };
 
-DataReplayer::IndexRangeOpt DataReplayer::process_set_time_range_request(
-  const SetTimeRangeRequest & set_time_range_request, const Timestamps & timestamps)
+DataReplayer::IndexRangeOpt DataReplayer::get_index_range_from_time_range(
+  const TimeRange & next_play_time_range, std::size_t start_idx, std::size_t end_idx,
+  const Timestamps & timestamps)
 {
   // Return immediately if timestamp is empty
   if (timestamps.empty()) {
     return std::nullopt;
   }
 
-  // Aliases
-  const auto & start_time = set_time_range_request.start_time;
-  const auto & target_time = set_time_range_request.target_time;
+  // Return if start/end indexes are invalid
+  if (start_idx >= timestamps.size() || end_idx > timestamps.size() || start_idx > end_idx) {
+    return std::nullopt;
+  }
 
-  // Return if start_time is after last timestamp or target_time is before first timestamp
-  if (start_time > timestamps.back() || target_time < timestamps.front()) {
+  // Aliases
+  const auto & start_time = next_play_time_range.start_time;
+  const auto & end_time = next_play_time_range.end_time;
+
+  // Return if start_time is after last timestamp or end_time is before first timestamp
+  if (start_time > timestamps.back() || end_time < timestamps.front()) {
     return std::nullopt;
   }
 
   // Find starting index
-  std::size_t start_index{0};
-  for (auto i = start_index; i < timestamps.size(); i++) {
+  std::size_t next_idx{start_idx};
+  for (auto i = next_idx; i < timestamps.size(); i++) {
     const auto & timestamp = timestamps.at(i);
-    start_index = i;
+    next_idx = i;
     if (timestamp >= start_time) {
       break;
     }
   }
 
   // Find target index
-  std::size_t target_index{timestamps.size()};
-  for (auto i = target_index; i-- > 0;) {
+  std::size_t target_idx{end_idx};
+  for (auto i = target_idx; i-- > 0;) {
     const auto & timestamp = timestamps.at(i);
-    target_index = i;
-    if (timestamp <= target_time) {
+    target_idx = i;
+    if (timestamp <= end_time) {
       break;
     }
   }
 
   // Return result
-  return (target_index >= start_index) ? std::optional(std::make_tuple(start_index, target_index))
-                                       : std::nullopt;
+  return (target_idx >= next_idx) ? std::optional(std::make_tuple(next_idx, target_idx))
+                                  : std::nullopt;
 }
 
 DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
-  const StepRequest & step_request, std::size_t next_idx, std::size_t data_size)
+  const StepRequest & step_request, std::size_t next_idx, std::size_t end_idx)
 {
   // Invalid if step size is zero
   if (step_request.number_steps < 1) {
@@ -477,12 +516,12 @@ DataReplayer::IndexRangeOpt DataReplayer::process_step_request(
   }
 
   // Invalid if replayer is at the end of the timeline
-  if (next_idx >= data_size) {
+  if (next_idx >= end_idx) {
     return std::nullopt;
   }
 
   // Compute target index and return
-  const auto target_idx = std::min(next_idx + step_request.number_steps - 1, data_size - 1);
+  const auto target_idx = std::min(next_idx + step_request.number_steps - 1, end_idx - 1);
   return std::make_pair(next_idx, target_idx);
 }
 
