@@ -30,8 +30,8 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     # Replayer Launch Configurations
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
 
-    # start_time = LaunchConfiguration("start_time", default="0.0")
-    # end_time = LaunchConfiguration("end_time", default="0.0")
+    start_time = LaunchConfiguration("start_time", default="0.0")
+    end_time = LaunchConfiguration("end_time", default="0.0")
 
     dataset_number = LaunchConfiguration("dataset_number", default="00")
     dataset_path = LaunchConfiguration(
@@ -216,6 +216,8 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
                 "publish_point_cloud": enable_point_cloud,
                 "publish_gray_images": enable_gray_images,
                 "publish_colour_images": enable_colour_images,
+                "start_time": start_time,
+                "end_time": end_time,
             }
         ],
     )
@@ -377,6 +379,18 @@ def generate_launch_description() -> LaunchDescription:
                 default_value=str(COLOUR_IMAGES_FOLDER_AVAILABLE),
                 description="Replayer publishes and odometry node "
                 "(if configured to load) subscribes to the colour images (p2 and p3)",
+            ),
+            DeclareLaunchArgument(
+                "start_time",
+                default_value="0.0",
+                description="Start time of the replayer. Set to zero to play the "
+                "entire duration",
+            ),
+            DeclareLaunchArgument(
+                "end_time",
+                default_value="0.0",
+                description="End time of the replayer. Set to zero to play the "
+                "entire duration",
             ),
             OpaqueFunction(function=launch_setup),
         ]
