@@ -83,16 +83,6 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   const auto start_time = parameters_client.get_parameter("start_time", 0.0l);
   const auto end_time = parameters_client.get_parameter("end_time", 0.0l);
 
-  // Load ground truth pose for visualization (if available)
-  ground_truth_path_opt_ = extract_poses_from_file(poses_path);
-  if (ground_truth_path_opt_.has_value()) {
-    RCLCPP_INFO(get_logger(), "Ground truth path loaded for this dataset");
-    gt_path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("ground_truth_path", kLatchingQoS);
-    publish_ground_truth_path(ground_truth_path_opt_.value());
-  } else {
-    RCLCPP_WARN(get_logger(), "Ground truth path not available for this dataset");
-  }
-
   // Load timestamps
   auto timestamps_opt = extract_timestamps_from_file(timestamp_path);
   if (!timestamps_opt.has_value()) {
@@ -123,7 +113,9 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   play_data_interface_ptrs.push_back(clock_interface_ptr);
 
   // Ground Truth Pose (if available)
+  ground_truth_path_opt_ = extract_poses_from_file(poses_path);
   if (ground_truth_path_opt_.has_value()) {
+    RCLCPP_INFO(get_logger(), "Ground truth path loaded for this dataset");
     PoseDataLoader::Header pose_header;
     pose_header.frame_id = kDefaultGlobalFrame;
     const std::string child_id = add_prefix(ground_truth_data_frame_prefix, "p0");
@@ -139,6 +131,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
       std::move(pose_loader_ptr));
     play_data_interface_check_shutdown_if_fail(*pose_interface_ptr, number_stamps);
     play_data_interface_ptrs.push_back(pose_interface_ptr);
+  } else {
+    RCLCPP_WARN(get_logger(), "Ground truth path not available for this dataset");
   }
 
   // Point Cloud
@@ -233,6 +227,16 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
         from_frame.c_str(), to_frame.c_str(), ex.what());
       rclcpp::shutdown();
     }
+  }
+
+  // Load ground truth pose for visualization (if available)
+  if (ground_truth_path_opt_.has_value()) {
+    gt_path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("ground_truth_path", kLatchingQoS);
+    const auto state = replayer_ptr_->get_replayer_state();
+    const auto & full_path = ground_truth_path_opt_.value();
+    const Transforms path_to_visualize{
+      full_path.cbegin() + state.start_idx, full_path.cbegin() + state.end_idx};
+    publish_ground_truth_path(path_to_visualize);
   }
 
   // Add Cb to publish replayer state upon state changes
@@ -336,7 +340,7 @@ void KITTIReplayerNode::publish_ground_truth_path(const Transforms & transforms)
   }
 
   std_msgs::msg::Header header;
-  header.frame_id = "map";
+  header.frame_id = std::string{kDefaultGlobalFrame};
 
   auto msg_ptr = std::make_unique<nav_msgs::msg::Path>();
   msg_ptr->header = header;
