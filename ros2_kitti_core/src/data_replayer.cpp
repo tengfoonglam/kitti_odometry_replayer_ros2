@@ -40,10 +40,16 @@ DataReplayer::DataReplayer(
   }
 
   const Timestamp kZeroTime{0, 0};
-  std::size_t start_idx = 0;
-  std::size_t end_idx = timestamps_.size();
-  Timestamp start_time = timestamps.front();
-  Timestamp end_time = timestamps.back();
+
+  ReplayerState temp_state;
+  temp_state.start_idx = 0;
+  temp_state.start_time = timestamps.front();
+  temp_state.next_idx = temp_state.start_idx;
+  temp_state.current_time = temp_state.start_time;
+  temp_state.end_idx = timestamps.size();
+  temp_state.end_time = timestamps.back();
+  temp_state.target_idx = temp_state.end_idx - 1;
+  temp_state.target_time = temp_state.end_time;
 
   const bool specific_time_range_specified =
     !(time_range.start_time == kZeroTime && time_range.end_time == kZeroTime);
@@ -53,15 +59,20 @@ DataReplayer::DataReplayer(
 
     if (index_range_opt.has_value()) {
       const auto & index_range = index_range_opt.value();
-      start_idx = std::get<0>(index_range);
-      end_idx = std::get<1>(index_range);
-      start_time = timestamps.at(start_idx);
-      end_time = timestamps.at(end_idx);
+      temp_state.start_idx = std::get<0>(index_range);
+      temp_state.start_time = timestamps.at(temp_state.start_idx);
+      temp_state.next_idx = temp_state.start_idx;
+      temp_state.current_time = temp_state.start_time;
+      temp_state.target_idx = std::get<1>(index_range);
+      temp_state.target_time = timestamps.at(temp_state.target_idx);
+      temp_state.end_idx = temp_state.target_idx + 1;
+      temp_state.end_time = temp_state.target_time;
+
       RCLCPP_INFO(
         logger_,
         "Replayer %s configured to play from %f to %f seconds (Might differ slightly from "
         "specified time)",
-        name_.c_str(), start_time.seconds(), end_time.seconds());
+        name_.c_str(), temp_state.start_time.seconds(), temp_state.end_time.seconds());
     } else {
       RCLCPP_ERROR(
         logger_,
@@ -71,16 +82,8 @@ DataReplayer::DataReplayer(
     }
   }
 
-  modify_state([&timestamps = std::as_const(timestamps_), start_idx, end_idx, start_time,
-                end_time](auto & replayer_state) {
-    replayer_state.start_idx = start_idx;
-    replayer_state.start_time = start_time;
-    replayer_state.current_time = start_time;
-    replayer_state.target_time = end_time;
-    replayer_state.end_time = end_time;
-    replayer_state.end_idx = end_idx;
-    replayer_state.next_idx = start_idx;
-    replayer_state.target_idx = end_idx - 1;
+  modify_state([&temp_state = std::as_const(temp_state)](auto & replayer_state) {
+    replayer_state = temp_state;
   });
 }
 
@@ -414,7 +417,7 @@ bool DataReplayer::reset()
   }
 
   modify_state([&timestamps = std::as_const(timestamps_)](auto & replayer_state) {
-    replayer_state.next_idx = 0;
+    replayer_state.next_idx = replayer_state.start_idx;
     replayer_state.current_time = replayer_state.start_time;
   });
 
