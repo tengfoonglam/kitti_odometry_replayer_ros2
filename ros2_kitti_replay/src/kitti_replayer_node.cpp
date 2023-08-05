@@ -43,7 +43,6 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("colour_image_folder_path", "");
   declare_parameter("ground_truth_data_frame_prefix", kDefaultGroundTruthDataFramePrefix);
   declare_parameter("odometry_data_frame_prefix", kDefaultOdometryDataFramePrefix);
-  declare_parameter("odometry_reference_frame_id", "");
   declare_parameter("publish_point_cloud", true);
   declare_parameter("publish_gray_images", true);
   declare_parameter("publish_colour_images", true);
@@ -75,8 +74,6 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     "ground_truth_data_frame_prefix", std::string{kDefaultGroundTruthDataFramePrefix});
   const auto odometry_data_frame_prefix = parameters_client.get_parameter(
     "odometry_data_frame_prefix", std::string{kDefaultOdometryDataFramePrefix});
-  odometry_reference_frame_id_ =
-    parameters_client.get_parameter("odometry_reference_frame_id", std::string{""});
   const bool publish_point_cloud = parameters_client.get_parameter("publish_point_cloud", true);
   const bool publish_gray_images = parameters_client.get_parameter("publish_gray_images", true);
   const bool publish_colour_images = parameters_client.get_parameter("publish_colour_images", true);
@@ -201,32 +198,35 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
     }
   }
 
-  // Create TF listener and wait until odometry frame is available and publish it
-  tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
-  tf_listener_ptr_ = std::make_unique<tf2_ros::TransformListener>(*tf_listener_buffer_ptr_);
+  // Preparation for publishing transforms
   static_tf_broadcaster_ptr_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
+  const auto initial_idx = replayer_ptr_->get_replayer_state().start_idx;
+  r2k_core::TransformStamped initial_transform_stamped;
+  initial_transform_stamped.header.frame_id = std::string{kDefaultGlobalFrame};
+  initial_transform_stamped.header.stamp = timestamps.at(initial_idx);
+  if (ground_truth_path_opt_.has_value()) {
+    initial_transform_stamped.transform = ground_truth_path_opt_.value().at(initial_idx);
+  }
+  const bool has_odometry_vehicle = (ground_truth_data_frame_prefix != odometry_data_frame_prefix);
 
-  if (!odometry_reference_frame_id_.empty()) {
-    const auto from_frame = odometry_reference_frame_id_;
-    const auto to_frame = std::string{kDefaultGlobalFrame};
+  // Publish initial position of ground truth vehicle
+  const auto ground_truth_base_link =
+    add_prefix(ground_truth_data_frame_prefix, std::string{kVehicleBaseLink});
+  r2k_core::TransformStamped global_tf_ground_truth_base_link = initial_transform_stamped;
+  global_tf_ground_truth_base_link.child_frame_id = ground_truth_base_link;
+  static_tf_broadcaster_ptr_->sendTransform(global_tf_ground_truth_base_link);
 
-    RCLCPP_INFO(
-      get_logger(), "Looking up odometry frame (TF from %s to %s)", from_frame.c_str(),
-      to_frame.c_str());
-    try {
-      auto odom_tf = tf_listener_buffer_ptr_->lookupTransform(
-        to_frame, from_frame, tf2::TimePointZero,
-        tf2::durationFromSec(kOdometryFrameLookupTimeout));
-      odom_tf.child_frame_id = kDefaultOdomFrame;
-      static_tf_broadcaster_ptr_->sendTransform(odom_tf);
-      RCLCPP_INFO(get_logger(), "Sucessfully established odometry frame");
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_ERROR(
-        get_logger(),
-        "Could not find odometry frame (TF from %s to %s): %s. Exiting replayer node.",
-        from_frame.c_str(), to_frame.c_str(), ex.what());
-      rclcpp::shutdown();
-    }
+  // Publish initial position of odometry vehicle and the odometry frame(if required)
+  if (has_odometry_vehicle) {
+    const auto odometry_base_link =
+      add_prefix(odometry_data_frame_prefix, std::string{kVehicleBaseLink});
+    r2k_core::TransformStamped global_tf_odometry_base_link = initial_transform_stamped;
+    global_tf_odometry_base_link.child_frame_id = ground_truth_base_link;
+    static_tf_broadcaster_ptr_->sendTransform(global_tf_odometry_base_link);
+
+    r2k_core::TransformStamped global_tf_odom = initial_transform_stamped;
+    global_tf_odom.child_frame_id = std::string{kDefaultOdomFrame};
+    static_tf_broadcaster_ptr_->sendTransform(global_tf_odom);
   }
 
   // Load ground truth pose for visualization (if available)

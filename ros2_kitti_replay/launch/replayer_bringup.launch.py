@@ -149,9 +149,6 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     P2_IMAGE_TOPIC = "p2_img"  # Fixed in Replayer
     P3_IMAGE_TOPIC = "p3_img"  # Fixed in Replayer
 
-    odometry_reference_frame_id = PathJoinSubstitution(
-        [ground_truth_data_frame_prefix, VEHICLE_BASE_LINK]
-    )
     odometry_base_link_frame_id = PathJoinSubstitution(
         [odometry_data_frame_prefix, VEHICLE_BASE_LINK]
     )
@@ -216,7 +213,6 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
                 "colour_image_folder_path": colour_image_folder_path,
                 "ground_truth_data_frame_prefix": ground_truth_data_frame_prefix,
                 "odometry_data_frame_prefix": processed_odometry_data_frame_prefix,
-                "odometry_reference_frame_id": odometry_reference_frame_id,
                 "publish_point_cloud": enable_point_cloud,
                 "publish_gray_images": enable_gray_images,
                 "publish_colour_images": enable_colour_images,

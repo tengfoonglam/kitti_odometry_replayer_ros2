@@ -30,6 +30,7 @@ public:
   static constexpr const char kDefaultOdometryDataFramePrefix[]{"odometry"};
   static constexpr const char kDefaultGlobalFrame[]{"map"};
   static constexpr const char kDefaultOdomFrame[]{"odom"};
+  static constexpr const char kVehicleBaseLink[]{"p0"};
   static constexpr float kOdometryFrameLookupTimeout = 5.0;
   static constexpr std::size_t kPublisherHistoryDepth = 10;
 
@@ -57,7 +58,6 @@ public:
     const DataReplayer::ReplayerState & replayer_state);
 
 private:
-  std::string odometry_reference_frame_id_;
   std::optional<Transforms> ground_truth_path_opt_;
 
   std::unique_ptr<DataReplayer> replayer_ptr_;
