@@ -47,6 +47,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   declare_parameter("publish_point_cloud", true);
   declare_parameter("publish_gray_images", true);
   declare_parameter("publish_colour_images", true);
+  declare_parameter("start_time", 0.0);
+  declare_parameter("end_time", 0.0);
 
   // Wait for parameters to be loaded
   auto parameters_client = rclcpp::SyncParametersClient(this);
@@ -78,34 +80,8 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   const bool publish_point_cloud = parameters_client.get_parameter("publish_point_cloud", true);
   const bool publish_gray_images = parameters_client.get_parameter("publish_gray_images", true);
   const bool publish_colour_images = parameters_client.get_parameter("publish_colour_images", true);
-
-  // Create TF listener and wait until odometry frame is available and publish it
-  tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
-  tf_listener_ptr_ = std::make_unique<tf2_ros::TransformListener>(*tf_listener_buffer_ptr_);
-  static_tf_broadcaster_ptr_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
-
-  if (!odometry_reference_frame_id_.empty()) {
-    const auto from_frame = odometry_reference_frame_id_;
-    const auto to_frame = std::string{kDefaultGlobalFrame};
-
-    RCLCPP_INFO(
-      get_logger(), "Looking up odometry frame (TF from %s to %s)", from_frame.c_str(),
-      to_frame.c_str());
-    try {
-      auto odom_tf = tf_listener_buffer_ptr_->lookupTransform(
-        to_frame, from_frame, tf2::TimePointZero,
-        tf2::durationFromSec(kOdometryFrameLookupTimeout));
-      odom_tf.child_frame_id = kDefaultOdomFrame;
-      static_tf_broadcaster_ptr_->sendTransform(odom_tf);
-      RCLCPP_INFO(get_logger(), "Sucessfully established odometry frame");
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_ERROR(
-        get_logger(),
-        "Could not find odometry frame (TF from %s to %s): %s. Exiting replayer node.",
-        from_frame.c_str(), to_frame.c_str(), ex.what());
-      rclcpp::shutdown();
-    }
-  }
+  const auto start_time = parameters_client.get_parameter("start_time", 0.0l);
+  const auto end_time = parameters_client.get_parameter("end_time", 0.0l);
 
   // Load ground truth pose for visualization (if available)
   ground_truth_path_opt_ = extract_poses_from_file(poses_path);
@@ -215,12 +191,46 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   }
 
   // Create replayer and add interfaces
-  replayer_ptr_ = std::make_unique<DataReplayer>("kitti_replayer", timestamps);
+  const bool specified_time_range = !(start_time == 0.0l && end_time == 0.0l);
+  replayer_ptr_ = specified_time_range
+                    ? std::make_unique<DataReplayer>(
+                        "kitti_replayer", timestamps, get_logger(),
+                        DataReplayer::TimeRange(
+                          r2k_core::to_timestamp(start_time), r2k_core::to_timestamp(end_time)))
+                    : std::make_unique<DataReplayer>("kitti_replayer", timestamps, get_logger());
   for (auto interface_ptr : play_data_interface_ptrs) {
     if (!replayer_ptr_->add_play_data_interface(interface_ptr)) {
       RCLCPP_ERROR(
         get_logger(), "Failed to add %s Play Data Interface to Replayer. Exiting.",
         interface_ptr->name().c_str());
+      rclcpp::shutdown();
+    }
+  }
+
+  // Create TF listener and wait until odometry frame is available and publish it
+  tf_listener_buffer_ptr_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ptr_ = std::make_unique<tf2_ros::TransformListener>(*tf_listener_buffer_ptr_);
+  static_tf_broadcaster_ptr_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
+
+  if (!odometry_reference_frame_id_.empty()) {
+    const auto from_frame = odometry_reference_frame_id_;
+    const auto to_frame = std::string{kDefaultGlobalFrame};
+
+    RCLCPP_INFO(
+      get_logger(), "Looking up odometry frame (TF from %s to %s)", from_frame.c_str(),
+      to_frame.c_str());
+    try {
+      auto odom_tf = tf_listener_buffer_ptr_->lookupTransform(
+        to_frame, from_frame, tf2::TimePointZero,
+        tf2::durationFromSec(kOdometryFrameLookupTimeout));
+      odom_tf.child_frame_id = kDefaultOdomFrame;
+      static_tf_broadcaster_ptr_->sendTransform(odom_tf);
+      RCLCPP_INFO(get_logger(), "Sucessfully established odometry frame");
+    } catch (const tf2::TransformException & ex) {
+      RCLCPP_ERROR(
+        get_logger(),
+        "Could not find odometry frame (TF from %s to %s): %s. Exiting replayer node.",
+        from_frame.c_str(), to_frame.c_str(), ex.what());
       rclcpp::shutdown();
     }
   }

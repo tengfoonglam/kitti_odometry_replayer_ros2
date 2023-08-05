@@ -30,6 +30,9 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     # Replayer Launch Configurations
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
 
+    # start_time = LaunchConfiguration("start_time", default="0.0")
+    # end_time = LaunchConfiguration("end_time", default="0.0")
+
     dataset_number = LaunchConfiguration("dataset_number", default="00")
     dataset_path = LaunchConfiguration(
         "dataset_path", default="/media/ltf/LTFUbuntuSSD/kitti_dataset"
