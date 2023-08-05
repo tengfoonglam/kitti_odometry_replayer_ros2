@@ -207,7 +207,6 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   if (ground_truth_path_opt_.has_value()) {
     initial_transform_stamped.transform = ground_truth_path_opt_.value().at(initial_idx);
   }
-  const bool has_odometry_vehicle = (ground_truth_data_frame_prefix != odometry_data_frame_prefix);
 
   // Publish initial position of ground truth vehicle
   const auto ground_truth_base_link =
@@ -216,7 +215,9 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   global_tf_ground_truth_base_link.child_frame_id = ground_truth_base_link;
   static_tf_broadcaster_ptr_->sendTransform(global_tf_ground_truth_base_link);
 
-  // Publish initial position of odometry vehicle and the odometry frame(if required)
+  // If odometry vehicle available, publish initial position of odometry vehicle and the odometry
+  // frame
+  const bool has_odometry_vehicle = (ground_truth_data_frame_prefix != odometry_data_frame_prefix);
   if (has_odometry_vehicle) {
     const auto odometry_base_link =
       add_prefix(odometry_data_frame_prefix, std::string{kVehicleBaseLink});
