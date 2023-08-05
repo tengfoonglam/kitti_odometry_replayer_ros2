@@ -212,7 +212,7 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   // Publish initial position of ground truth vehicle
   const auto ground_truth_base_link =
     add_prefix(ground_truth_data_frame_prefix, std::string{kVehicleBaseLink});
-  r2k_core::TransformStamped global_tf_ground_truth_base_link = initial_transform_stamped;
+  auto global_tf_ground_truth_base_link = initial_transform_stamped;
   global_tf_ground_truth_base_link.child_frame_id = ground_truth_base_link;
   static_tf_broadcaster_ptr_->sendTransform(global_tf_ground_truth_base_link);
 
@@ -220,11 +220,11 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
   if (has_odometry_vehicle) {
     const auto odometry_base_link =
       add_prefix(odometry_data_frame_prefix, std::string{kVehicleBaseLink});
-    r2k_core::TransformStamped global_tf_odometry_base_link = initial_transform_stamped;
+    auto global_tf_odometry_base_link = initial_transform_stamped;
     global_tf_odometry_base_link.child_frame_id = ground_truth_base_link;
     static_tf_broadcaster_ptr_->sendTransform(global_tf_odometry_base_link);
 
-    r2k_core::TransformStamped global_tf_odom = initial_transform_stamped;
+    auto global_tf_odom = initial_transform_stamped;
     global_tf_odom.child_frame_id = std::string{kDefaultOdomFrame};
     static_tf_broadcaster_ptr_->sendTransform(global_tf_odom);
   }
