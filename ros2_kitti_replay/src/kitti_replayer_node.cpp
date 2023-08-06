@@ -9,7 +9,7 @@
 #include <ros2_kitti_core/image_data_loader.hpp>
 #include <ros2_kitti_core/point_cloud_data_loader.hpp>
 #include <ros2_kitti_core/pose_data_loader.hpp>
-#include <ros2_kitti_interface/msg/trigger_response.hpp>
+#include <ros2_kitti_msgs/msg/trigger_response.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <vector>
 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ros2_kitti_interface</name>
+  <name>ros2_kitti_msgs</name>
   <version>0.1.0</version>
   <description>Interface Definition of ROS 2 KITI</description>
   <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>

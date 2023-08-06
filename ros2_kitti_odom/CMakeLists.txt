@@ -6,7 +6,7 @@ find_package(image_transport REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(ros2_kitti_interface REQUIRED)
+find_package(ros2_kitti_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -39,7 +39,7 @@ ament_target_dependencies(${PROJECT_NAME}
                           message_filters
                           nav_msgs
                           rclcpp
-                          ros2_kitti_interface
+                          ros2_kitti_msgs
                           sensor_msgs
                           std_msgs
                           std_srvs
@@ -66,7 +66,7 @@ ament_export_dependencies(image_transport
                           message_filters
                           nav_msgs
                           rclcpp
-                          ros2_kitti_interface
+                          ros2_kitti_msgs
                           sensor_msgs
                           std_msgs
                           std_srvs
