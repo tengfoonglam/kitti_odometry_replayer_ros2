@@ -3,7 +3,7 @@
 <package format="3">
   <name>ros2_kitti_msgs</name>
   <version>0.1.0</version>
-  <description>Interface Definition of ROS 2 KITI</description>
+  <description>Message/Service/Action definitions of ROS 2 KITTI</description>
   <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>
   <license>BSD 3-clause</license>
 
