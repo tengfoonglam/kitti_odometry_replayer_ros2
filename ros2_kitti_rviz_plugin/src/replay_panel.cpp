@@ -75,12 +75,8 @@ ReplayPanel::ReplayPanel(QWidget * parent) : rviz_common::Panel(parent)
     std::string{kReplayerStateTopicName}, 10,
     std::bind(&ReplayPanel::state_callback, this, std::placeholders::_1));
 
-  spin_thread_ = std::thread([this]() {
-    while (!shutdown_flag_) {
-      rclcpp::spin_some(node_ptr_);
-    }
-    // RCLCPP_INFO(node_ptr_->get_logger(), "Replay Panel Spin Thread Completed");
-  });
+  executor_.add_node(node_ptr_);
+  executor_thread_ = std::thread([this]() { executor_.spin(); });
 }
 
 void ReplayPanel::state_callback(const ReplayerStateMsg::ConstSharedPtr state)
@@ -92,11 +88,10 @@ void ReplayPanel::onInitialize() {}
 
 ReplayPanel::~ReplayPanel()
 {
-  shutdown_flag_ = true;
-  if (spin_thread_.joinable()) {
-    spin_thread_.join();
+  executor_.cancel();
+  if (executor_thread_.joinable()) {
+    executor_thread_.join();
   }
-  rclcpp::shutdown();
 }
 
 }  // namespace r2k_rviz
