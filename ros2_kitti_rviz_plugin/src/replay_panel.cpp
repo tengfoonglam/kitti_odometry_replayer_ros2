@@ -28,7 +28,7 @@ ReplayPanel::ReplayPanel(QWidget * parent)
 
   replay_speed_input_ptr_->setDecimals(2);
   replay_speed_input_ptr_->setSingleStep(0.25);
-  replay_speed_input_ptr_->setRange(0.0, 5.0);
+  replay_speed_input_ptr_->setRange(0.25, 5.0);
   replay_speed_input_ptr_->setValue(1.0);
   replay_speed_input_ptr_->setPrefix("x");
   step_size_input_ptr_->setSingleStep(1);
