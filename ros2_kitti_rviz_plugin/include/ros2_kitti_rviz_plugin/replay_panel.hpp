@@ -19,7 +19,7 @@
 namespace r2k_rviz
 {
 
-class ReplayPanel : public rviz_common::Panel  // QMainWindow
+class ReplayPanel : public rviz_common::Panel
 {
   Q_OBJECT
 
