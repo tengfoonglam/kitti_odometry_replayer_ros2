@@ -9,11 +9,12 @@
 
   <exec_depend>ros2_kitti_core</exec_depend>
   <exec_depend>ros2_kitti_description</exec_depend>
-  <exec_depend>ros2_kitti_interface</exec_depend>
+  <exec_depend>ros2_kitti_msgs</exec_depend>
   <exec_depend>ros2_kitti_odom</exec_depend>
   <exec_depend>ros2_kitti_odom_open3d</exec_depend>
+  <exec_depend>ros2_kitti_odom_kiss_icp</exec_depend>
   <exec_depend>ros2_kitti_replay</exec_depend>
-
+  <exec_depend>ros2_kitti_rviz_plugin</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

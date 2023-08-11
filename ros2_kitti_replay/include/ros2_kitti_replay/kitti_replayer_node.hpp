@@ -14,9 +14,9 @@
 #include <ros2_kitti_core/load_and_play_data_interface.hpp>
 #include <ros2_kitti_core/pose_utils.hpp>
 #include <ros2_kitti_core/timestamp_utils.hpp>
-#include <ros2_kitti_interface/msg/replayer_state.hpp>
-#include <ros2_kitti_interface/srv/play.hpp>
-#include <ros2_kitti_interface/srv/step.hpp>
+#include <ros2_kitti_msgs/msg/replayer_state.hpp>
+#include <ros2_kitti_msgs/srv/play.hpp>
+#include <ros2_kitti_msgs/srv/step.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <string>
 
@@ -31,15 +31,15 @@ public:
   static constexpr const char kDefaultGlobalFrame[]{"map"};
   static constexpr const char kDefaultOdomFrame[]{"odom"};
   static constexpr const char kVehicleBaseLink[]{"p0"};
-  static constexpr float kOdometryFrameLookupTimeout = 5.0;
-  static constexpr std::size_t kPublisherHistoryDepth = 10;
+  static constexpr float kOdometryFrameLookupTimeout{5.0};
+  static constexpr std::size_t kPublisherHistoryDepth{10};
 
   using DataReplayer = r2k_core::DataReplayer;
   using Transforms = r2k_core::Transforms;
 
-  using ReplayerStateMsg = ros2_kitti_interface::msg::ReplayerState;
-  using PlaySrv = ros2_kitti_interface::srv::Play;
-  using StepSrv = ros2_kitti_interface::srv::Step;
+  using ReplayerStateMsg = ros2_kitti_msgs::msg::ReplayerState;
+  using PlaySrv = ros2_kitti_msgs::srv::Play;
+  using StepSrv = ros2_kitti_msgs::srv::Step;
   using TriggerSrv = std_srvs::srv::Trigger;
   template <typename T>
   using LoadAndPlayDataInterface = r2k_core::LoadAndPlayDataInterface<T>;

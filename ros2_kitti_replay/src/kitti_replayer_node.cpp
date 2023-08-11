@@ -9,7 +9,7 @@
 #include <ros2_kitti_core/image_data_loader.hpp>
 #include <ros2_kitti_core/point_cloud_data_loader.hpp>
 #include <ros2_kitti_core/pose_data_loader.hpp>
-#include <ros2_kitti_interface/msg/trigger_response.hpp>
+#include <ros2_kitti_msgs/msg/trigger_response.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <vector>
 
@@ -250,15 +250,15 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Bind services
   step_service_ptr_ = create_service<StepSrv>(
-    "~/step",
+    "step",
     std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
 
   play_service_ptr_ = create_service<PlaySrv>(
-    "~/play",
+    "play",
     std::bind(&KITTIReplayerNode::play, this, std::placeholders::_1, std::placeholders::_2));
 
   pause_service_ptr_ = create_service<TriggerSrv>(
-    "~/pause",
+    "pause",
     std::bind(&KITTIReplayerNode::pause, this, std::placeholders::_1, std::placeholders::_2));
 }
 

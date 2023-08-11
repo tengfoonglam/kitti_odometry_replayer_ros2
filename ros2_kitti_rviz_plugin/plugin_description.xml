@@ -1,0 +1,9 @@
+<library path="ros2_kitti_rviz_plugin">
+    <class name="ros2_kitti_rviz_plugin/ReplayPanel"
+           type="r2k_rviz::ReplayPanel"
+           base_class_type="rviz_common::Panel">
+        <description>
+            Replay Panel for the KITTI Odometry Dataset Replayer
+        </description>
+    </class>
+</library>

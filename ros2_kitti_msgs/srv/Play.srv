@@ -1,0 +1,5 @@
+ros2_kitti_msgs/PlayRequest request
+
+---
+
+ros2_kitti_msgs/TriggerResponse response
