@@ -31,8 +31,8 @@ public:
   static constexpr const char kDefaultGlobalFrame[]{"map"};
   static constexpr const char kDefaultOdomFrame[]{"odom"};
   static constexpr const char kVehicleBaseLink[]{"p0"};
-  static constexpr float kOdometryFrameLookupTimeout = 5.0;
-  static constexpr std::size_t kPublisherHistoryDepth = 10;
+  static constexpr float kOdometryFrameLookupTimeout{5.0};
+  static constexpr std::size_t kPublisherHistoryDepth{10};
 
   using DataReplayer = r2k_core::DataReplayer;
   using Transforms = r2k_core::Transforms;

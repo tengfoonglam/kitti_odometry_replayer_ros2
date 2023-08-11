@@ -7,6 +7,13 @@
 namespace r2k_rviz
 {
 
+const rclcpp::QoS ReplayPanel::kLatchingQoS{
+  rclcpp::QoSInitialization{RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT, 1},
+  rmw_qos_profile_t{
+    RMW_QOS_POLICY_HISTORY_KEEP_LAST, 10, RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+    RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL, RMW_QOS_DEADLINE_DEFAULT, RMW_QOS_LIFESPAN_DEFAULT,
+    RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT, RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT, false}};
+
 ReplayPanel::ReplayPanel(QWidget * parent)
 : rviz_common::Panel(parent),
   start_time_label_ptr_(new QLabel("Start Time [s]")),
@@ -23,9 +30,30 @@ ReplayPanel::ReplayPanel(QWidget * parent)
   pause_button_ptr_(new QPushButton("Pause")),
   step_button_ptr_(new QPushButton("Step"))
 {
-  auto * const layout = new QGridLayout();
-  layout->setContentsMargins(0, 0, 0, 0);
+  setup_ros();
+  setup_widgets();
+  setup_layout();
+}
 
+void ReplayPanel::setup_ros()
+{
+  node_ptr_ = std::make_shared<rclcpp::Node>("replay_panel_node");
+
+  state_subscriber_ptr_ =
+    node_ptr_->create_subscription<decltype(state_subscriber_ptr_)::element_type::SubscribedType>(
+      std::string{kReplayerStateTopicName}, kLatchingQoS,
+      std::bind(&ReplayPanel::state_callback, this, std::placeholders::_1));
+
+  play_client_ptr_ = node_ptr_->create_client<PlaySrv>("play");
+  pause_client_ptr_ = node_ptr_->create_client<TriggerSrv>("pause");
+  step_client_ptr_ = node_ptr_->create_client<StepSrv>("step");
+
+  executor_.add_node(node_ptr_);
+  executor_thread_ = std::thread([this]() { executor_.spin(); });
+}
+
+void ReplayPanel::setup_widgets()
+{
   replay_speed_input_ptr_->setDecimals(2);
   replay_speed_input_ptr_->setSingleStep(0.25);
   replay_speed_input_ptr_->setRange(0.25, 5.0);
@@ -37,6 +65,36 @@ ReplayPanel::ReplayPanel(QWidget * parent)
   pause_button_ptr_->setDisabled(true);
   step_button_ptr_->setDisabled(true);
 
+  QObject::connect(play_button_ptr_, &QPushButton::clicked, this, &ReplayPanel::on_play_clicked);
+  QObject::connect(pause_button_ptr_, &QPushButton::clicked, this, &ReplayPanel::on_pause_clicked);
+  QObject::connect(step_button_ptr_, &QPushButton::clicked, this, &ReplayPanel::on_step_clicked);
+}
+
+void ReplayPanel::on_play_clicked()
+{
+  auto request_ptr = std::make_shared<PlaySrv::Request>();
+  request_ptr->request.replay_speed = replay_speed_input_ptr_->value();
+  play_client_ptr_->async_send_request(request_ptr);
+}
+
+void ReplayPanel::on_pause_clicked()
+{
+  pause_client_ptr_->async_send_request(std::make_shared<TriggerSrv::Request>());
+}
+
+void ReplayPanel::on_step_clicked()
+{
+  auto request_ptr = std::make_shared<StepSrv::Request>();
+  request_ptr->request.replay_speed = replay_speed_input_ptr_->value();
+  request_ptr->request.number_steps =
+    static_cast<decltype(request_ptr->request.number_steps)>(step_size_input_ptr_->value());
+  step_client_ptr_->async_send_request(request_ptr);
+}
+
+void ReplayPanel::setup_layout()
+{
+  auto * const layout = new QGridLayout();
+  layout->setContentsMargins(0, 0, 0, 0);
   layout->addWidget(start_time_label_ptr_, 0, 0);
   layout->addWidget(start_time_value_ptr_, 0, 1);
   layout->addWidget(current_time_label_ptr_, 1, 0);
@@ -50,17 +108,7 @@ ReplayPanel::ReplayPanel(QWidget * parent)
   layout->addWidget(play_button_ptr_, 5, 0);
   layout->addWidget(step_button_ptr_, 5, 1);
   layout->addWidget(pause_button_ptr_, 6, 0, 1, 2);
-
   setLayout(layout);
-
-  node_ptr_ = std::make_shared<rclcpp::Node>("replay_panel_node");
-
-  state_subscriber_ptr_ = node_ptr_->create_subscription<ReplayerStateMsg>(
-    std::string{kReplayerStateTopicName}, 10,
-    std::bind(&ReplayPanel::state_callback, this, std::placeholders::_1));
-
-  executor_.add_node(node_ptr_);
-  executor_thread_ = std::thread([this]() { executor_.spin(); });
 }
 
 template <typename T>

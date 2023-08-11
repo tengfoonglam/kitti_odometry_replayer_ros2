@@ -8,6 +8,8 @@ find_package(rclcpp REQUIRED)
 find_package(ros2_kitti_msgs REQUIRED)
 find_package(rviz_common REQUIRED)
 find_package(rviz_rendering REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -36,7 +38,9 @@ ament_target_dependencies(${PROJECT_NAME}
                           rclcpp
                           ros2_kitti_msgs
                           rviz_common
-                          rviz_rendering)
+                          rviz_rendering
+                          std_msgs
+                          std_srvs)
 target_include_directories(${PROJECT_NAME}
                            PUBLIC include ${Qt5Widgets_INCLUDE_DIRS})
 

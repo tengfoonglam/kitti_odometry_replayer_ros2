@@ -250,15 +250,15 @@ KITTIReplayerNode::KITTIReplayerNode(const rclcpp::NodeOptions & options)
 
   // Bind services
   step_service_ptr_ = create_service<StepSrv>(
-    "~/step",
+    "step",
     std::bind(&KITTIReplayerNode::step, this, std::placeholders::_1, std::placeholders::_2));
 
   play_service_ptr_ = create_service<PlaySrv>(
-    "~/play",
+    "play",
     std::bind(&KITTIReplayerNode::play, this, std::placeholders::_1, std::placeholders::_2));
 
   pause_service_ptr_ = create_service<TriggerSrv>(
-    "~/pause",
+    "pause",
     std::bind(&KITTIReplayerNode::pause, this, std::placeholders::_1, std::placeholders::_2));
 }
 

@@ -124,14 +124,16 @@ bool DataReplayer::set_state_change_cb(StateChangeCallback && state_change_cb)
     return false;
   }
 
-  with_lock(cb_mutex_, [this, &state_change_cb = std::as_const(state_change_cb)]() {
+  {
+    std::scoped_lock(state_mutex_, cb_mutex_);
     if (state_change_cb_) {
       RCLCPP_WARN(
         logger_, "Replayer %s replacing existing state change callback with new one",
         name_.c_str());
     }
     state_change_cb_ = std::move(state_change_cb);
-  });
+    state_change_cb_(state_);
+  }
 
   return true;
 }
