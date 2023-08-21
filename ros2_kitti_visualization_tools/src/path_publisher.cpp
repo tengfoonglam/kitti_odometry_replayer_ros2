@@ -54,15 +54,17 @@ void PathPublisher::publish_line(const geometry_msgs::msg::TransformStamped & tr
     using Point = Marker::_points_type::value_type;
 
     Point previous_point;
-    previous_point.x = previous_transform_stamped_.value().transform.translation.x;
-    previous_point.y = previous_transform_stamped_.value().transform.translation.y;
-    previous_point.z = previous_transform_stamped_.value().transform.translation.z;
+    const auto & previous_translation = previous_transform_stamped_.value().transform.translation;
+    previous_point.x = previous_translation.x;
+    previous_point.y = previous_translation.y;
+    previous_point.z = previous_translation.z;
     msg_ptr->points.push_back(previous_point);
 
     Point current_point;
-    current_point.x = transform_stamped.transform.translation.x;
-    current_point.y = transform_stamped.transform.translation.y;
-    current_point.z = transform_stamped.transform.translation.z;
+    const auto & current_translation = transform_stamped.transform.translation;
+    current_point.x = current_translation.x;
+    current_point.y = current_translation.y;
+    current_point.z = current_translation.z;
     msg_ptr->points.push_back(previous_point);
 
     publisher_ptr_->publish(std::move(msg_ptr));
