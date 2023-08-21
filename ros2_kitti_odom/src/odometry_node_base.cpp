@@ -81,7 +81,7 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
       get_logger(), "Looking up TF from %s (sensor) to %s (base link)", from_frame.c_str(),
       to_frame.c_str());
     try {
-      auto base_link_tf_sensor_stamped = tf_listener_buffer_ptr->lookupTransform(
+      const auto base_link_tf_sensor_stamped = tf_listener_buffer_ptr->lookupTransform(
         to_frame, from_frame, tf2::TimePointZero,
         tf2::durationFromSec(kBaseLinkTFScannerLookupTimeout));
       tf2::Transform base_link_tf_sensor;
