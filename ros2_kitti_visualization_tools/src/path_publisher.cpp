@@ -21,7 +21,7 @@ void PathPublisher::publish_pose(const geometry_msgs::msg::TransformStamped & tr
   msg_ptr->header = transform_stamped.header;
   msg_ptr->ns = "pose";
   msg_ptr->id = pose_id_++;
-  msg_ptr->type = Marker::ARROW;
+  msg_ptr->type = Marker::SPHERE;
   msg_ptr->action = Marker::ADD;
   msg_ptr->pose.position.x = transform_stamped.transform.translation.x;
   msg_ptr->pose.position.y = transform_stamped.transform.translation.y;
@@ -30,9 +30,13 @@ void PathPublisher::publish_pose(const geometry_msgs::msg::TransformStamped & tr
   msg_ptr->pose.orientation.x = transform_stamped.transform.rotation.x;
   msg_ptr->pose.orientation.y = transform_stamped.transform.rotation.y;
   msg_ptr->pose.orientation.z = transform_stamped.transform.rotation.z;
-  msg_ptr->scale.x = 0.1;
-  msg_ptr->color.r = 1.0;
-  msg_ptr->color.a = 1.0;
+  msg_ptr->scale.x = kPoseScale;
+  msg_ptr->scale.y = kPoseScale;
+  msg_ptr->scale.z = kPoseScale;
+  msg_ptr->color.r = std::get<0>(kPoseRgba);
+  msg_ptr->color.g = std::get<1>(kPoseRgba);
+  msg_ptr->color.b = std::get<2>(kPoseRgba);
+  msg_ptr->color.a = std::get<3>(kPoseRgba);
   publisher_ptr_->publish(std::move(msg_ptr));
 }
 
@@ -47,9 +51,11 @@ void PathPublisher::publish_line(const geometry_msgs::msg::TransformStamped & tr
     msg_ptr->id = line_id_++;
     msg_ptr->type = Marker::LINE_STRIP;
     msg_ptr->action = Marker::ADD;
-    msg_ptr->scale.x = 0.1;
-    msg_ptr->color.r = 1.0;
-    msg_ptr->color.a = 1.0;
+    msg_ptr->scale.x = kLineScale;
+    msg_ptr->color.r = std::get<0>(kLineRgba);
+    msg_ptr->color.g = std::get<1>(kLineRgba);
+    msg_ptr->color.b = std::get<2>(kLineRgba);
+    msg_ptr->color.a = std::get<3>(kLineRgba);
 
     using Point = Marker::_points_type::value_type;
 

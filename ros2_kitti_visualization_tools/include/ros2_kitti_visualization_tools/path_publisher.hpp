@@ -7,6 +7,7 @@
 #include <optional>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
+#include <tuple>
 #include <visualization_msgs/msg/marker.hpp>
 
 namespace r2k_viz_tools
@@ -15,6 +16,13 @@ namespace r2k_viz_tools
 class PathPublisher
 {
 public:
+  using RGBA = std::tuple<float, float, float, float>;
+
+  static constexpr float kLineScale{0.1};
+  static constexpr float kPoseScale{0.1};
+  static constexpr RGBA kLineRgba{1.0, 0.0, 1.0, 1.0};
+  static constexpr RGBA kPoseRgba{1.0, 0.0, 0.0, 1.0};
+
   using Marker = visualization_msgs::msg::Marker;
 
   PathPublisher(rclcpp::Node::SharedPtr node_ptr, const std::string & topic_name);
