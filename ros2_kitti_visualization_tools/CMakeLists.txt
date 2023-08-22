@@ -25,7 +25,7 @@ set(HEADER_LIST "include/${PROJECT_NAME}/path_publisher.hpp")
 set(SOURCE_LIST "src/path_publisher.cpp")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_LIST} ${HEADER_LIST})
-
+set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
                           geometry_msgs

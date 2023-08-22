@@ -105,7 +105,6 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
     "~/reset",
     std::bind(&OdometryNodeBase::reset, this, std::placeholders::_1, std::placeholders::_2));
   tf_broadcaster_ptr_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-  path_pub_ptr_ = create_publisher<nav_msgs::msg::Path>("~/path", 10);
 
   if (!pointcloud_topic.empty()) {
     point_cloud_sub_ptr_ = std::make_unique<PointCloudSubscriber>(this, pointcloud_topic);
@@ -117,6 +116,9 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   p1_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p1_topic);
   p2_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p2_topic);
   p3_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p3_topic);
+
+  path_publisher_ptr_ =
+    std::make_unique<r2k_viz_tools::PathPublisher>(this, std::string{kTravelledPathTopicName});
 }
 
 void OdometryNodeBase::shutdown_if_empty(
@@ -150,20 +152,16 @@ void OdometryNodeBase::notify_new_transform(
   tf2::toMsg(odom_tf_base_link_current, transform_stamped.transform);
   tf_broadcaster_ptr_->sendTransform(transform_stamped);
 
-  path_.header = transform_stamped.header;
-  path_.poses.emplace_back();
-  auto & new_pose_stamped = path_.poses.back();
-  geometry_msgs::msg::PoseStamped pose_stamped;
-  new_pose_stamped.header = transform_stamped.header;
-  new_pose_stamped.pose.position.x = transform_stamped.transform.translation.x;
-  new_pose_stamped.pose.position.y = transform_stamped.transform.translation.y;
-  new_pose_stamped.pose.position.z = transform_stamped.transform.translation.z;
-  new_pose_stamped.pose.orientation.w = transform_stamped.transform.rotation.w;
-  new_pose_stamped.pose.orientation.x = transform_stamped.transform.rotation.x;
-  new_pose_stamped.pose.orientation.y = transform_stamped.transform.rotation.y;
-  new_pose_stamped.pose.orientation.z = transform_stamped.transform.rotation.z;
+  path_publisher_ptr_->publish(transform_stamped);
+}
 
-  path_pub_ptr_->publish(path_);
+bool OdometryNodeBase::reset_internal()
+{
+  std::scoped_lock lock(path_mutex_);
+  if (path_publisher_ptr_) {
+    path_publisher_ptr_->reset();
+  }
+  return true;
 }
 
 }  // namespace r2k_odom
