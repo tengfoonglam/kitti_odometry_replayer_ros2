@@ -17,9 +17,8 @@ void PathPublisher::publish(const TransformStamped & transform_stamped)
   std::scoped_lock lock(mutex_);
   const auto current_point = vector3_to_point(transform_stamped.transform.translation);
   if (previous_point_opt_.has_value()) {
-    visual_tools_ptr_->publishLine(
-      previous_point_opt_.value(), current_point, rviz_visual_tools::Colors::WHITE,
-      rviz_visual_tools::Scales::XXXXLARGE);
+    visual_tools_ptr_->publishPath(
+      {previous_point_opt_.value(), current_point}, kPathColour, kPathRadius);
   }
   visual_tools_ptr_->publishAxis(
     transform_to_pose(transform_stamped.transform), kAxisLength, kAxisRadius);

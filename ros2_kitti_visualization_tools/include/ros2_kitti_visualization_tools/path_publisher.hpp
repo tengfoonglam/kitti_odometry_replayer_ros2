@@ -27,7 +27,9 @@ public:
   using Vector3 = geometry_msgs::msg::Vector3;
 
   static constexpr double kAxisLength{0.25};
-  static constexpr double kAxisRadius{0.15};
+  static constexpr double kAxisRadius{0.25};
+  static constexpr double kPathRadius{0.22};
+  static constexpr rviz_visual_tools::Colors kPathColour{rviz_visual_tools::Colors::WHITE};
 
   PathPublisher(
     rclcpp::Node * const node_ptr, const std::string & base_frame_id,
