@@ -6,6 +6,7 @@
 #include <mutex>
 #include <optional>
 #include <rclcpp/rclcpp.hpp>
+#include <rviz_visual_tools/rviz_visual_tools.hpp>
 #include <string>
 #include <tuple>
 #include <visualization_msgs/msg/marker.hpp>
@@ -21,13 +22,18 @@ public:
   using Marker = visualization_msgs::msg::Marker;
   using MarkerArray = visualization_msgs::msg::MarkerArray;
 
+  static constexpr double kAxisLength{0.1};
+  static constexpr double kAxisRadius{0.05};
+
   static constexpr float kLineScale{0.1};
   static constexpr float kPoseScale{0.3};
   static constexpr RGBA kLineRgba{1.0, 0.0, 1.0, 1.0};
   static constexpr RGBA kPoseRgba{1.0, 0.0, 0.0, 1.0};
   static constexpr std::size_t kPublisherHistoryDepth{10};
 
-  PathPublisher(rclcpp::Node * const node_ptr, const std::string & topic_name);
+  PathPublisher(
+    rclcpp::Node * const node_ptr, const std::string & base_frame_id,
+    const std::string & topic_name);
 
   void publish(const geometry_msgs::msg::TransformStamped & transform_stamped);
 
@@ -35,17 +41,8 @@ public:
 
 private:
   std::mutex mutex_;
-  std::size_t line_id_{0};
-  std::size_t pose_id_{0};
   std::optional<geometry_msgs::msg::TransformStamped> previous_transform_stamped_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr publisher_ptr_;
-
-  [[nodiscard]] static Marker get_pose_marker(
-    std::size_t id, const geometry_msgs::msg::TransformStamped & transform_stamped);
-
-  [[nodiscard]] static Marker get_line_marker(
-    std::size_t id, const geometry_msgs::msg::TransformStamped & previous_transform_stamped,
-    const geometry_msgs::msg::TransformStamped & current_transform_stamped);
+  rviz_visual_tools::RvizVisualToolsPtr visual_tools_ptr_;
 };
 
 }  // namespace r2k_viz_tools

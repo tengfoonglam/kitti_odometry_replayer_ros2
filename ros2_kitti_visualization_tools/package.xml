@@ -11,7 +11,11 @@
 
   <build_depend>geometry_msgs</build_depend>
   <build_depend>rclcpp</build_depend>
+  <build_depend>rviz_visual_tools</build_depend>
+  <build_depend>tf2_eigen</build_depend>
   <build_depend>visualization_msgs</build_depend>
+
+  <exec_depend>rviz_visual_tools</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

@@ -117,8 +117,8 @@ OdometryNodeBase::OdometryNodeBase(const rclcpp::NodeOptions & options)
   p2_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p2_topic);
   p3_img_sub_ptr_ = create_image_subscriber_if_topic_not_empty(this, p3_topic);
 
-  path_publisher_ptr_ =
-    std::make_unique<r2k_viz_tools::PathPublisher>(this, std::string{kTravelledPathTopicName});
+  path_publisher_ptr_ = std::make_unique<r2k_viz_tools::PathPublisher>(
+    this, odometry_frame_id_, std::string{kTravelledPathTopicName});
 }
 
 void OdometryNodeBase::shutdown_if_empty(

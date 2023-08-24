@@ -4,6 +4,8 @@ project(ros2_kitti_visualization_tools LANGUAGES CXX)
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rviz_visual_tools REQUIRED)
+find_package(tf2_eigen REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 # Default to C++17
@@ -30,6 +32,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 ament_target_dependencies(${PROJECT_NAME}
                           geometry_msgs
                           rclcpp
+                          rviz_visual_tools
+                          tf2_eigen
                           visualization_msgs)
 
 if(BUILD_TESTING)
@@ -48,7 +52,11 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(geometry_msgs rclcpp visualization_msgs)
+ament_export_dependencies(geometry_msgs
+                          rclcpp
+                          rviz_visual_tools
+                          tf2_eigen
+                          visualization_msgs)
 
 install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
