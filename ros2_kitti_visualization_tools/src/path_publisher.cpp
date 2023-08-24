@@ -15,12 +15,11 @@ PathPublisher::PathPublisher(
 void PathPublisher::publish(const TransformStamped & transform_stamped)
 {
   std::scoped_lock lock(mutex_);
-  const auto current_point = vector3_to_point32(transform_stamped.transform.translation);
+  const auto current_point = vector3_to_point(transform_stamped.transform.translation);
   if (previous_point_opt_.has_value()) {
-    geometry_msgs::msg::Polygon polygon;
-    polygon.points = {previous_point_opt_.value(), current_point};
-    visual_tools_ptr_->publishPolygon(
-      polygon, rviz_visual_tools::Colors::WHITE, rviz_visual_tools::Scales::XXXLARGE);
+    visual_tools_ptr_->publishLine(
+      previous_point_opt_.value(), current_point, rviz_visual_tools::Colors::WHITE,
+      rviz_visual_tools::Scales::XXXXLARGE);
   }
   visual_tools_ptr_->publishAxis(
     transform_to_pose(transform_stamped.transform), kAxisLength, kAxisRadius);
@@ -49,12 +48,12 @@ PathPublisher::Pose PathPublisher::transform_to_pose(const Transform & transform
   return pose;
 }
 
-PathPublisher::Point32 PathPublisher::vector3_to_point32(const Vector3 & vector_3)
+PathPublisher::Point PathPublisher::vector3_to_point(const Vector3 & vector_3)
 {
-  Point32 point;
-  point.x = static_cast<Point32::_x_type>(vector_3.x);
-  point.y = static_cast<Point32::_y_type>(vector_3.y);
-  point.z = static_cast<Point32::_z_type>(vector_3.z);
+  Point point;
+  point.x = vector_3.x;
+  point.y = vector_3.y;
+  point.z = vector_3.z;
   return point;
 }
 

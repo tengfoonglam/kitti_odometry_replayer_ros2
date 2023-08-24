@@ -1,7 +1,7 @@
 #ifndef ROS2_KITTI_VISUALIZATION_TOOLS__PATH_PUBLISHER_HPP_
 #define ROS2_KITTI_VISUALIZATION_TOOLS__PATH_PUBLISHER_HPP_
 
-#include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -20,15 +20,14 @@ namespace r2k_viz_tools
 class PathPublisher
 {
 public:
-  using Point32 = geometry_msgs::msg::Point32;
+  using Point = geometry_msgs::msg::Point;
   using Pose = geometry_msgs::msg::Pose;
   using Transform = geometry_msgs::msg::Transform;
   using TransformStamped = geometry_msgs::msg::TransformStamped;
   using Vector3 = geometry_msgs::msg::Vector3;
 
-  static constexpr double kAxisLength{0.2};
-  static constexpr double kAxisRadius{0.1};
-  static constexpr double kPathRadius{0.05};
+  static constexpr double kAxisLength{0.25};
+  static constexpr double kAxisRadius{0.15};
 
   PathPublisher(
     rclcpp::Node * const node_ptr, const std::string & base_frame_id,
@@ -40,12 +39,12 @@ public:
 
 private:
   std::mutex mutex_;
-  std::optional<Point32> previous_point_opt_;
+  std::optional<Point> previous_point_opt_;
   rviz_visual_tools::RvizVisualToolsPtr visual_tools_ptr_;
 
   [[nodiscard]] static Pose transform_to_pose(const Transform & transform);
 
-  [[nodiscard]] static Point32 vector3_to_point32(const Vector3 & vector_3);
+  [[nodiscard]] static Point vector3_to_point(const Vector3 & vector_3);
 };
 
 }  // namespace r2k_viz_tools
