@@ -1,7 +1,11 @@
 #ifndef ROS2_KITTI_VISUALIZATION_TOOLS__PATH_PUBLISHER_HPP_
 #define ROS2_KITTI_VISUALIZATION_TOOLS__PATH_PUBLISHER_HPP_
 
+#include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -9,8 +13,6 @@
 #include <rviz_visual_tools/rviz_visual_tools.hpp>
 #include <string>
 #include <tuple>
-#include <visualization_msgs/msg/marker.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
 
 namespace r2k_viz_tools
 {
@@ -18,31 +20,32 @@ namespace r2k_viz_tools
 class PathPublisher
 {
 public:
-  using RGBA = std::tuple<float, float, float, float>;
-  using Marker = visualization_msgs::msg::Marker;
-  using MarkerArray = visualization_msgs::msg::MarkerArray;
+  using Point32 = geometry_msgs::msg::Point32;
+  using Pose = geometry_msgs::msg::Pose;
+  using Transform = geometry_msgs::msg::Transform;
+  using TransformStamped = geometry_msgs::msg::TransformStamped;
+  using Vector3 = geometry_msgs::msg::Vector3;
 
-  static constexpr double kAxisLength{0.1};
-  static constexpr double kAxisRadius{0.05};
-
-  static constexpr float kLineScale{0.1};
-  static constexpr float kPoseScale{0.3};
-  static constexpr RGBA kLineRgba{1.0, 0.0, 1.0, 1.0};
-  static constexpr RGBA kPoseRgba{1.0, 0.0, 0.0, 1.0};
-  static constexpr std::size_t kPublisherHistoryDepth{10};
+  static constexpr double kAxisLength{0.2};
+  static constexpr double kAxisRadius{0.1};
+  static constexpr double kPathRadius{0.05};
 
   PathPublisher(
     rclcpp::Node * const node_ptr, const std::string & base_frame_id,
     const std::string & topic_name);
 
-  void publish(const geometry_msgs::msg::TransformStamped & transform_stamped);
+  void publish(const TransformStamped & transform_stamped);
 
   void reset();
 
 private:
   std::mutex mutex_;
-  std::optional<geometry_msgs::msg::TransformStamped> previous_transform_stamped_;
+  std::optional<Point32> previous_point_opt_;
   rviz_visual_tools::RvizVisualToolsPtr visual_tools_ptr_;
+
+  [[nodiscard]] static Pose transform_to_pose(const Transform & transform);
+
+  [[nodiscard]] static Point32 vector3_to_point32(const Vector3 & vector_3);
 };
 
 }  // namespace r2k_viz_tools
