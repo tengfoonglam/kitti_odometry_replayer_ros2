@@ -1,4 +1,4 @@
-ros2 launch ros2_kitti_replay replayer_bringup.launch.py dataset_number:=5
+ros2 launch ros2_kitti_replay replayer_bringup.launch.py dataset_number:=3
 
 ros2 launch ros2_kitti_replay replayer_bringup.launch.py dataset_number:=5
 
