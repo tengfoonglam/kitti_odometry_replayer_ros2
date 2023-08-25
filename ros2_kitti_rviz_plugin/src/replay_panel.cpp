@@ -111,21 +111,27 @@ void ReplayPanel::setup_layout()
   setLayout(layout);
 }
 
-template <typename T>
-inline void set_timestamp_as_text(QLabel & label, const T & timestamp_msg)
+inline void set_timestamp_as_label(QLabel & label, const double & seconds)
 {
   label.setText(QString::number(
-    rclcpp::Time(timestamp_msg).seconds(), ReplayPanel::kValueDisplayFormat,
-    ReplayPanel::kValueDisplayPrecision));
+    seconds, ReplayPanel::kValueDisplayFormat, ReplayPanel::kValueDisplayPrecision));
 }
 
 void ReplayPanel::state_callback(const ReplayerStateMsg::ConstSharedPtr state_ptr)
 {
-  set_timestamp_as_text(*start_time_value_ptr_, state_ptr->start_time);
-  set_timestamp_as_text(*current_time_value_ptr_, state_ptr->current_time);
-  set_timestamp_as_text(*end_time_value_ptr_, state_ptr->end_time);
+  const auto start_time = rclcpp::Time(state_ptr->start_time).seconds();
+  const auto current_time = rclcpp::Time(state_ptr->current_time).seconds();
+  const auto end_time = rclcpp::Time(state_ptr->end_time).seconds();
 
-  if (state_ptr->is_playing) {
+  set_timestamp_as_label(*start_time_value_ptr_, start_time);
+  set_timestamp_as_label(*current_time_value_ptr_, current_time);
+  set_timestamp_as_label(*end_time_value_ptr_, end_time);
+
+  if (current_time >= end_time) {
+    play_button_ptr_->setDisabled(true);
+    pause_button_ptr_->setDisabled(true);
+    step_button_ptr_->setDisabled(true);
+  } else if (state_ptr->is_playing) {
     play_button_ptr_->setDisabled(true);
     pause_button_ptr_->setDisabled(false);
     step_button_ptr_->setDisabled(true);
