@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>ros2_kitti_integration_test</name>
+  <version>0.1.0</version>
+  <description>Integration Test for the ROS2 KITTI Odometry Dataset Replayer</description>
+  <maintainer email="tengfoonglam@yahoo.com.sg">Lam Teng Foong</maintainer>
+  <license>BSD 3-clause</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ros2_kitti_msgs</exec_depend>
+
+
+  <test_depend>launch_pytest</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>ros2launch</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
