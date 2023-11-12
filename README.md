@@ -94,37 +94,37 @@ In the event that you do not want to process/download the point cloud, grayscale
 
 ## Quick Start
 
-Replay a dataset sequence (e.g. Sequence 1). Press play using the RVIZ GUI.
+##### Replay a dataset sequence (e.g. Sequence 1). Press play using the RVIZ GUI.
 
 `ros2 launch ros2_kitti_replay replayer_bringup.launch.py dataset_number:=1`
 
-Run a dataset sequence in a specified time range
+##### Run a dataset sequence in a specified time range
 
 `ros2 launch ros2_kitti_replay replayer_bringup.launch.py dataset_number:=5 start_time:=60.0 end_time:=120.0`
 
-Run Open3D ICP Odometry over a dataset sequence
+##### Run Open3D ICP Odometry over a dataset sequence
 
 `ros2 launch ros2_kitti_odom_open3d open3d_odom_with_replayer_bringup.launch.py dataset_number:=1`
 
-Run KISS ICP Odometry over a dataset sequence
+##### Run KISS ICP Odometry over a dataset sequence
 
 `ros2 launch ros2_kitti_odom_kiss_icp kiss_icp_odom_with_replayer_bringup.launch.py dataset_number:=1`
 
 ## Terminal Commands while the Replayer is Running
 
-Play
+##### Play
 
 `ros2 service call /kitti_replayer/play ros2_kitti_msgs/srv/Play "{request: {replay_speed: 2.0}}" `
 
-Pause
+##### Pause
 
 `ros2 service call /kitti_replayer/pause std_srvs/srv/Trigger`
 
-Step forward a specified number of frames
+##### Step forward a specified number of frames
 
 `ros2 service call /kitti_replayer/step ros2_kitti_msgs/srv/Step "{request: {replay_speed: 2.0, number_steps: 50}}" `
 
-Specify time range on the next play command
+##### Specify time range on the next play command
 
 `ros2 service call /kitti_replayer/set_next_play_time_range ros2_kitti_msgs/srv/SetTimeRange "{request:{start_time:{sec: 30, nanosec: 0}, end_time:{sec: 60, nanosec: 0}}}" `
 

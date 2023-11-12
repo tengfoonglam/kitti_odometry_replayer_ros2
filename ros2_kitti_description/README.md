@@ -1,7 +1,12 @@
 # ros2_kitti_description
-___
 
-***ros2_kitti_description*** is a package that generates vehicle URDFs for the [KITTI Vision Benchmark Odometry Dataset](https://www.cvlibs.net/datasets/kitti/eval_odometry.php)
+***ros2_kitti_description*** is a package that generates vehicle URDFs for the [KITTI Vision Benchmark Odometry Dataset](https://www.cvlibs.net/datasets/kitti/eval_odometry.php).
+
+Note that all URDFs for all sequences have been generated and can already be found in the `urdf` folder. Only run the instructions below if you want to regenerate the URDFs again.
+
+<img src="./media/urdf_image.png"
+     alt="KITTI Vehicle URDF"
+     style="width:400px;" />
 
 ## Instructions
 
