@@ -11,12 +11,21 @@
 namespace r2k_odom_kiss_icp
 {
 
+/**
+ * @brief Odometry Node based on KISS ICP
+ *
+ */
 class KissICPOdometryNode final : public r2k_odom::OdometryNodeBase
 {
 public:
   static constexpr std::size_t kLoggingPeriodMs = 10000;
   static constexpr double kSecondsToMsScalingFactor = 1e3;
 
+  /**
+   * @brief Construct a new Kiss ICP Odometry Node object
+   *
+   * @param options - Node options
+   */
   explicit KissICPOdometryNode(const rclcpp::NodeOptions & options);
 
 private:
@@ -26,7 +35,19 @@ private:
   kiss_icp::pipeline::KISSConfig config_;
   r2k_core::Timer timer_;
 
+  /**
+   * @brief Callback when a new point cloud is published
+   *
+   * @param pc_ptr
+   */
   void point_cloud_cb(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pc_ptr);
+
+  /**
+   * @brief Reset of node
+   *
+   * @return true - Reset successful
+   * @return false - Otherwise
+   */
   bool reset_internal() final;
 };
 
