@@ -9,6 +9,10 @@
 
 ##### Running an Odometry Pipeline and Comparing with a Ground Truth "Ghost Car"
 
+<img src="./media/odometry_mode.png"
+     alt="Odometry Mode"
+     style="width:5 00px;" />
+
 ## Key Features
 1. Replayer that replays all the data provided by the KITTI Odometry Dataset
     * Timestamps
