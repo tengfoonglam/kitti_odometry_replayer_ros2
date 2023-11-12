@@ -13,6 +13,10 @@
 namespace r2k_core
 {
 
+/**
+ * @brief Base class for Data Loader
+ *
+ */
 class DataLoaderBase
 {
 public:

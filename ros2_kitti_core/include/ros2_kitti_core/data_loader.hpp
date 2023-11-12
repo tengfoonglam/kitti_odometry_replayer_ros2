@@ -14,6 +14,11 @@
 namespace r2k_core
 {
 
+/**
+ * @brief DataLoader that retrieves data given an index
+ *
+ * @tparam RT - Return type of the data loader. Must be a value, shared or unique poiinter
+ */
 template <typename RT>
 class DataLoader : public DataLoaderBase
 {
@@ -27,10 +32,27 @@ public:
 
   static constexpr bool kReturnValueIsPtr = !std::is_same_v<DataType, ReturnType>;
 
+  /**
+   * @brief Construct a new Data Loader object
+   *
+   * @param name - Name of the data loader
+   */
   explicit DataLoader(const std::string & name) : DataLoaderBase(name) {}
 
+  /**
+   * @brief Construct a new Data Loader object
+   *
+   * @param name - Name of the data loader
+   * @param logger - Logger to use
+   */
   DataLoader(const std::string & name, rclcpp::Logger logger) : DataLoaderBase(name, logger) {}
 
+  /**
+   * @brief Get the data given an index
+   *
+   * @param idx - Index of the data to
+   * @return OptionalReturnType - Data, std::nullopt if failed
+   */
   [[nodiscard]] OptionalReturnType get_data(std::size_t idx)
   {
     if (!can_process_data(idx, __func__)) {
@@ -40,6 +62,13 @@ public:
   }
 
 protected:
+  /**
+   * @brief Get the data given an index implementation. It is guaranteed that the index
+   *        is within range and the loader is ready
+   *
+   * @param idx - Index of the data to
+   * @return OptionalReturnType - Data, std::nullopt if failed
+   */
   [[nodiscard]] virtual OptionalReturnType get_data_internal(std::size_t idx) = 0;
 };
 
