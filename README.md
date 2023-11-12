@@ -2,27 +2,30 @@
 
 [![CI](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml/badge.svg)](https://github.com/tengfoonglam/ros2_kitti/actions/workflows/main.yml)
 
-[INSERT IMAGE]
 
-**KITTI Odometry Replayer ROS 2** is a ROS 2 package that allows a user to replay data from the [KITTI Odometry Dataset](https://www.cvlibs.net/datasets/kitti/eval_odometry.php). Currently only supports the **Humble** distribution.
+**KITTI Odometry Replayer ROS 2** is a ROS 2 package that allows a user to replay data from the [KITTI Odometry Dataset](https://www.cvlibs.net/datasets/kitti/eval_odometry.php). It currently only supports the **Humble** distribution.
 
-Key features of the package:
+##### Replaying Poses, Point Cloud and Images from a Dataset Sequence
+
+##### Running an Odometry Pipeline and Comparing with a Ground Truth "Ghost Car"
+
+## Key Features
 1. Replayer that replays all the data provided by the KITTI Odometry Dataset
     * Timestamps
     * Ground truth poses
     * Lidar point cloud
     * Left/right grayscale images
     * Left/right colour images
-1. Additional replayer functionality
+2. Additional replayer functionality
     * Start/pause
     * Replay at a specified speed
     * Replay only a segment of a sequence
     * Replayer can be made a [composible node](https://docs.ros.org/en/humble/Tutorials/Intermediate/Composition.html) which allows for more efficient transport of published data
-1. URDF generator that creates the URDF of all the vehicle setup in the dataset
-1. Composible odometry nodes that uses the data replayer as a data source:
+3. URDF generator that creates the URDF of all the vehicle setup in the dataset
+4. Composible odometry nodes that uses the data replayer as a data source:
     * Odometry using [Open3D](http://www.open3d.org/)'s point cloud resigration implementation
     * [KISS ICP](https://github.com/PRBonn/kiss-icp)
-1. Visualization tools
+5. Visualization tools
     * RVIZ plugin that allows the control of the replayer via a GUI
     * 'Ghost car' driving on the ground truth path when running the replayer with an odometry node
 
@@ -94,9 +97,9 @@ In the event that you do not want to process/download the point cloud, grayscale
 
 ## Quick Start
 
-##### Replay a dataset sequence (e.g. Sequence 1). Press play using the RVIZ GUI.
+##### Replay a dataset sequence (e.g. Sequence 5). Press play using the RVIZ GUI.
 
-`ros2 launch ros2_kitti_replay replayer_bringup.launch.py dataset_number:=1`
+`ros2 launch ros2_kitti_replay replayer_bringup.launch.py dataset_number:=5`
 
 ##### Run a dataset sequence in a specified time range
 
@@ -104,11 +107,11 @@ In the event that you do not want to process/download the point cloud, grayscale
 
 ##### Run Open3D ICP Odometry over a dataset sequence
 
-`ros2 launch ros2_kitti_odom_open3d open3d_odom_with_replayer_bringup.launch.py dataset_number:=1`
+`ros2 launch ros2_kitti_odom_open3d open3d_odom_with_replayer_bringup.launch.py dataset_number:=5`
 
 ##### Run KISS ICP Odometry over a dataset sequence
 
-`ros2 launch ros2_kitti_odom_kiss_icp kiss_icp_odom_with_replayer_bringup.launch.py dataset_number:=1`
+`ros2 launch ros2_kitti_odom_kiss_icp kiss_icp_odom_with_replayer_bringup.launch.py dataset_number:=5`
 
 ## Terminal Commands while the Replayer is Running
 
@@ -160,3 +163,4 @@ This repository uses [pre-commit hooks](https://pre-commit.com/) to ensure that 
    * Transformations in the vehicle model
    * Software architecture
 - [ ] Odometry node that uses visual odometry (e.g. using [ORB-SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3))
+- [ ] Instructions on how to record a rosbag when performing an odometry run and evaluating the odometry pipeline performance using [evo](https://github.com/MichaelGrupp/evo)
