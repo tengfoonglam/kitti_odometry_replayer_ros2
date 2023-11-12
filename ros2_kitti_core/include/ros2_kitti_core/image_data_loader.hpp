@@ -13,7 +13,7 @@ namespace r2k_core
 {
 
 /**
- * @brief Data loaded that loads images from a folder
+ * @brief Data loader that loads images from a folder
  *
  */
 class ImageDataLoader final : public FolderDataLoader<ImageMsg::SharedPtr>

@@ -10,11 +10,24 @@ namespace r2k_core
 class Timer
 {
 public:
+  /**
+   * @brief Construct a new Timer object
+   *
+   */
   Timer();
 
+  /**
+   * @brief Start the timer
+   *
+   */
   void start();
 
-  rclcpp::Duration stop();
+  /**
+   * @brief Stop the timer, return the time elapsed
+   *
+   * @return rclcpp::Duration - Elapsted time
+   */
+  [[nodiscard]] rclcpp::Duration stop();
 
 private:
   bool is_timing_;
