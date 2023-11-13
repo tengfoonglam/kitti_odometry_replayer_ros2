@@ -1,6 +1,6 @@
 import os
 
-# from pathlib import Path
+from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchContext, LaunchDescription
@@ -24,8 +24,7 @@ from typing import List
 POINT_CLOUD_FOLDER_AVAILABLE = True
 GRAY_IMAGES_FOLDER_AVAILABLE = True
 COLOUR_IMAGES_FOLDER_AVAILABLE = True
-DATASET_PATH = "/media/ltf/LTFUbuntuSSD/kitti_dataset"
-# TEMP = str(Path().home() / "kitti_dataset")
+DATASET_PATH = str(Path().home() / "kitti_dataset")
 
 
 def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
