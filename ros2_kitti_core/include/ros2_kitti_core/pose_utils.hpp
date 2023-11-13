@@ -12,6 +12,12 @@ using Transform = geometry_msgs::msg::Transform;
 using TransformStamped = geometry_msgs::msg::TransformStamped;
 using Transforms = std::vector<Transform>;
 
+/**
+ * @brief Given a KITTI pose .txt file, extract all poses in it
+ *
+ * @param poses_path - Path of .txt file
+ * @return std::optional<Transforms> - Extracted poses, std::nullopt if failure
+ */
 [[nodiscard]] std::optional<Transforms> extract_poses_from_file(
   const std::filesystem::path & poses_path);
 

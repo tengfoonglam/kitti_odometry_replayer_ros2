@@ -11,6 +11,13 @@ namespace r2k_core
 using Timestamp = rclcpp::Time;
 using Timestamps = std::vector<rclcpp::Time>;
 
+/**
+ * @brief Convert a floating point number to a Timestamp class
+ *
+ * @tparam T - Floating point type
+ * @param seconds - Input value
+ * @return Timestamp - Output Timestamp
+ */
 template <typename T>
 [[nodiscard]] inline Timestamp to_timestamp(T seconds)
 {

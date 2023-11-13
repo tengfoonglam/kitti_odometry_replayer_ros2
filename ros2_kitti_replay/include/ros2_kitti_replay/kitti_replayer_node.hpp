@@ -23,6 +23,10 @@
 namespace r2k_replay
 {
 
+/**
+ * @brief KITTI Replayer Node
+ *
+ */
 class KITTIReplayerNode final : public rclcpp::Node
 {
 public:
@@ -36,7 +40,6 @@ public:
 
   using DataReplayer = r2k_core::DataReplayer;
   using Transforms = r2k_core::Transforms;
-
   using ReplayerStateMsg = ros2_kitti_msgs::msg::ReplayerState;
   using PlaySrv = ros2_kitti_msgs::srv::Play;
   using StepSrv = ros2_kitti_msgs::srv::Step;
@@ -44,7 +47,6 @@ public:
   template <typename T>
   using LoadAndPlayDataInterface = r2k_core::LoadAndPlayDataInterface<T>;
   using ImageLoadAndPlayInterface = LoadAndPlayDataInterface<r2k_core::ImageDataLoader>;
-
   template <typename T>
   using Publisher = rclcpp::Publisher<T>;
   template <typename T>
@@ -52,8 +54,19 @@ public:
 
   static const rclcpp::QoS kLatchingQoS;
 
+  /**
+   * @brief Construct a new KITTIReplayerNode object
+   *
+   * @param options - Node Options
+   */
   explicit KITTIReplayerNode(const rclcpp::NodeOptions & options);
 
+  /**
+   * @brief Convert replayer state to a message
+   *
+   * @param replayer_state - Input state
+   * @return ReplayerStateMsg - Output message
+   */
   [[nodiscard]] static ReplayerStateMsg replayer_state_to_msg(
     const DataReplayer::ReplayerState & replayer_state);
 
@@ -70,32 +83,88 @@ private:
   std::unique_ptr<tf2_ros::TransformListener> tf_listener_ptr_;
   std::unique_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_ptr_;
 
+  /**
+   * @brief Create a LoadAndPlayDataInterface given a callback and data loader pointer
+   *
+   * @tparam T - DataLoader Type
+   * @param name - Name of interface
+   * @param cb - Callback called when play() is called by the interface
+   * @param loader_ptr - DataLoader shared pointer
+   * @return std::shared_ptr<LoadAndPlayDataInterface<T>>
+   */
   template <typename T>
   [[nodiscard]] static std::shared_ptr<LoadAndPlayDataInterface<T>> make_shared_interface(
     const std::string & name, typename LoadAndPlayDataInterface<T>::PlayCb && cb,
     std::unique_ptr<T> loader_ptr);
 
+  /**
+   * @brief Check that a Data Interface is ready and data_size matches the expected value, shut down
+   * the node in case it is not
+   *
+   * @tparam T - DataLoader Type
+   * @param interface - Interface to check
+   * @param expected_data_size
+   */
   template <typename T>
   void play_data_interface_check_shutdown_if_fail(
     const LoadAndPlayDataInterface<T> & interface, std::size_t expected_data_size);
 
+  /**
+   * @brief Append prefix to a segment
+   *
+   * @param prefix
+   * @param segment
+   * @return std::string
+   */
   [[nodiscard]] static std::string add_prefix(
     const std::string & prefix, const std::string & segment);
 
+  /**
+   * @brief Implementation of play service call
+   *
+   * @param request_ptr
+   * @param response_ptr
+   */
   void play(
     const std::shared_ptr<PlaySrv::Request> request_ptr,
     std::shared_ptr<PlaySrv::Response> response_ptr);
 
+  /**
+   * @brief Implementation of step service call
+   *
+   * @param request_ptr
+   * @param response_ptr
+   */
   void step(
     const std::shared_ptr<StepSrv::Request> request_ptr,
     std::shared_ptr<StepSrv::Response> response_ptr);
 
+  /**
+   * @brief Implementation of pause service call
+   *
+   * @param request_ptr
+   * @param response_ptr
+   */
   void pause(
     [[maybe_unused]] const std::shared_ptr<TriggerSrv::Request> request_ptr,
     std::shared_ptr<TriggerSrv::Response> response_ptr);
 
+  /**
+   * @brief Publish the ground truth path
+   *
+   * @param transforms - Ground truth path
+   */
   void publish_ground_truth_path(const Transforms & transforms);
 
+  /**
+   * @brief Create a image play data interface object
+   *
+   * @param frame_id - Frame ID of the image
+   * @param topic_name - Topic name
+   * @param folder_path - Folder where the images are located
+   * @param timestamps - Timestamps of the images
+   * @return std::shared_ptr<ImageLoadAndPlayInterface> - Resulting interface
+   */
   std::shared_ptr<ImageLoadAndPlayInterface> create_image_play_data_interface(
     const std::string & frame_id, const std::string & topic_name,
     const std::filesystem::path & folder_path, const r2k_core::Timestamps & timestamps);

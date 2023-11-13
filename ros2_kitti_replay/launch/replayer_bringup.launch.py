@@ -1,6 +1,6 @@
 import os
 
-# from pathlib import Path
+from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchContext, LaunchDescription
@@ -24,6 +24,7 @@ from typing import List
 POINT_CLOUD_FOLDER_AVAILABLE = True
 GRAY_IMAGES_FOLDER_AVAILABLE = True
 COLOUR_IMAGES_FOLDER_AVAILABLE = True
+DATASET_PATH = str(Path().home() / "kitti_dataset")
 
 
 def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
@@ -34,9 +35,7 @@ def launch_setup(context: LaunchContext) -> List[LaunchDescription]:
     end_time = LaunchConfiguration("end_time", default="0.0")
 
     dataset_number = LaunchConfiguration("dataset_number", default="00")
-    dataset_path = LaunchConfiguration(
-        "dataset_path", default="/media/ltf/LTFUbuntuSSD/kitti_dataset"
-    )
+    dataset_path = LaunchConfiguration("dataset_path", default=DATASET_PATH)
     ground_truth_data_frame_prefix = LaunchConfiguration(
         "ground_truth_data_frame_prefix", default="ground_truth"
     )
@@ -317,7 +316,7 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument(
                 "dataset_path",
-                default_value="/media/ltf/LTFUbuntuSSD/kitti_dataset",
+                default_value=DATASET_PATH,
                 description="Path where all dataset folders are located",
             ),
             DeclareLaunchArgument(

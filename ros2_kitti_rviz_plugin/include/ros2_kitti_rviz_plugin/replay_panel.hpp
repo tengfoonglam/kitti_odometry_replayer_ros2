@@ -34,6 +34,11 @@ public:
   using StepSrv = ros2_kitti_msgs::srv::Step;
   using TriggerSrv = std_srvs::srv::Trigger;
 
+  /**
+   * @brief Construct a new Replay Panel object
+   *
+   * @param parent
+   */
   explicit ReplayPanel(QWidget * parent = nullptr);
 
   ~ReplayPanel();
@@ -61,13 +66,21 @@ protected:
   QPushButton * const pause_button_ptr_;
   QPushButton * const step_button_ptr_;
 
+  // Setup methods
   void setup_ros();
   void setup_widgets();
   void setup_layout();
+
+  // Click callbacks
   void on_play_clicked();
   void on_pause_clicked();
   void on_step_clicked();
 
+  /**
+   * @brief Callback when there is a replayer state change
+   *
+   * @param state_ptr
+   */
   void state_callback(const ReplayerStateMsg::ConstSharedPtr state_ptr);
 };
 

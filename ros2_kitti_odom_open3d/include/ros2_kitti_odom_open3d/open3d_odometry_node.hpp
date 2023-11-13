@@ -22,8 +22,19 @@ public:
   static constexpr std::size_t kLoggingPeriodMs = 10000;
   static constexpr double kSecondsToMsScalingFactor = 1e3;
 
+  /**
+   * @brief Construct a new Open 3 D Odometry Node object
+   *
+   * @param options
+   */
   explicit Open3DOdometryNode(const rclcpp::NodeOptions & options);
 
+  /**
+   * @brief Convert an Eigen matrix to tf2::Transform
+   *
+   * @param tf_eigen
+   * @return tf2::Transform
+   */
   [[nodiscard]] static tf2::Transform eigen_to_transform(const Eigen::Matrix4d & tf_eigen);
 
 private:
@@ -34,9 +45,28 @@ private:
   r2k_core::Timer normal_computation_timer_;
   r2k_core::Timer icp_timer_;
 
+  /**
+   * @brief Callback when a new point cloud is published
+   *
+   * @param pc_ptr
+   */
   void point_cloud_cb(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & pc_ptr);
+
+  /**
+   * @brief Reset of node
+   *
+   * @return true - Reset successful
+   * @return false - Otherwise
+   */
   bool reset_internal() final;
 
+  /**
+   * @brief Perform ICP resgistration
+   *
+   * @param source - Point cloud to register
+   * @param target - Point cloud to register against
+   * @return tf2::Transform - Resulting transformation of source w.r.t target
+   */
   [[nodiscard]] tf2::Transform perform_registration(
     const O3DPointCloud & source, const O3DPointCloud & target);
 };

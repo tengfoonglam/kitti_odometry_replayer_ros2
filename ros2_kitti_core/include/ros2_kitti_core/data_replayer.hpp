@@ -17,6 +17,10 @@
 namespace r2k_core
 {
 
+/**
+ * @brief Data replayer that loads and play data given a sequence of timestamps
+ *
+ */
 class DataReplayer
 {
 public:
@@ -57,40 +61,135 @@ public:
   using IndexRange = std::tuple<std::size_t, std::size_t>;
   using IndexRangeOpt = std::optional<IndexRange>;
 
+  /**
+   * @brief Construct a new Data Replayer object
+   *
+   * @param name
+   * @param timestamps
+   * @param logger
+   * @param time_range
+   */
   DataReplayer(
     const std::string & name, const Timestamps & timestamps,
     rclcpp::Logger logger = rclcpp::get_logger("replayer"),
     const TimeRange & time_range = TimeRange());
 
+  // Rule of Five since destructor was modified
   DataReplayer(const DataReplayer & other) = delete;
   DataReplayer & operator=(const DataReplayer & other) = delete;
 
+  /**
+   * @brief Whether replayer is playing
+   *
+   * @return true - Is playing
+   * @return false - Otherwise
+   */
   [[nodiscard]] bool is_playing() const;
 
+  /**
+   * @brief Add a play data interface to the replayer. Replayer must not be playing
+   *
+   * @param play_data_interface_ptr - Shared pointer of the interface to be added
+   * @return true - Added successfully
+   * @return false _ Otherwise
+   */
   bool add_play_data_interface(std::shared_ptr<PlayDataInterfaceBase> play_data_interface_ptr);
 
+  /**
+   * @brief Set the state change cb object. This will be called whenever the replayer changes state.
+   *        Replayer must not be playing
+   *
+   * @param state_change_cb - Callback to call
+   * @return true - Set successful
+   * @return false - Otherwise
+   */
   bool set_state_change_cb(StateChangeCallback && state_change_cb);
 
+  /**
+   * @brief Get the replayer state
+   *
+   * @return ReplayerState - Current replayer state
+   */
   [[nodiscard]] ReplayerState get_replayer_state() const;
 
+  /**
+   * @brief Play
+   *
+   * @param replay_speed
+   * @return true - Successful
+   * @return false - Otherwise
+   */
   bool play(float replay_speed = 1.0f);
 
+  /**
+   * @brief Set the time range to play
+   *
+   * @param next_play_time_range - Time range to play
+   * @return true - Set successful
+   * @return false - Otherwise
+   */
   bool set_next_play_time_range(const TimeRange & next_play_time_range);
 
+  /**
+   * @brief Step through a fixed amount of frames
+   *
+   * @param step_request
+   * @return true - Step started successfully
+   * @return false - Otherwise
+   */
   bool step(const StepRequest & step_request);
 
+  /**
+   * @brief Pause the replayer
+   *
+   * @return true - Paused the replayer successfully or already not playing
+   * @return false - Otherwise
+   */
   bool pause();
 
+  /**
+   * @brief Stop the replayer. Timeline is reset back to the start time
+   *
+   * @return true - Stopped the replayer successfully
+   * @return false - Otherwise
+   */
   bool stop();
 
+  /**
+   * @brief Reset the replayer
+   *
+   * @return true - Reset successful
+   * @return false - Otherwise
+   */
   bool reset();
 
+  /**
+   * @brief Destroy the Data Replayer object
+   *
+   */
   ~DataReplayer();
 
+  /**
+   * @brief Get the index range to play given a time range
+   *
+   * @param next_play_time_range - Time range
+   * @param start_idx - Minimum index
+   * @param end_idx - Maximum index
+   * @param timestamps - Timestamps
+   * @return IndexRangeOpt - Index range if a valid one is found
+   */
   [[nodiscard]] static IndexRangeOpt get_index_range_from_time_range(
     const TimeRange & next_play_time_range, std::size_t start_idx, std::size_t end_idx,
     const Timestamps & timestamps);
 
+  /**
+   * @brief GGet the index range given a step request
+   *
+   * @param step_request - Step request
+   * @param next_idx - Next index to be played
+   * @param end_idx - Last index to be played
+   * @return IndexRangeOpt - Index range if a valid one is found
+   */
   [[nodiscard]] static IndexRangeOpt process_step_request(
     const StepRequest & step_request, std::size_t next_idx, std::size_t end_idx);
 
@@ -116,6 +215,14 @@ private:
   mutable std::mutex interface_mutex_;
   std::vector<std::shared_ptr<PlayDataInterfaceBase>> play_data_interface_ptrs_;
 
+  /**
+   * @brief Lock a given mutex before executing a callable
+   *
+   * @tparam Callable
+   * @param mutex
+   * @param callable
+   * @return decltype(callable()) - Return value of callable
+   */
   template <typename Callable>
   static inline auto with_lock(std::mutex & mutex, Callable callable) -> decltype(callable())
   {
@@ -123,20 +230,61 @@ private:
     return callable();
   }
 
+  /**
+   * @brief Threadsafe way of modifying the replayer's state using a callback
+   *
+   * @param modify_cb
+   */
   void modify_state_no_lock(const StateModificationCallback & modify_cb);
 
+  /**
+   * @brief Modify the replayer's state using a callback, not threadsafe
+   *
+   * @param modify_cb
+   */
   void modify_state(const StateModificationCallback & modify_cb);
 
+  /**
+   * @brief Main loop running when replaying
+   *
+   */
   void play_loop();
 
+  /**
+   * @brief Stop the play loop if it is running
+   *
+   */
   void stop_play_thread();
 
+  /**
+   * @brief Get the next index to be played
+   *
+   * @return std::size_t
+   */
   [[nodiscard]] std::size_t get_next_index() const;
 
+  /**
+   * @brief Prepare all required data for a given index
+   *
+   * @param index - Index to be played
+   */
   void prepare_data(std::size_t index);
 
+  /**
+   * @brief Play all data for a given index
+   *
+   * @param index - Index to be played
+   */
   void play_data(std::size_t index);
 
+  /**
+   * @brief Start playing a given index range
+   *
+   * @param index_range
+   * @param replay_speed
+   * @return true - Play successfully started
+   * @return false - Otherwise
+   */
   bool play_index_range(const IndexRange & index_range, float replay_speed);
 };
 
