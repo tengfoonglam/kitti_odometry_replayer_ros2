@@ -7,11 +7,13 @@
 
 ##### Replaying Poses, Point Cloud and Images from a Dataset Sequence
 
+[replayer.webm](https://github.com/tengfoonglam/kitti_odometry_replayer_ros2/assets/19413243/32014e7f-707b-4869-8ba8-aa944ef16cee)
+
 ##### Running an Odometry Pipeline and Comparing with a Ground Truth "Ghost Car"
 
 <img src="./media/odometry_mode.png"
      alt="Odometry Mode"
-     style="width:5 00px;" />
+     style="width:400px;" />
 
 ## Key Features
 1. Replayer that replays all the data provided by the KITTI Odometry Dataset
